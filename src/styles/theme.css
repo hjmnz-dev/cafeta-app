@@ -3,15 +3,15 @@
 :root {
   /* ── Cafeta brand tokens ─────────────────────────────
      Símbolo: dos arcos abiertos + punto. Comunidad cerrada, no encerrada. */
-  --brand-red: #d62828;        /* rojo principal */
-  --brand-red-dark: #7e1418;   /* rojo oscuro (hover / arco interior) */
+  --brand-red: #d62828; /* rojo principal */
+  --brand-red-dark: #7e1418; /* rojo oscuro (hover / arco interior) */
   --brand-red-bright: #ff4a46; /* rojo brillante (modo oscuro / acentos) */
-  --brand-ink: #171313;        /* tinta / casi negro */
-  --brand-pink: #ffe9e6;       /* rosa claro (superficies suaves) */
-  --brand-sand: #efebe8;       /* fondo cálido */
-  --brand-sand-soft: #fbf8f7;  /* pozo de tarjeta */
-  --brand-line: #e3ddd9;       /* bordes */
-  --brand-muted: #8a807c;      /* texto tenue */
+  --brand-ink: #171313; /* tinta / casi negro */
+  --brand-pink: #ffe9e6; /* rosa claro (superficies suaves) */
+  --brand-sand: #efebe8; /* fondo cálido */
+  --brand-sand-soft: #fbf8f7; /* pozo de tarjeta */
+  --brand-line: #e3ddd9; /* bordes */
+  --brand-muted: #8a807c; /* texto tenue */
   --brand-muted-strong: #4a4340;
   --font-brand: 'Space Grotesk', system-ui, sans-serif;
   --font-ui: 'DM Sans', system-ui, sans-serif;
@@ -205,21 +205,21 @@
    Nombres por función, no por color: "superficie" y "tinta" siguen
    significando lo mismo en ambos temas, aunque uno sea claro y el otro oscuro. */
 :root {
-  --frame: #f3f4f6;        /* lienzo detrás del marco del teléfono */
-  --app-bg: #efebe8;       /* fondo de pantalla */
-  --surface: #ffffff;      /* tarjetas y barras */
-  --surface-2: #fbf8f7;    /* pozo dentro de una tarjeta */
-  --surface-3: #f1ece9;    /* campos y superficies apagadas */
-  --line: #e3ddd9;         /* bordes */
-  --line-soft: #f0ebe8;    /* separadores internos */
-  --ink: #171313;          /* texto principal */
-  --ink-2: #4a4340;        /* texto secundario */
-  --muted: #8a807c;        /* texto tenue e iconos inactivos */
-  --tint: #ffe9e6;         /* superficie de acento (rosa de marca) */
-  --brand: #d62828;        /* rojo Cafeta */
+  --frame: #f3f4f6; /* lienzo detrás del marco del teléfono */
+  --app-bg: #efebe8; /* fondo de pantalla */
+  --surface: #ffffff; /* tarjetas y barras */
+  --surface-2: #fbf8f7; /* pozo dentro de una tarjeta */
+  --surface-3: #f1ece9; /* campos y superficies apagadas */
+  --line: #e3ddd9; /* bordes */
+  --line-soft: #f0ebe8; /* separadores internos */
+  --ink: #171313; /* texto principal */
+  --ink-2: #4a4340; /* texto secundario */
+  --muted: #8a807c; /* texto tenue e iconos inactivos */
+  --tint: #ffe9e6; /* superficie de acento (rosa de marca) */
+  --brand: #d62828; /* rojo Cafeta */
   --brand-strong: #7e1418; /* estado presionado / hover */
   --brand-bright: #ff4a46; /* acento vivo */
-  --on-brand: #ffffff;     /* texto sobre rojo */
+  --on-brand: #ffffff; /* texto sobre rojo */
   --ok: #34c759;
   --shadow-card: 0 2px 12px rgba(23, 19, 19, 0.08);
   --shadow-pop: 0 8px 28px rgba(23, 19, 19, 0.18);
@@ -252,10 +252,10 @@
   --ink-2: #cdc3bf;
   --muted: #9c918c;
   --tint: #3a1d1c;
-  --brand: #ff5a52;        /* el rojo de marca se aclara para sostener contraste sobre fondo oscuro */
+  --brand: #ff5a52; /* el rojo de marca se aclara para sostener contraste sobre fondo oscuro */
   --brand-strong: #ff7a72;
   --brand-bright: #ff8078;
-  --on-brand: #1a0f0e;     /* sobre un rojo claro, la tinta oscura lee mejor que el blanco */
+  --on-brand: #1a0f0e; /* sobre un rojo claro, la tinta oscura lee mejor que el blanco */
   --ok: #4ade80;
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.45);
   --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.6);
@@ -274,14 +274,19 @@
 
 /* El fondo del documento sigue al tema para que no se vea un borde claro
    alrededor del marco del teléfono en móvil. */
-html, body {
+html,
+body {
   background: var(--frame);
 }
 
 /* Avance de la barra de una historia (ver StoryViewerScreen). */
 @keyframes story-progress {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 /*

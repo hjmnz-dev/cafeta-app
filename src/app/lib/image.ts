@@ -28,9 +28,18 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     const img = new Image();
     // Si el entorno no decodifica la imagen no llega ni load ni error, así que
     // el temporizador evita que publicar se quede colgado.
-    const timer = setTimeout(() => reject(new Error('Tiempo agotado al leer la imagen')), 5000);
-    img.onload = () => { clearTimeout(timer); resolve(img); };
-    img.onerror = () => { clearTimeout(timer); reject(new Error('No se pudo leer la imagen')); };
+    const timer = setTimeout(
+      () => reject(new Error('Tiempo agotado al leer la imagen')),
+      5000,
+    );
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error('No se pudo leer la imagen'));
+    };
     img.src = src;
   });
 }

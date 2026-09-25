@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useAppState } from '../store/AppState';
 import { searchUsers } from '../lib/search';
@@ -23,7 +23,9 @@ export function PeopleScreen() {
     <div className="w-full h-full bg-[var(--app-bg)] flex flex-col pb-[100px]">
       {/* Header */}
       <div className="bg-[var(--surface)] border-b border-[var(--line)] px-5 py-4 pt-16">
-        <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">Descubrir</h1>
+        <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">
+          Descubrir
+        </h1>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
           <input
@@ -49,7 +51,9 @@ export function PeopleScreen() {
         ))}
 
         <p className="px-5 py-6 text-center text-[12px] text-[var(--muted)] font-['DM_Sans',sans-serif]">
-          Sigues a {followingIds.length} {followingIds.length === 1 ? 'persona' : 'personas'} · conectado como {profile.name}
+          Sigues a {followingIds.length}{' '}
+          {followingIds.length === 1 ? 'persona' : 'personas'} · conectado como{' '}
+          {profile.name}
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { CafetaLogo } from './Logo';
@@ -40,7 +40,12 @@ export function ForgotPasswordScreen() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    },
+    [],
+  );
 
   const startExpiry = () => {
     setSecondsLeft(CODE_TTL_SECONDS);
@@ -64,7 +69,7 @@ export function ForgotPasswordScreen() {
     }
     setEmailError(null);
     // Código de demostración (en producción lo genera y envía el servidor).
-    const demo = String(Math.floor(100000 + (email.length * 7919) % 900000));
+    const demo = String(Math.floor(100000 + ((email.length * 7919) % 900000)));
     setSentCode(demo);
     setCode('');
     setCodeError(null);
@@ -111,7 +116,9 @@ export function ForgotPasswordScreen() {
       <div className="pt-[60px] px-6 flex flex-col">
         {/* Back */}
         <button
-          onClick={() => (step === 'request' ? navigate('/login') : setStep('request'))}
+          onClick={() =>
+            step === 'request' ? navigate('/login') : setStep('request')
+          }
           className="w-10 h-10 -ml-2 mb-4 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
           aria-label="Volver"
         >
@@ -129,7 +136,8 @@ export function ForgotPasswordScreen() {
                 Recuperar contraseña
               </h1>
               <p className="text-[var(--muted)] text-[15px] text-center mb-8 px-2">
-                Ingresa tu correo institucional y te enviaremos un código para restablecer tu contraseña.
+                Ingresa tu correo institucional y te enviaremos un código para
+                restablecer tu contraseña.
               </p>
               <div className="w-full flex flex-col gap-4">
                 <div>
@@ -140,10 +148,17 @@ export function ForgotPasswordScreen() {
                     type="email"
                     placeholder="tu@est.intec.edu.do"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(null); }}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(null);
+                    }}
                     className={inputBase}
                   />
-                  {emailError && <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">{emailError}</p>}
+                  {emailError && (
+                    <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
+                      {emailError}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={sendCode}
@@ -161,7 +176,9 @@ export function ForgotPasswordScreen() {
                 Verifica tu correo
               </h1>
               <p className="text-[var(--muted)] text-[15px] text-center mb-2 px-2">
-                Enviamos un código de 6 dígitos a <span className="font-semibold text-[var(--ink)]">{email}</span>.
+                Enviamos un código de 6 dígitos a{' '}
+                <span className="font-semibold text-[var(--ink)]">{email}</span>
+                .
               </p>
               {/* Ayuda de demo (sin backend). Quitar al conectar la API. */}
               <p className="text-[11px] text-[var(--muted)] text-center mb-6 font-['IBM_Plex_Mono',monospace]">
@@ -175,12 +192,22 @@ export function ForgotPasswordScreen() {
                     aria-label="Código de verificación"
                     placeholder="––––––"
                     value={code}
-                    onChange={(e) => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); if (codeError) setCodeError(null); }}
-                    className={inputBase + ' text-center tracking-[0.5em] text-[22px] font-semibold'}
+                    onChange={(e) => {
+                      setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      if (codeError) setCodeError(null);
+                    }}
+                    className={
+                      inputBase +
+                      ' text-center tracking-[0.5em] text-[22px] font-semibold'
+                    }
                   />
                   <div className="flex items-center justify-between mt-2">
-                    <span className={`text-[12px] font-['DM_Sans',sans-serif] ${secondsLeft > 0 ? 'text-[var(--muted)]' : 'text-[var(--brand)]'}`}>
-                      {secondsLeft > 0 ? `Expira en ${secondsLeft}s` : 'Código expirado'}
+                    <span
+                      className={`text-[12px] font-['DM_Sans',sans-serif] ${secondsLeft > 0 ? 'text-[var(--muted)]' : 'text-[var(--brand)]'}`}
+                    >
+                      {secondsLeft > 0
+                        ? `Expira en ${secondsLeft}s`
+                        : 'Código expirado'}
                     </span>
                     <button
                       onClick={sendCode}
@@ -189,7 +216,11 @@ export function ForgotPasswordScreen() {
                       Reenviar código
                     </button>
                   </div>
-                  {codeError && <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">{codeError}</p>}
+                  {codeError && (
+                    <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
+                      {codeError}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={verifyCode}
@@ -211,14 +242,19 @@ export function ForgotPasswordScreen() {
               </p>
               <div className="w-full flex flex-col gap-4">
                 <div>
-                  <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">Contraseña</label>
+                  <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+                    Contraseña
+                  </label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       aria-label="Nueva contraseña"
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => { setPassword(e.target.value); if (resetError) setResetError(null); }}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (resetError) setResetError(null);
+                      }}
                       className={inputBase + ' pr-12'}
                     />
                     <button
@@ -226,21 +262,34 @@ export function ForgotPasswordScreen() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">Confirmar contraseña</label>
+                  <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+                    Confirmar contraseña
+                  </label>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     aria-label="Confirmar nueva contraseña"
                     placeholder="••••••••"
                     value={confirm}
-                    onChange={(e) => { setConfirm(e.target.value); if (resetError) setResetError(null); }}
+                    onChange={(e) => {
+                      setConfirm(e.target.value);
+                      if (resetError) setResetError(null);
+                    }}
                     className={inputBase}
                   />
-                  {resetError && <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">{resetError}</p>}
+                  {resetError && (
+                    <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
+                      {resetError}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={resetPassword}
@@ -261,7 +310,8 @@ export function ForgotPasswordScreen() {
                 ¡Listo!
               </h1>
               <p className="text-[var(--muted)] text-[15px] mb-8 px-2">
-                Tu contraseña fue restablecida. Ya puedes iniciar sesión con tus nuevos datos.
+                Tu contraseña fue restablecida. Ya puedes iniciar sesión con tus
+                nuevos datos.
               </p>
               <button
                 onClick={() => navigate('/login')}

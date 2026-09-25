@@ -1,7 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, User, Globe, Users, Lock, Bell, ChevronRight, LogOut, Ban, Moon, Sun } from 'lucide-react';
-import { useAppState, ProfileVisibility, NotificationPrefs, Theme } from '../store/AppState';
+import {
+  ArrowLeft,
+  User,
+  Globe,
+  Users,
+  Lock,
+  Bell,
+  ChevronRight,
+  LogOut,
+  Ban,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import {
+  useAppState,
+  ProfileVisibility,
+  NotificationPrefs,
+  Theme,
+} from '../store/AppState';
 
 /**
  * DEF-03 — Configuración de cuenta. Acceso desde el ícono ⚙️ del perfil.
@@ -12,27 +29,92 @@ import { useAppState, ProfileVisibility, NotificationPrefs, Theme } from '../sto
  * puede revertir sin recordar su enlace.
  */
 
-const VISIBILITY_OPTIONS: { value: ProfileVisibility; label: string; desc: string; icon: React.ElementType }[] = [
-  { value: 'public', label: 'Público', desc: 'Cualquier estudiante puede ver tu perfil y contenido.', icon: Globe },
-  { value: 'followers', label: 'Solo seguidores', desc: 'Solo quienes ya te siguen ven tu contenido.', icon: Users },
-  { value: 'private', label: 'Privado', desc: 'Debes aprobar cada solicitud para ver tu perfil.', icon: Lock },
+const VISIBILITY_OPTIONS: {
+  value: ProfileVisibility;
+  label: string;
+  desc: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    value: 'public',
+    label: 'Público',
+    desc: 'Cualquier estudiante puede ver tu perfil y contenido.',
+    icon: Globe,
+  },
+  {
+    value: 'followers',
+    label: 'Solo seguidores',
+    desc: 'Solo quienes ya te siguen ven tu contenido.',
+    icon: Users,
+  },
+  {
+    value: 'private',
+    label: 'Privado',
+    desc: 'Debes aprobar cada solicitud para ver tu perfil.',
+    icon: Lock,
+  },
 ];
 
 /** Apariencia. El oscuro es el predeterminado; el claro está a un toque. */
-const THEME_OPTIONS: { value: Theme; label: string; desc: string; icon: React.ElementType }[] = [
-  { value: 'dark', label: 'Oscuro', desc: 'El modo con el que arranca Cafeta. Descansa la vista de noche.', icon: Moon },
-  { value: 'light', label: 'Claro', desc: 'Fondo claro, útil con mucha luz alrededor.', icon: Sun },
+const THEME_OPTIONS: {
+  value: Theme;
+  label: string;
+  desc: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    value: 'dark',
+    label: 'Oscuro',
+    desc: 'El modo con el que arranca Cafeta. Descansa la vista de noche.',
+    icon: Moon,
+  },
+  {
+    value: 'light',
+    label: 'Claro',
+    desc: 'Fondo claro, útil con mucha luz alrededor.',
+    icon: Sun,
+  },
 ];
 
-const NOTIFICATION_OPTIONS: { key: keyof NotificationPrefs; label: string; desc: string }[] = [
-  { key: 'likes', label: 'Reacciones', desc: 'Cuando reaccionan a tus publicaciones o historias.' },
-  { key: 'comments', label: 'Comentarios', desc: 'Cuando comentan tu contenido.' },
-  { key: 'follows', label: 'Nuevos seguidores', desc: 'Cuando alguien te sigue o solicita seguirte.' },
-  { key: 'messages', label: 'Mensajes', desc: 'Cuando recibes un mensaje directo.' },
-  { key: 'stories', label: 'Historias', desc: 'Cuando alguien que sigues publica una historia.' },
+const NOTIFICATION_OPTIONS: {
+  key: keyof NotificationPrefs;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    key: 'likes',
+    label: 'Reacciones',
+    desc: 'Cuando reaccionan a tus publicaciones o historias.',
+  },
+  {
+    key: 'comments',
+    label: 'Comentarios',
+    desc: 'Cuando comentan tu contenido.',
+  },
+  {
+    key: 'follows',
+    label: 'Nuevos seguidores',
+    desc: 'Cuando alguien te sigue o solicita seguirte.',
+  },
+  {
+    key: 'messages',
+    label: 'Mensajes',
+    desc: 'Cuando recibes un mensaje directo.',
+  },
+  {
+    key: 'stories',
+    label: 'Historias',
+    desc: 'Cuando alguien que sigues publica una historia.',
+  },
 ];
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  on,
+  onChange,
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <button
       onClick={() => onChange(!on)}
@@ -49,17 +131,23 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 export function SettingsScreen() {
   const navigate = useNavigate();
-  const { profile, settings, updateSettings, users, blockedIds, unblockUser } = useAppState();
+  const { profile, settings, updateSettings, users, blockedIds, unblockUser } =
+    useAppState();
 
   const blockedUsers = users.filter((u) => blockedIds.includes(u.id));
 
-  const setVisibility = (visibility: ProfileVisibility) => updateSettings({ visibility });
+  const setVisibility = (visibility: ProfileVisibility) =>
+    updateSettings({ visibility });
   const setTheme = (theme: Theme) => updateSettings({ theme });
   const setNotif = (key: keyof NotificationPrefs, value: boolean) =>
-    updateSettings({ notifications: { ...settings.notifications, [key]: value } });
+    updateSettings({
+      notifications: { ...settings.notifications, [key]: value },
+    });
 
-  const sectionTitle = "text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider font-['IBM_Plex_Mono',monospace] mb-3 px-1";
-  const card = 'bg-[var(--surface)] rounded-[18px] border border-[var(--line)] overflow-hidden';
+  const sectionTitle =
+    "text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider font-['IBM_Plex_Mono',monospace] mb-3 px-1";
+  const card =
+    'bg-[var(--surface)] rounded-[18px] border border-[var(--line)] overflow-hidden';
 
   return (
     <div className="w-full h-full bg-[var(--app-bg)] flex flex-col">
@@ -72,7 +160,9 @@ export function SettingsScreen() {
         >
           <ArrowLeft className="w-6 h-6 text-[var(--ink)]" />
         </button>
-        <h1 className="text-[17px] font-semibold text-[var(--ink)] font-['Space_Grotesk',sans-serif]">Configuración</h1>
+        <h1 className="text-[17px] font-semibold text-[var(--ink)] font-['Space_Grotesk',sans-serif]">
+          Configuración
+        </h1>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-7">
@@ -87,8 +177,12 @@ export function SettingsScreen() {
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[15px] text-[var(--ink)] truncate">{profile.name}</p>
-                <p className="text-[13px] text-[var(--muted)] truncate">{profile.handle}</p>
+                <p className="font-semibold text-[15px] text-[var(--ink)] truncate">
+                  {profile.name}
+                </p>
+                <p className="text-[13px] text-[var(--muted)] truncate">
+                  {profile.handle}
+                </p>
               </div>
             </div>
             <button
@@ -96,7 +190,9 @@ export function SettingsScreen() {
               className="w-full flex items-center gap-3 px-4 py-4 hover:bg-[var(--surface-2)] transition-colors"
             >
               <User className="w-5 h-5 text-[var(--muted)]" />
-              <span className="flex-1 text-left text-[15px] text-[var(--ink)]">Editar perfil</span>
+              <span className="flex-1 text-left text-[15px] text-[var(--ink)]">
+                Editar perfil
+              </span>
               <ChevronRight className="w-5 h-5 text-[var(--muted)]" />
             </button>
           </div>
@@ -116,13 +212,25 @@ export function SettingsScreen() {
                   aria-pressed={active}
                   className={`w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-[var(--surface-2)] transition-colors ${i > 0 ? 'border-t border-[var(--line-soft)]' : ''}`}
                 >
-                  <Icon className={`w-5 h-5 flex-none ${active ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`} />
+                  <Icon
+                    className={`w-5 h-5 flex-none ${active ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[15px] ${active ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink)]'}`}>{opt.label}</p>
-                    <p className="text-[12px] text-[var(--muted)] leading-snug">{opt.desc}</p>
+                    <p
+                      className={`text-[15px] ${active ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink)]'}`}
+                    >
+                      {opt.label}
+                    </p>
+                    <p className="text-[12px] text-[var(--muted)] leading-snug">
+                      {opt.desc}
+                    </p>
                   </div>
-                  <span className={`w-5 h-5 rounded-full flex-none flex items-center justify-center border-2 ${active ? 'border-[var(--brand)]' : 'border-[var(--line)]'}`}>
-                    {active && <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand)]" />}
+                  <span
+                    className={`w-5 h-5 rounded-full flex-none flex items-center justify-center border-2 ${active ? 'border-[var(--brand)]' : 'border-[var(--line)]'}`}
+                  >
+                    {active && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand)]" />
+                    )}
                   </span>
                 </button>
               );
@@ -144,13 +252,25 @@ export function SettingsScreen() {
                   aria-pressed={active}
                   className={`w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-[var(--surface-2)] transition-colors ${i > 0 ? 'border-t border-[var(--line-soft)]' : ''}`}
                 >
-                  <Icon className={`w-5 h-5 flex-none ${active ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`} />
+                  <Icon
+                    className={`w-5 h-5 flex-none ${active ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[15px] ${active ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink)]'}`}>{opt.label}</p>
-                    <p className="text-[12px] text-[var(--muted)] leading-snug">{opt.desc}</p>
+                    <p
+                      className={`text-[15px] ${active ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink)]'}`}
+                    >
+                      {opt.label}
+                    </p>
+                    <p className="text-[12px] text-[var(--muted)] leading-snug">
+                      {opt.desc}
+                    </p>
                   </div>
-                  <span className={`w-5 h-5 rounded-full flex-none flex items-center justify-center border-2 ${active ? 'border-[var(--brand)]' : 'border-[var(--line)]'}`}>
-                    {active && <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand)]" />}
+                  <span
+                    className={`w-5 h-5 rounded-full flex-none flex items-center justify-center border-2 ${active ? 'border-[var(--brand)]' : 'border-[var(--line)]'}`}
+                  >
+                    {active && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand)]" />
+                    )}
                   </span>
                 </button>
               );
@@ -170,9 +290,14 @@ export function SettingsScreen() {
                 <Bell className="w-5 h-5 text-[var(--muted)] flex-none" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[15px] text-[var(--ink)]">{opt.label}</p>
-                  <p className="text-[12px] text-[var(--muted)] leading-snug">{opt.desc}</p>
+                  <p className="text-[12px] text-[var(--muted)] leading-snug">
+                    {opt.desc}
+                  </p>
                 </div>
-                <Toggle on={settings.notifications[opt.key]} onChange={(v) => setNotif(opt.key, v)} />
+                <Toggle
+                  on={settings.notifications[opt.key]}
+                  onChange={(v) => setNotif(opt.key, v)}
+                />
               </div>
             ))}
           </div>
@@ -184,7 +309,8 @@ export function SettingsScreen() {
           <div className={card}>
             {blockedUsers.length === 0 ? (
               <p className="px-4 py-4 text-[13px] text-[var(--muted)] leading-snug">
-                No has bloqueado a nadie. Puedes bloquear a alguien desde su perfil o desde una de sus publicaciones.
+                No has bloqueado a nadie. Puedes bloquear a alguien desde su
+                perfil o desde una de sus publicaciones.
               </p>
             ) : (
               blockedUsers.map((u, i) => (
@@ -194,8 +320,12 @@ export function SettingsScreen() {
                 >
                   <Ban className="w-5 h-5 text-[var(--muted)] flex-none" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] text-[var(--ink)] truncate">{u.name}</p>
-                    <p className="text-[12px] text-[var(--muted)] truncate">{u.handle}</p>
+                    <p className="text-[15px] text-[var(--ink)] truncate">
+                      {u.name}
+                    </p>
+                    <p className="text-[12px] text-[var(--muted)] truncate">
+                      {u.handle}
+                    </p>
                   </div>
                   <button
                     onClick={() => unblockUser(u.id)}

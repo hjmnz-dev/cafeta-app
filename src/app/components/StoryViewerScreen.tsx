@@ -1,10 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { X, ChevronLeft, ChevronRight, Pencil, EyeOff, Clock, Send, MessageCircle } from 'lucide-react';
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  EyeOff,
+  Clock,
+  Send,
+  MessageCircle,
+} from 'lucide-react';
 import { useAppState, CURRENT_USER_ID } from '../store/AppState';
 import {
-  visibleStories, visibleComments, reactionCounts, remainingLabel, isVigente,
-  playbackQueue, authorSegment, STORY_REACTIONS, STORY_DURATION_MS,
+  visibleStories,
+  visibleComments,
+  reactionCounts,
+  remainingLabel,
+  isVigente,
+  playbackQueue,
+  authorSegment,
+  STORY_REACTIONS,
+  STORY_DURATION_MS,
 } from '../lib/stories';
 
 /**
@@ -27,7 +43,8 @@ import {
  */
 
 /** Fondo de las historias sin imagen: degradado de marca. */
-const TEXT_STORY_BG = 'linear-gradient(160deg, var(--brand-strong) 0%, var(--brand) 55%, #ff6a52 100%)';
+const TEXT_STORY_BG =
+  'linear-gradient(160deg, var(--brand-strong) 0%, var(--brand) 55%, #ff6a52 100%)';
 
 export function StoryViewerScreen() {
   const { storyId } = useParams();
@@ -42,9 +59,16 @@ export function StoryViewerScreen() {
   const from = (location.state as { from?: string } | null)?.from ?? '/home';
   const goBack = () => navigate(from);
   const {
-    stories, followingIds, profile, isOwnStory,
-    editStory, deactivateStory, reactToStory,
-    addStoryComment, editStoryComment, deactivateStoryComment,
+    stories,
+    followingIds,
+    profile,
+    isOwnStory,
+    editStory,
+    deactivateStory,
+    reactToStory,
+    addStoryComment,
+    editStoryComment,
+    deactivateStoryComment,
   } = useAppState();
 
   const [editing, setEditing] = useState(false);
@@ -55,11 +79,17 @@ export function StoryViewerScreen() {
   const [commentDraft, setCommentDraft] = useState('');
   const [showComments, setShowComments] = useState(true);
 
-  const visibles = visibleStories(stories, { currentUserId: CURRENT_USER_ID, followingIds });
+  const visibles = visibleStories(stories, {
+    currentUserId: CURRENT_USER_ID,
+    followingIds,
+  });
   const story = stories.find((s) => s.id === storyId);
 
   // Vencida, desactivada o de alguien a quien no se sigue: no se muestra (HU13).
-  const available = Boolean(story) && isVigente(story!) && visibles.some((s) => s.id === story!.id);
+  const available =
+    Boolean(story) &&
+    isVigente(story!) &&
+    visibles.some((s) => s.id === story!.id);
 
   // Cola de reproducción y tramo del autor actual (lo que mide la barra).
   const queue = playbackQueue(visibles);
@@ -70,13 +100,18 @@ export function StoryViewerScreen() {
 
   // El temporizador no corre mientras se escribe o se edita: cerrar la pantalla
   // en medio de un comentario sería perder lo escrito.
-  const paused = editing || confirmOff || editingComment !== null || comment.trim().length > 0;
+  const paused =
+    editing ||
+    confirmOff ||
+    editingComment !== null ||
+    comment.trim().length > 0;
 
   useEffect(() => {
     if (!available || paused) return;
     const timer = setTimeout(() => {
       // Se acabaron las historias por ver: se cierra el visor.
-      if (nextId) navigate(`/stories/${nextId}`, { replace: true, state: { from } });
+      if (nextId)
+        navigate(`/stories/${nextId}`, { replace: true, state: { from } });
       else navigate(from);
     }, STORY_DURATION_MS);
     return () => clearTimeout(timer);
@@ -86,8 +121,12 @@ export function StoryViewerScreen() {
     return (
       <div className="w-full h-full bg-[#0d0a09] flex flex-col items-center justify-center gap-4 px-8 text-center">
         <Clock className="w-10 h-10 text-white/50" />
-        <p className="text-white text-[16px]">Esta historia ya no está disponible.</p>
-        <p className="text-white/60 text-[14px]">Las historias se muestran solo durante 24 horas.</p>
+        <p className="text-white text-[16px]">
+          Esta historia ya no está disponible.
+        </p>
+        <p className="text-white/60 text-[14px]">
+          Las historias se muestran solo durante 24 horas.
+        </p>
         <button
           onClick={goBack}
           className="mt-2 h-11 px-6 rounded-full bg-white text-[#171313] text-[15px] font-semibold"
@@ -127,16 +166,24 @@ export function StoryViewerScreen() {
     setEditingComment(null);
   };
 
-  const iconButton = 'w-9 h-9 rounded-full flex items-center justify-center text-white/85 hover:bg-[var(--surface)]/15 transition-colors';
+  const iconButton =
+    'w-9 h-9 rounded-full flex items-center justify-center text-white/85 hover:bg-[var(--surface)]/15 transition-colors';
 
   return (
     <div className="w-full h-full bg-[#0d0a09] flex flex-col relative overflow-hidden">
       {/* Contenido a sangre */}
       <div className="absolute inset-0">
         {story.image ? (
-          <img src={story.image} alt="" className="w-full h-full object-cover" />
+          <img
+            src={story.image}
+            alt=""
+            className="w-full h-full object-cover"
+          />
         ) : (
-          <div className="w-full h-full" style={{ background: TEXT_STORY_BG }} />
+          <div
+            className="w-full h-full"
+            style={{ background: TEXT_STORY_BG }}
+          />
         )}
         {/* Velos: sostienen la legibilidad de cabecera y acciones sobre la foto */}
         <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/70 to-transparent" />
@@ -147,8 +194,13 @@ export function StoryViewerScreen() {
           historia hay una sola franja, que se llena mientras se ve. */}
       <div className="relative px-3 pt-12 flex gap-1" aria-hidden>
         {segment.map((s, i) => (
-          <span key={s.id} className="flex-1 h-[3px] rounded-full bg-[var(--surface)]/25 overflow-hidden">
-            {i < segmentIndex && <span className="block h-full w-full rounded-full bg-[var(--surface)]" />}
+          <span
+            key={s.id}
+            className="flex-1 h-[3px] rounded-full bg-[var(--surface)]/25 overflow-hidden"
+          >
+            {i < segmentIndex && (
+              <span className="block h-full w-full rounded-full bg-[var(--surface)]" />
+            )}
             {i === segmentIndex && (
               <span
                 key={s.id + String(paused)}
@@ -165,9 +217,15 @@ export function StoryViewerScreen() {
 
       {/* Cabecera: autor, vigencia y acciones de autor (HU14/HU15) */}
       <div className="relative px-3 py-2.5 flex items-center gap-2.5">
-        <img src={story.authorAvatar} alt={story.authorName} className="w-9 h-9 rounded-full object-cover bg-[var(--surface)]/10 flex-none" />
+        <img
+          src={story.authorAvatar}
+          alt={story.authorName}
+          className="w-9 h-9 rounded-full object-cover bg-[var(--surface)]/10 flex-none"
+        />
         <div className="flex-1 min-w-0">
-          <p className="text-white text-[14px] font-semibold truncate">{story.authorName}</p>
+          <p className="text-white text-[14px] font-semibold truncate">
+            {story.authorName}
+          </p>
           <p className="text-white/70 text-[11px]">
             {remainingLabel(story)}
             {story.edited && ' · Editada'}
@@ -175,10 +233,21 @@ export function StoryViewerScreen() {
         </div>
         {own && (
           <>
-            <button onClick={() => { setDraft(story.text); setEditing(true); }} aria-label="Editar historia" className={iconButton}>
+            <button
+              onClick={() => {
+                setDraft(story.text);
+                setEditing(true);
+              }}
+              aria-label="Editar historia"
+              className={iconButton}
+            >
               <Pencil className="w-[18px] h-[18px]" />
             </button>
-            <button onClick={() => setConfirmOff(true)} aria-label="Desactivar historia" className={iconButton}>
+            <button
+              onClick={() => setConfirmOff(true)}
+              aria-label="Desactivar historia"
+              className={iconButton}
+            >
               <EyeOff className="w-[18px] h-[18px]" />
             </button>
           </>
@@ -200,10 +269,16 @@ export function StoryViewerScreen() {
               className="w-full min-h-[90px] resize-none text-[15px] text-[#171313] outline-none bg-transparent"
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditing(false)} className="px-4 py-2 rounded-full text-[14px] font-semibold text-[#8a807c] bg-[#f1ece9]">
+              <button
+                onClick={() => setEditing(false)}
+                className="px-4 py-2 rounded-full text-[14px] font-semibold text-[#8a807c] bg-[#f1ece9]"
+              >
                 Cancelar
               </button>
-              <button onClick={saveEdit} className="px-4 py-2 rounded-full text-[14px] font-semibold text-white bg-[#d62828]">
+              <button
+                onClick={saveEdit}
+                className="px-4 py-2 rounded-full text-[14px] font-semibold text-white bg-[#d62828]"
+              >
                 Guardar
               </button>
             </div>
@@ -213,7 +288,9 @@ export function StoryViewerScreen() {
             <p
               className={
                 'text-white leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] ' +
-                (story.image ? 'text-[17px]' : "text-[26px] font-['Space_Grotesk',sans-serif] font-bold text-center")
+                (story.image
+                  ? 'text-[17px]'
+                  : "text-[26px] font-['Space_Grotesk',sans-serif] font-bold text-center")
               }
             >
               {story.text}
@@ -225,7 +302,9 @@ export function StoryViewerScreen() {
       {/* Navegación entre historias vigentes */}
       <div className="relative px-3 flex items-center justify-between">
         <button
-          onClick={() => prev && navigate(`/stories/${prev.id}`, { state: { from } })}
+          onClick={() =>
+            prev && navigate(`/stories/${prev.id}`, { state: { from } })
+          }
           disabled={!prev}
           aria-label="Historia anterior"
           className={iconButton + ' disabled:opacity-25'}
@@ -236,7 +315,9 @@ export function StoryViewerScreen() {
           {segmentIndex + 1} de {segment.length}
         </span>
         <button
-          onClick={() => next && navigate(`/stories/${next.id}`, { state: { from } })}
+          onClick={() =>
+            next && navigate(`/stories/${next.id}`, { state: { from } })
+          }
           disabled={!next}
           aria-label="Historia siguiente"
           className={iconButton + ' disabled:opacity-25'}
@@ -256,7 +337,9 @@ export function StoryViewerScreen() {
               aria-pressed={myReaction === emoji}
               className={
                 'w-10 h-10 rounded-full text-[19px] flex items-center justify-center transition-transform ' +
-                (myReaction === emoji ? 'bg-[var(--surface)] scale-110' : 'bg-[var(--surface)]/15 hover:bg-[var(--surface)]/25')
+                (myReaction === emoji
+                  ? 'bg-[var(--surface)] scale-110'
+                  : 'bg-[var(--surface)]/15 hover:bg-[var(--surface)]/25')
               }
             >
               {emoji}
@@ -283,18 +366,30 @@ export function StoryViewerScreen() {
 
         {showComments && (
           <div className="mt-2 max-h-[150px] overflow-y-auto no-scrollbar flex flex-col gap-2">
-            {comments.length === 0 && <p className="text-white/50 text-[13px]">Todavía no hay comentarios.</p>}
+            {comments.length === 0 && (
+              <p className="text-white/50 text-[13px]">
+                Todavía no hay comentarios.
+              </p>
+            )}
 
             {comments.map((c) => {
               const mine = c.authorId === CURRENT_USER_ID;
               return (
-                <div key={c.id} className="bg-[var(--surface)]/12 backdrop-blur-sm rounded-[14px] px-3.5 py-2.5">
+                <div
+                  key={c.id}
+                  className="bg-[var(--surface)]/12 backdrop-blur-sm rounded-[14px] px-3.5 py-2.5"
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-white text-[13px] font-semibold">{c.authorName}</p>
+                    <p className="text-white text-[13px] font-semibold">
+                      {c.authorName}
+                    </p>
                     {mine && editingComment !== c.id && (
                       <div className="flex gap-1">
                         <button
-                          onClick={() => { setEditingComment(c.id); setCommentDraft(c.text); }}
+                          onClick={() => {
+                            setEditingComment(c.id);
+                            setCommentDraft(c.text);
+                          }}
                           aria-label={`Editar comentario de ${c.authorName}`}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-white/75 hover:bg-[var(--surface)]/15"
                         >
@@ -321,10 +416,16 @@ export function StoryViewerScreen() {
                         className="w-full bg-white rounded-[12px] px-3 py-2 text-[14px] text-[#171313] outline-none"
                       />
                       <div className="flex justify-end gap-2 mt-2">
-                        <button onClick={() => setEditingComment(null)} className="px-3 py-1.5 rounded-full text-[13px] font-semibold text-white/75">
+                        <button
+                          onClick={() => setEditingComment(null)}
+                          className="px-3 py-1.5 rounded-full text-[13px] font-semibold text-white/75"
+                        >
                           Cancelar
                         </button>
-                        <button onClick={() => saveComment(c.id)} className="px-3 py-1.5 rounded-full text-[13px] font-semibold text-white bg-[#d62828]">
+                        <button
+                          onClick={() => saveComment(c.id)}
+                          className="px-3 py-1.5 rounded-full text-[13px] font-semibold text-white bg-[#d62828]"
+                        >
                           Guardar
                         </button>
                       </div>
@@ -332,7 +433,12 @@ export function StoryViewerScreen() {
                   ) : (
                     <p className="text-white/90 text-[13.5px] mt-0.5">
                       {c.text}
-                      {c.edited && <span className="text-white/50 text-[12px]"> · Editado</span>}
+                      {c.edited && (
+                        <span className="text-white/50 text-[12px]">
+                          {' '}
+                          · Editado
+                        </span>
+                      )}
                     </p>
                   )}
                 </div>
@@ -364,13 +470,18 @@ export function StoryViewerScreen() {
 
       {/* Confirmación de baja lógica (HU15) */}
       {confirmOff && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6" role="dialog" aria-modal="true">
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6"
+          role="dialog"
+          aria-modal="true"
+        >
           <div className="bg-[var(--surface)] w-full max-w-[330px] p-5 rounded-3xl shadow-[var(--shadow-pop)]">
             <h2 className="text-[17px] font-semibold text-[var(--ink)] font-['Space_Grotesk',sans-serif] mb-2">
               Desactivar historia
             </h2>
             <p className="text-[14px] text-[var(--muted)] leading-relaxed mb-5">
-              Dejará de mostrarse a tus seguidores. Su registro se conserva para trazabilidad.
+              Dejará de mostrarse a tus seguidores. Su registro se conserva para
+              trazabilidad.
             </p>
             <div className="flex gap-2">
               <button
@@ -380,7 +491,11 @@ export function StoryViewerScreen() {
                 Cancelar
               </button>
               <button
-                onClick={() => { deactivateStory(story.id); setConfirmOff(false); goBack(); }}
+                onClick={() => {
+                  deactivateStory(story.id);
+                  setConfirmOff(false);
+                  goBack();
+                }}
                 className="flex-1 py-2.5 rounded-full text-[14px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-strong)] transition-colors"
               >
                 Desactivar

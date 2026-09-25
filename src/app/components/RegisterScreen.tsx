@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { CafetaLogo } from './Logo';
@@ -70,8 +70,8 @@ export function RegisterScreen() {
       isError
         ? 'bg-[var(--tint)] border-2 border-[var(--brand)]'
         : isFocused
-        ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[0_4px_16px_rgba(214,40,40,0.12)]'
-        : 'bg-[var(--surface-3)] border-2 border-transparent',
+          ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[0_4px_16px_rgba(214,40,40,0.12)]'
+          : 'bg-[var(--surface-3)] border-2 border-transparent',
     ].join(' ');
   };
 
@@ -107,7 +107,10 @@ export function RegisterScreen() {
                 type="text"
                 placeholder="Juan"
                 value={nombre}
-                onChange={(e) => { setNombre(e.target.value); clearError('nombre'); }}
+                onChange={(e) => {
+                  setNombre(e.target.value);
+                  clearError('nombre');
+                }}
                 onFocus={() => setFocusedField('nombre')}
                 onBlur={() => setFocusedField(null)}
                 className={inputClass('nombre')}
@@ -126,7 +129,10 @@ export function RegisterScreen() {
                 type="text"
                 placeholder="Pérez"
                 value={apellido}
-                onChange={(e) => { setApellido(e.target.value); clearError('apellido'); }}
+                onChange={(e) => {
+                  setApellido(e.target.value);
+                  clearError('apellido');
+                }}
                 onFocus={() => setFocusedField('apellido')}
                 onBlur={() => setFocusedField(null)}
                 className={inputClass('apellido')}
@@ -148,7 +154,10 @@ export function RegisterScreen() {
               type="email"
               placeholder="tu@email.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); clearError('email'); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError('email');
+              }}
               onFocus={() => setFocusedField('email')}
               onBlur={() => setFocusedField(null)}
               className={inputClass('email')}
@@ -170,7 +179,10 @@ export function RegisterScreen() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); clearError('password'); }}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearError('password');
+                }}
                 onFocus={() => setFocusedField('password')}
                 onBlur={() => setFocusedField(null)}
                 className={`${inputClass('password')} pr-12`}
@@ -178,11 +190,17 @@ export function RegisterScreen() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-label={
+                  showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                }
                 aria-pressed={showPassword}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
             {errors.password && (
@@ -202,7 +220,10 @@ export function RegisterScreen() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); clearError('confirmPassword'); }}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  clearError('confirmPassword');
+                }}
                 onFocus={() => setFocusedField('confirmPassword')}
                 onBlur={() => setFocusedField(null)}
                 className={`${inputClass('confirmPassword')} pr-12`}
@@ -210,11 +231,19 @@ export function RegisterScreen() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
+                aria-label={
+                  showConfirmPassword
+                    ? 'Ocultar confirmación de contraseña'
+                    : 'Mostrar confirmación de contraseña'
+                }
                 aria-pressed={showConfirmPassword}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
               >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
             {errors.confirmPassword && (
@@ -242,8 +271,8 @@ export function RegisterScreen() {
                 className="text-[var(--brand)] font-semibold hover:text-[var(--brand-strong)] transition-colors"
               >
                 términos y condiciones
-              </button>
-              {' '}y la{' '}
+              </button>{' '}
+              y la{' '}
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}

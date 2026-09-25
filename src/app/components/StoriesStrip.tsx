@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { useAppState, CURRENT_USER_ID } from '../store/AppState';
 import { visibleStories } from '../lib/stories';
@@ -17,7 +16,10 @@ import { MyStoryAvatar } from './MyStoryAvatar';
 export function StoriesStrip() {
   const { stories, followingIds } = useAppState();
   const { pathname: from } = useLocation();
-  const visibles = visibleStories(stories, { currentUserId: CURRENT_USER_ID, followingIds });
+  const visibles = visibleStories(stories, {
+    currentUserId: CURRENT_USER_ID,
+    followingIds,
+  });
   const others = visibles.filter((s) => s.authorId !== CURRENT_USER_ID);
   const hasMine = visibles.some((s) => s.authorId === CURRENT_USER_ID);
 
@@ -26,12 +28,16 @@ export function StoriesStrip() {
       {/* Tu historia: publicar (HU12) y, si ya hay una, verla (HU13) */}
       <div className="flex flex-col items-center gap-1.5 min-w-[68px]">
         <MyStoryAvatar size={62} />
-        <span className="text-[11px] text-[var(--muted)] font-medium">Tu historia</span>
+        <span className="text-[11px] text-[var(--muted)] font-medium">
+          Tu historia
+        </span>
       </div>
 
       {others.length === 0 ? (
         <p className="self-center text-[12px] text-[var(--muted)] leading-snug max-w-[220px]">
-          Sigue a alguien en <span className="font-semibold text-[var(--ink-2)]">Descubrir</span> para ver sus historias
+          Sigue a alguien en{' '}
+          <span className="font-semibold text-[var(--ink-2)]">Descubrir</span>{' '}
+          para ver sus historias
           {hasMine ? '.' : ', o publica la tuya.'}
         </p>
       ) : (
@@ -44,7 +50,10 @@ export function StoriesStrip() {
             aria-label={`Ver historia de ${story.authorName}`}
           >
             {/* Anillo de historia vigente */}
-            <div className="w-[62px] h-[62px] rounded-full p-[2.5px]" style={{ background: 'var(--story-ring)' }}>
+            <div
+              className="w-[62px] h-[62px] rounded-full p-[2.5px]"
+              style={{ background: 'var(--story-ring)' }}
+            >
               <img
                 src={story.authorAvatar}
                 className="w-full h-full rounded-full object-cover border-2 border-[var(--surface)]"

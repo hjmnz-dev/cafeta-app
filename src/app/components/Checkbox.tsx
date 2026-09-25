@@ -15,7 +15,12 @@ import React from 'react';
  *   sobre el texto no hacía nada. Aquí el `<input>` va oculto pero real, y la
  *   etiqueta envuelve todo.
  */
-export function Checkbox({ checked, onChange, error = false, children }: {
+export function Checkbox({
+  checked,
+  onChange,
+  error = false,
+  children,
+}: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   /** Marca el contorno en rojo cuando el formulario señala esta casilla. */
@@ -38,8 +43,8 @@ export function Checkbox({ checked, onChange, error = false, children }: {
           (checked
             ? 'bg-[var(--ink)] border-[var(--ink)]'
             : error
-            ? 'bg-transparent border-[var(--brand)]'
-            : 'bg-transparent border-[var(--muted)]')
+              ? 'bg-transparent border-[var(--brand)]'
+              : 'bg-transparent border-[var(--muted)]')
         }
       >
         {checked && (

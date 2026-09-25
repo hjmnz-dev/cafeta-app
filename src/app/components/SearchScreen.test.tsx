@@ -48,7 +48,9 @@ describe('DEF-07 · HU41 — Buscar usuarios', () => {
     await type(user, 'maria');
     await user.click(screen.getByRole('button', { name: /seguir a maría/i }));
 
-    expect(screen.getByRole('button', { name: /dejar de seguir a maría/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /dejar de seguir a maría/i }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -71,7 +73,9 @@ describe('DEF-07 · HU42 — Buscar contenido', () => {
     await user.click(screen.getByRole('tab', { name: /publicaciones/i }));
     await type(user, 'zzzzz');
 
-    expect(screen.getByText(/no encontramos publicaciones/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no encontramos publicaciones/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -82,8 +86,12 @@ describe('DEF-07 — Comportamiento de la pantalla de búsqueda', () => {
 
     await type(user, 'laura'); // usuaria Laura Batista + su publicación de grupo
 
-    expect(screen.getByRole('tab', { name: /personas \(1\)/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /publicaciones \(1\)/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('tab', { name: /personas \(1\)/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('tab', { name: /publicaciones \(1\)/i }),
+    ).toBeInTheDocument();
   });
 
   it('sin consulta ofrece sugerencias del propio directorio en vez de un vacío', async () => {
@@ -100,6 +108,9 @@ describe('DEF-07 — Comportamiento de la pantalla de búsqueda', () => {
   it('el feed ofrece la entrada a la búsqueda global', () => {
     renderWithProviders(<FeedScreen />, { route: '/home' });
 
-    expect(screen.getByRole('link', { name: /buscar/i })).toHaveAttribute('href', '/search');
+    expect(screen.getByRole('link', { name: /buscar/i })).toHaveAttribute(
+      'href',
+      '/search',
+    );
   });
 });

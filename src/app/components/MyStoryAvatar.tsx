@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { useAppState, CURRENT_USER_ID, MY_AVATAR } from '../store/AppState';
 import { visibleStories, playbackQueue } from '../lib/stories';
@@ -20,15 +19,24 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   // De dónde se sale, para poder volver aquí al cerrar (feed o perfil).
   const { pathname: from } = useLocation();
 
-  const visibles = visibleStories(stories, { currentUserId: CURRENT_USER_ID, followingIds });
-  const mine = playbackQueue(visibles).filter((s) => s.authorId === CURRENT_USER_ID);
+  const visibles = visibleStories(stories, {
+    currentUserId: CURRENT_USER_ID,
+    followingIds,
+  });
+  const mine = playbackQueue(visibles).filter(
+    (s) => s.authorId === CURRENT_USER_ID,
+  );
   const hasMine = mine.length > 0;
 
   const badgeSize = Math.round(size * 0.35);
   const badge =
     'absolute -bottom-0.5 -right-0.5 rounded-full bg-[var(--brand)] text-[var(--on-brand)] ' +
     'border-2 border-[var(--surface)] flex items-center justify-center leading-none font-bold';
-  const badgeStyle = { width: badgeSize, height: badgeSize, fontSize: Math.round(badgeSize * 0.7) };
+  const badgeStyle = {
+    width: badgeSize,
+    height: badgeSize,
+    fontSize: Math.round(badgeSize * 0.7),
+  };
 
   const avatar = (ring: boolean) => (
     <img
@@ -54,13 +62,24 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
           {avatar(true)}
         </Link>
       ) : (
-        <Link to="/create-story" state={{ from }} aria-label="Crear historia" className="block w-full h-full">
+        <Link
+          to="/create-story"
+          state={{ from }}
+          aria-label="Crear historia"
+          className="block w-full h-full"
+        >
           {avatar(false)}
         </Link>
       )}
 
       {hasMine ? (
-        <Link to="/create-story" state={{ from }} aria-label="Crear historia" className={badge} style={badgeStyle}>
+        <Link
+          to="/create-story"
+          state={{ from }}
+          aria-label="Crear historia"
+          className={badge}
+          style={badgeStyle}
+        >
           +
         </Link>
       ) : (

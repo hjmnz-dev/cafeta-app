@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { Search, MoreVertical, Send, Image as ImageIcon, Mic, Pencil, EyeOff, Check, X } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Search,
+  MoreVertical,
+  Send,
+  Image as ImageIcon,
+  Mic,
+  Pencil,
+  EyeOff,
+  Check,
+  X,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAppState } from '../store/AppState';
@@ -35,7 +45,7 @@ const CONVERSATIONS: Conversation[] = [
     lastMessage: '¿Tienes los apuntes de Estructuras de Datos?',
     timestamp: 'Ahora',
     unread: 2,
-    online: true
+    online: true,
   },
   {
     id: '2',
@@ -45,7 +55,7 @@ const CONVERSATIONS: Conversation[] = [
     lastMessage: 'Claro, nos vemos en la biblioteca a las 3',
     timestamp: '5 min',
     unread: 0,
-    online: true
+    online: true,
   },
   {
     id: '3',
@@ -55,7 +65,7 @@ const CONVERSATIONS: Conversation[] = [
     lastMessage: 'Gracias por la ayuda con el proyecto!',
     timestamp: '2 h',
     unread: 0,
-    online: false
+    online: false,
   },
   {
     id: '4',
@@ -65,7 +75,7 @@ const CONVERSATIONS: Conversation[] = [
     lastMessage: '¿Vamos a estudiar juntos para el examen?',
     timestamp: '1 d',
     unread: 1,
-    online: false
+    online: false,
   },
   {
     id: '5',
@@ -75,12 +85,13 @@ const CONVERSATIONS: Conversation[] = [
     lastMessage: 'Vi tu post sobre React, muy interesante',
     timestamp: '2 d',
     unread: 0,
-    online: false
-  }
+    online: false,
+  },
 ];
 
 export function MessagesScreen() {
-  const { conversationMessages, sendMessage, editMessage, deactivateMessage } = useAppState();
+  const { conversationMessages, sendMessage, editMessage, deactivateMessage } =
+    useAppState();
 
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,12 +99,13 @@ export function MessagesScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
 
-  const filteredConversations = CONVERSATIONS.filter(conv =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.username.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = CONVERSATIONS.filter(
+    (conv) =>
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.username.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const selectedConversation = CONVERSATIONS.find(c => c.id === selectedChat);
+  const selectedConversation = CONVERSATIONS.find((c) => c.id === selectedChat);
 
   const send = () => {
     const text = messageInput.trim();
@@ -117,9 +129,23 @@ export function MessagesScreen() {
         {/* Chat Header */}
         <div className="bg-[var(--surface)] border-b border-[var(--line-soft)] px-5 py-4 pt-16 flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
-            <button onClick={() => setSelectedChat(null)} className="text-[var(--brand)]" aria-label="Volver a conversaciones">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <button
+              onClick={() => setSelectedChat(null)}
+              className="text-[var(--brand)]"
+              aria-label="Volver a conversaciones"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <div className="relative">
@@ -131,8 +157,12 @@ export function MessagesScreen() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="font-['Space Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)] truncate">{selectedConversation.name}</h2>
-              <p className="text-[var(--muted)] text-[13px]">{selectedConversation.online ? 'En línea' : 'Desconectado'}</p>
+              <h2 className="font-['Space Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)] truncate">
+                {selectedConversation.name}
+              </h2>
+              <p className="text-[var(--muted)] text-[13px]">
+                {selectedConversation.online ? 'En línea' : 'Desconectado'}
+              </p>
             </div>
           </div>
           <button className="w-9 h-9 flex items-center justify-center text-[var(--muted)] hover:bg-[var(--app-bg)] rounded-full transition-colors">
@@ -149,13 +179,21 @@ export function MessagesScreen() {
           )}
 
           {messages.map((msg) => (
-            <div key={msg.id} className={cn("flex flex-col", msg.sentByMe ? "items-end" : "items-start")}>
-              <div className={cn(
-                "max-w-[75%] rounded-[20px] px-4 py-3 shadow-sm",
-                msg.sentByMe
-                  ? "bg-[var(--brand)] text-[var(--on-brand)] rounded-br-sm"
-                  : "bg-[var(--surface)] text-[var(--ink)] rounded-bl-sm"
-              )}>
+            <div
+              key={msg.id}
+              className={cn(
+                'flex flex-col',
+                msg.sentByMe ? 'items-end' : 'items-start',
+              )}
+            >
+              <div
+                className={cn(
+                  'max-w-[75%] rounded-[20px] px-4 py-3 shadow-sm',
+                  msg.sentByMe
+                    ? 'bg-[var(--brand)] text-[var(--on-brand)] rounded-br-sm'
+                    : 'bg-[var(--surface)] text-[var(--ink)] rounded-bl-sm',
+                )}
+              >
                 {editingId === msg.id ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -166,21 +204,34 @@ export function MessagesScreen() {
                       onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                       className="bg-[var(--surface)]/95 text-[var(--ink)] rounded-[12px] px-3 py-1.5 text-[15px] outline-none min-w-[150px]"
                     />
-                    <button onClick={saveEdit} aria-label="Guardar cambios del mensaje" className="text-[var(--on-brand)]/90 hover:text-[var(--on-brand)]">
+                    <button
+                      onClick={saveEdit}
+                      aria-label="Guardar cambios del mensaje"
+                      className="text-[var(--on-brand)]/90 hover:text-[var(--on-brand)]"
+                    >
                       <Check className="w-[18px] h-[18px]" />
                     </button>
-                    <button onClick={() => setEditingId(null)} aria-label="Cancelar edición" className="text-[var(--on-brand)]/90 hover:text-[var(--on-brand)]">
+                    <button
+                      onClick={() => setEditingId(null)}
+                      aria-label="Cancelar edición"
+                      className="text-[var(--on-brand)]/90 hover:text-[var(--on-brand)]"
+                    >
                       <X className="w-[18px] h-[18px]" />
                     </button>
                   </div>
                 ) : (
                   <>
                     <p className="text-[15px] leading-relaxed">{msg.text}</p>
-                    <span className={cn(
-                      "text-[11px] mt-1 block",
-                      msg.sentByMe ? "text-[var(--on-brand)]/70" : "text-[var(--muted)]"
-                    )}>
-                      {msg.time}{msg.edited && ' · Editado'}
+                    <span
+                      className={cn(
+                        'text-[11px] mt-1 block',
+                        msg.sentByMe
+                          ? 'text-[var(--on-brand)]/70'
+                          : 'text-[var(--muted)]',
+                      )}
+                    >
+                      {msg.time}
+                      {msg.edited && ' · Editado'}
                     </span>
                   </>
                 )}
@@ -190,7 +241,10 @@ export function MessagesScreen() {
               {msg.sentByMe && editingId !== msg.id && (
                 <div className="flex gap-1 mt-1">
                   <button
-                    onClick={() => { setEditingId(msg.id); setEditDraft(msg.text); }}
+                    onClick={() => {
+                      setEditingId(msg.id);
+                      setEditDraft(msg.text);
+                    }}
                     aria-label={`Editar mensaje: ${msg.text}`}
                     className="flex items-center gap-1 text-[11px] text-[var(--muted)] hover:text-[var(--brand)] px-2 py-1 rounded-full transition-colors"
                   >
@@ -212,7 +266,10 @@ export function MessagesScreen() {
         {/* Message Input */}
         <div className="bg-[var(--surface)] border-t border-[var(--line-soft)] px-5 py-4 pb-24">
           <div className="flex items-center gap-3 bg-[var(--app-bg)] rounded-[24px] px-4 py-3 border border-[var(--line)]">
-            <button className="text-[var(--muted)] hover:text-[var(--brand)] transition-colors" aria-label="Adjuntar imagen">
+            <button
+              className="text-[var(--muted)] hover:text-[var(--brand)] transition-colors"
+              aria-label="Adjuntar imagen"
+            >
               <ImageIcon className="w-5 h-5" />
             </button>
             <input
@@ -224,7 +281,10 @@ export function MessagesScreen() {
               onKeyDown={(e) => e.key === 'Enter' && send()}
               className="flex-1 bg-transparent outline-none text-[15px] text-[var(--ink)] placeholder:text-[var(--muted)]"
             />
-            <button className="text-[var(--muted)] hover:text-[var(--brand)] transition-colors" aria-label="Grabar audio">
+            <button
+              className="text-[var(--muted)] hover:text-[var(--brand)] transition-colors"
+              aria-label="Grabar audio"
+            >
               <Mic className="w-5 h-5" />
             </button>
             <button
@@ -245,7 +305,9 @@ export function MessagesScreen() {
     <div className="w-full h-full bg-[var(--app-bg)] flex flex-col pb-[100px]">
       {/* Header */}
       <div className="bg-[var(--surface)] border-b border-[var(--line-soft)] px-5 py-4 pt-16">
-        <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">Mensajes</h1>
+        <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">
+          Mensajes
+        </h1>
 
         {/* Search Bar */}
         <div className="relative">
@@ -266,7 +328,8 @@ export function MessagesScreen() {
           // La vista previa sale del hilo real: si se retira el último mensaje,
           // la lista deja de anunciarlo (HU37).
           const thread = conversationMessages(conversation.id);
-          const preview = thread.length > 0 ? thread[thread.length - 1].text : 'Sin mensajes';
+          const preview =
+            thread.length > 0 ? thread[thread.length - 1].text : 'Sin mensajes';
 
           return (
             <button
@@ -287,11 +350,17 @@ export function MessagesScreen() {
               {/* Content */}
               <div className="flex-1 min-w-0 text-left">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-['Space Grotesk',sans-serif] font-semibold text-[15px] text-[var(--ink)] truncate">{conversation.name}</h3>
-                  <span className="text-[12px] text-[var(--muted)] flex-shrink-0 ml-2">{conversation.timestamp}</span>
+                  <h3 className="font-['Space Grotesk',sans-serif] font-semibold text-[15px] text-[var(--ink)] truncate">
+                    {conversation.name}
+                  </h3>
+                  <span className="text-[12px] text-[var(--muted)] flex-shrink-0 ml-2">
+                    {conversation.timestamp}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-[14px] text-[var(--muted)] truncate flex-1 mr-2">{preview}</p>
+                  <p className="text-[14px] text-[var(--muted)] truncate flex-1 mr-2">
+                    {preview}
+                  </p>
                   {conversation.unread > 0 && (
                     <span className="flex-shrink-0 w-5 h-5 bg-[var(--brand)] text-[var(--on-brand)] text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm">
                       {conversation.unread}

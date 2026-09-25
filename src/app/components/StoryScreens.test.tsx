@@ -24,10 +24,18 @@ function renderStoryFlow(route = '/create-story') {
 }
 
 /** HU12 + HU13: publica una historia propia y la abre desde el feed. */
-async function publishAndOpen(user: ReturnType<typeof userEvent.setup>, text: string) {
-  await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), text);
+async function publishAndOpen(
+  user: ReturnType<typeof userEvent.setup>,
+  text: string,
+) {
+  await user.type(
+    screen.getByRole('textbox', { name: /texto de la historia/i }),
+    text,
+  );
   await user.click(screen.getByRole('button', { name: /publicar/i }));
-  await user.click(screen.getByRole('link', { name: /ver historia de carlos gómez/i }));
+  await user.click(
+    screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+  );
 }
 
 describe('DEF-04 · HU12/HU13 — Crear y ver historias', () => {
@@ -35,11 +43,16 @@ describe('DEF-04 · HU12/HU13 — Crear y ver historias', () => {
     const user = userEvent.setup();
     renderStoryFlow();
 
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Estudiando en la biblioteca');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Estudiando en la biblioteca',
+    );
     await user.click(screen.getByRole('button', { name: /publicar/i }));
 
     expect(screen.getByTestId('location')).toHaveTextContent('/home');
-    expect(screen.getByRole('link', { name: /ver historia de carlos gómez/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+    ).toBeInTheDocument();
   });
 
   it('HU12 — no se puede publicar una historia vacía', async () => {
@@ -52,7 +65,9 @@ describe('DEF-04 · HU12/HU13 — Crear y ver historias', () => {
     renderStoryFlow('/home');
 
     expect(screen.getByText(/sigue a alguien en/i)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /ver historia de/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /ver historia de/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('HU13 — el visor muestra el contenido y cuánto tiempo le queda', async () => {
@@ -74,7 +89,9 @@ describe('DEF-04 · HU14/HU15 — Editar y desactivar historia', () => {
     await publishAndOpen(user, 'Texto original');
     await user.click(screen.getByRole('button', { name: /editar historia/i }));
 
-    const box = screen.getByRole('textbox', { name: /editar texto de la historia/i });
+    const box = screen.getByRole('textbox', {
+      name: /editar texto de la historia/i,
+    });
     await user.clear(box);
     await user.type(box, 'Texto corregido');
     await user.click(screen.getByRole('button', { name: /guardar/i }));
@@ -89,13 +106,17 @@ describe('DEF-04 · HU14/HU15 — Editar y desactivar historia', () => {
     renderStoryFlow();
 
     await publishAndOpen(user, 'Historia que voy a retirar');
-    await user.click(screen.getByRole('button', { name: /desactivar historia/i }));
+    await user.click(
+      screen.getByRole('button', { name: /desactivar historia/i }),
+    );
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
 
     expect(screen.getByTestId('location')).toHaveTextContent('/home');
-    expect(screen.queryByRole('link', { name: /ver historia de/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /ver historia de/i }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -109,12 +130,18 @@ describe('DEF-04 · HU16 — Reaccionar a historia', () => {
     const heart = screen.getByRole('button', { name: /reaccionar con ❤️/i });
     await user.click(heart);
 
-    expect(screen.getByRole('button', { name: /reaccionar con ❤️/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: /reaccionar con ❤️/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText(/❤️ 1/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /reaccionar con ❤️/i }));
+    await user.click(
+      screen.getByRole('button', { name: /reaccionar con ❤️/i }),
+    );
 
-    expect(screen.getByRole('button', { name: /reaccionar con ❤️/i })).toHaveAttribute('aria-pressed', 'false');
+    expect(
+      screen.getByRole('button', { name: /reaccionar con ❤️/i }),
+    ).toHaveAttribute('aria-pressed', 'false');
     expect(screen.queryByText(/❤️ 1/)).not.toBeInTheDocument();
   });
 
@@ -124,11 +151,19 @@ describe('DEF-04 · HU16 — Reaccionar a historia', () => {
 
     await publishAndOpen(user, 'Historia con reacciones');
 
-    await user.click(screen.getByRole('button', { name: /reaccionar con ❤️/i }));
-    await user.click(screen.getByRole('button', { name: /reaccionar con 🔥/i }));
+    await user.click(
+      screen.getByRole('button', { name: /reaccionar con ❤️/i }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: /reaccionar con 🔥/i }),
+    );
 
-    expect(screen.getByRole('button', { name: /reaccionar con ❤️/i })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: /reaccionar con 🔥/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: /reaccionar con ❤️/i }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    expect(
+      screen.getByRole('button', { name: /reaccionar con 🔥/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
@@ -138,8 +173,13 @@ describe('DEF-04 · HU17/HU18/HU19 — Comentarios de historia', () => {
     renderStoryFlow();
 
     await publishAndOpen(user, 'Historia comentable');
-    await user.type(screen.getByRole('textbox', { name: /escribe un comentario/i }), '¡Qué bueno!');
-    await user.click(screen.getByRole('button', { name: /enviar comentario/i }));
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un comentario/i }),
+      '¡Qué bueno!',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /enviar comentario/i }),
+    );
 
     expect(screen.getByText('¡Qué bueno!')).toBeInTheDocument();
     expect(screen.getByText(/comentarios \(1\)/i)).toBeInTheDocument();
@@ -150,10 +190,17 @@ describe('DEF-04 · HU17/HU18/HU19 — Comentarios de historia', () => {
     renderStoryFlow();
 
     await publishAndOpen(user, 'Historia comentable');
-    await user.type(screen.getByRole('textbox', { name: /escribe un comentario/i }), 'Comentario con herror');
-    await user.click(screen.getByRole('button', { name: /enviar comentario/i }));
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un comentario/i }),
+      'Comentario con herror',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /enviar comentario/i }),
+    );
 
-    await user.click(screen.getByRole('button', { name: /editar comentario de/i }));
+    await user.click(
+      screen.getByRole('button', { name: /editar comentario de/i }),
+    );
     const box = screen.getByRole('textbox', { name: /^editar comentario$/i });
     await user.clear(box);
     await user.type(box, 'Comentario con error');
@@ -168,10 +215,17 @@ describe('DEF-04 · HU17/HU18/HU19 — Comentarios de historia', () => {
     renderStoryFlow();
 
     await publishAndOpen(user, 'Historia comentable');
-    await user.type(screen.getByRole('textbox', { name: /escribe un comentario/i }), 'Mejor lo retiro');
-    await user.click(screen.getByRole('button', { name: /enviar comentario/i }));
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un comentario/i }),
+      'Mejor lo retiro',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /enviar comentario/i }),
+    );
 
-    await user.click(screen.getByRole('button', { name: /desactivar comentario de/i }));
+    await user.click(
+      screen.getByRole('button', { name: /desactivar comentario de/i }),
+    );
 
     expect(screen.queryByText('Mejor lo retiro')).not.toBeInTheDocument();
     expect(screen.getByText(/comentarios \(0\)/i)).toBeInTheDocument();
@@ -186,7 +240,9 @@ describe('DEF-04 · HU13 — Reproducción automática de historias', () => {
   /** Publica y abre una historia con el reloj bajo control de la prueba. */
   async function abrirConRelojFalso() {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) });
+    const user = userEvent.setup({
+      advanceTimers: vi.advanceTimersByTime.bind(vi),
+    });
     renderStoryFlow();
     await publishAndOpen(user, 'Historia con tiempo');
     return user;
@@ -196,7 +252,9 @@ describe('DEF-04 · HU13 — Reproducción automática de historias', () => {
     await abrirConRelojFalso();
     expect(screen.getByText('Historia con tiempo')).toBeInTheDocument();
 
-    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
 
     expect(screen.getByTestId('location')).toHaveTextContent('/home');
   });
@@ -204,8 +262,13 @@ describe('DEF-04 · HU13 — Reproducción automática de historias', () => {
   it('escribir un comentario pausa el temporizador: no se cierra debajo de la mano', async () => {
     const user = await abrirConRelojFalso();
 
-    await user.type(screen.getByRole('textbox', { name: /escribe un comentario/i }), 'Estoy escribiendo');
-    await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un comentario/i }),
+      'Estoy escribiendo',
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15_000);
+    });
 
     expect(screen.getByText('Historia con tiempo')).toBeInTheDocument();
     expect(screen.getByTestId('location')).not.toHaveTextContent('/home');
@@ -226,12 +289,17 @@ describe('DEF-04 · HU12/HU13 — "Tu historia" es un solo círculo', () => {
     const user = userEvent.setup();
     renderStoryFlow();
 
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Mi historia del día');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Mi historia del día',
+    );
     await user.click(screen.getByRole('button', { name: /^publicar$/i }));
 
     // Un único elemento "Tu historia", y ahora abre la historia publicada.
     expect(screen.getAllByText('Tu historia')).toHaveLength(1);
-    expect(screen.getByRole('link', { name: /ver historia de carlos gómez/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+    ).toBeInTheDocument();
     // Y no se duplica como un círculo más con el nombre propio.
     expect(screen.queryByText('Carlos')).not.toBeInTheDocument();
   });
@@ -240,7 +308,10 @@ describe('DEF-04 · HU12/HU13 — "Tu historia" es un solo círculo', () => {
     const user = userEvent.setup();
     renderStoryFlow();
 
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Mi historia del día');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Mi historia del día',
+    );
     await user.click(screen.getByRole('button', { name: /^publicar$/i }));
 
     await user.click(screen.getByRole('link', { name: /crear historia/i }));
@@ -251,8 +322,12 @@ describe('DEF-04 · HU12/HU13 — "Tu historia" es un solo círculo', () => {
   it('sin historia propia, tocar el círculo lleva a crearla', () => {
     renderStoryFlow('/home');
 
-    expect(screen.getByRole('link', { name: /crear historia/i })).toHaveAttribute('href', '/create-story');
-    expect(screen.queryByRole('link', { name: /ver historia de/i })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /crear historia/i }),
+    ).toHaveAttribute('href', '/create-story');
+    expect(
+      screen.queryByRole('link', { name: /ver historia de/i }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -276,11 +351,16 @@ describe('DEF-04 · HU13 — Cerrar devuelve a la pantalla desde la que se abri�
 
     // Publicar desde el perfil también devuelve al perfil.
     await user.click(screen.getByRole('link', { name: /crear historia/i }));
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Historia desde el perfil');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Historia desde el perfil',
+    );
     await user.click(screen.getByRole('button', { name: /^publicar$/i }));
     expect(screen.getByTestId('location')).toHaveTextContent('/profile');
 
-    await user.click(screen.getByRole('link', { name: /ver historia de carlos gómez/i }));
+    await user.click(
+      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+    );
     expect(screen.getByTestId('location')).toHaveTextContent('/stories/');
 
     await user.click(screen.getByRole('button', { name: /cerrar/i }));
@@ -291,9 +371,14 @@ describe('DEF-04 · HU13 — Cerrar devuelve a la pantalla desde la que se abri�
     const user = userEvent.setup();
     renderConPerfil('/create-story');
 
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Historia desde el feed');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Historia desde el feed',
+    );
     await user.click(screen.getByRole('button', { name: /^publicar$/i }));
-    await user.click(screen.getByRole('link', { name: /ver historia de carlos gómez/i }));
+    await user.click(
+      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+    );
 
     await user.click(screen.getByRole('button', { name: /cerrar/i }));
     expect(screen.getByTestId('location')).toHaveTextContent('/home');
@@ -302,15 +387,24 @@ describe('DEF-04 · HU13 — Cerrar devuelve a la pantalla desde la que se abri�
   it('al vencer el tiempo también vuelve al perfil, no al feed', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) });
+      const user = userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      });
       renderConPerfil('/profile');
 
       await user.click(screen.getByRole('link', { name: /crear historia/i }));
-      await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Historia con tiempo');
+      await user.type(
+        screen.getByRole('textbox', { name: /texto de la historia/i }),
+        'Historia con tiempo',
+      );
       await user.click(screen.getByRole('button', { name: /^publicar$/i }));
-      await user.click(screen.getByRole('link', { name: /ver historia de carlos gómez/i }));
+      await user.click(
+        screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+      );
 
-      await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
 
       expect(screen.getByTestId('location')).toHaveTextContent('/profile');
     } finally {

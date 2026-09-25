@@ -15,21 +15,33 @@ function readDemoCode() {
 describe('DEF-01 · HU03 — Recuperar contraseña', () => {
   it('rechaza un correo con formato inválido y no avanza', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+    renderWithProviders(<ForgotPasswordScreen />, {
+      route: '/forgot-password',
+    });
 
-    await user.type(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), 'correo-invalido');
+    await user.type(
+      screen.getByPlaceholderText(/est\.intec\.edu\.do/i),
+      'correo-invalido',
+    );
     await user.click(screen.getByRole('button', { name: /enviar código/i }));
 
     expect(screen.getByText(/correo electrónico válido/i)).toBeInTheDocument();
     // Sigue en el paso de solicitud
-    expect(screen.getByRole('button', { name: /enviar código/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /enviar código/i }),
+    ).toBeInTheDocument();
   });
 
   it('con un correo válido avanza al paso de verificación', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+    renderWithProviders(<ForgotPasswordScreen />, {
+      route: '/forgot-password',
+    });
 
-    await user.type(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), 'juan@est.intec.edu.do');
+    await user.type(
+      screen.getByPlaceholderText(/est\.intec\.edu\.do/i),
+      'juan@est.intec.edu.do',
+    );
     await user.click(screen.getByRole('button', { name: /enviar código/i }));
 
     expect(screen.getByText(/verifica tu correo/i)).toBeInTheDocument();
@@ -38,9 +50,14 @@ describe('DEF-01 · HU03 — Recuperar contraseña', () => {
 
   it('rechaza un código incorrecto', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+    renderWithProviders(<ForgotPasswordScreen />, {
+      route: '/forgot-password',
+    });
 
-    await user.type(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), 'juan@est.intec.edu.do');
+    await user.type(
+      screen.getByPlaceholderText(/est\.intec\.edu\.do/i),
+      'juan@est.intec.edu.do',
+    );
     await user.click(screen.getByRole('button', { name: /enviar código/i }));
 
     await user.type(screen.getByLabelText(/código de verificación/i), '000000');
@@ -51,10 +68,15 @@ describe('DEF-01 · HU03 — Recuperar contraseña', () => {
 
   it('completa el flujo feliz: correo → código → nueva contraseña → éxito', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+    renderWithProviders(<ForgotPasswordScreen />, {
+      route: '/forgot-password',
+    });
 
     // Paso 1
-    await user.type(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), 'juan@est.intec.edu.do');
+    await user.type(
+      screen.getByPlaceholderText(/est\.intec\.edu\.do/i),
+      'juan@est.intec.edu.do',
+    );
     await user.click(screen.getByRole('button', { name: /enviar código/i }));
 
     // Paso 2 — usa el código válido que muestra la demo
@@ -64,9 +86,17 @@ describe('DEF-01 · HU03 — Recuperar contraseña', () => {
 
     // Paso 3
     expect(screen.getByText(/nueva contraseña/i)).toBeInTheDocument();
-    await user.type(screen.getByLabelText(/^nueva contraseña$/i), 'nuevaClave123');
-    await user.type(screen.getByLabelText(/confirmar nueva contraseña/i), 'nuevaClave123');
-    await user.click(screen.getByRole('button', { name: /restablecer contraseña/i }));
+    await user.type(
+      screen.getByLabelText(/^nueva contraseña$/i),
+      'nuevaClave123',
+    );
+    await user.type(
+      screen.getByLabelText(/confirmar nueva contraseña/i),
+      'nuevaClave123',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /restablecer contraseña/i }),
+    );
 
     // Éxito
     expect(screen.getByText('¡Listo!')).toBeInTheDocument();
@@ -76,25 +106,42 @@ describe('DEF-01 · HU03 — Recuperar contraseña', () => {
 
   it('rechaza cuando las contraseñas no coinciden', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+    renderWithProviders(<ForgotPasswordScreen />, {
+      route: '/forgot-password',
+    });
 
-    await user.type(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), 'juan@est.intec.edu.do');
+    await user.type(
+      screen.getByPlaceholderText(/est\.intec\.edu\.do/i),
+      'juan@est.intec.edu.do',
+    );
     await user.click(screen.getByRole('button', { name: /enviar código/i }));
     const code = readDemoCode();
     await user.type(screen.getByLabelText(/código de verificación/i), code);
     await user.click(screen.getByRole('button', { name: /verificar/i }));
 
-    await user.type(screen.getByLabelText(/^nueva contraseña$/i), 'claveUno123');
-    await user.type(screen.getByLabelText(/confirmar nueva contraseña/i), 'claveDos456');
-    await user.click(screen.getByRole('button', { name: /restablecer contraseña/i }));
+    await user.type(
+      screen.getByLabelText(/^nueva contraseña$/i),
+      'claveUno123',
+    );
+    await user.type(
+      screen.getByLabelText(/confirmar nueva contraseña/i),
+      'claveDos456',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /restablecer contraseña/i }),
+    );
 
-    expect(screen.getByText(/las contraseñas no coinciden/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/las contraseñas no coinciden/i),
+    ).toBeInTheDocument();
   });
 
   it('el código expira: tras la vigencia no permite verificar', () => {
     vi.useFakeTimers();
     try {
-      renderWithProviders(<ForgotPasswordScreen />, { route: '/forgot-password' });
+      renderWithProviders(<ForgotPasswordScreen />, {
+        route: '/forgot-password',
+      });
 
       fireEvent.change(screen.getByPlaceholderText(/est\.intec\.edu\.do/i), {
         target: { value: 'juan@est.intec.edu.do' },
@@ -102,7 +149,9 @@ describe('DEF-01 · HU03 — Recuperar contraseña', () => {
       fireEvent.click(screen.getByRole('button', { name: /enviar código/i }));
 
       const code = readDemoCode();
-      fireEvent.change(screen.getByLabelText(/código de verificación/i), { target: { value: code } });
+      fireEvent.change(screen.getByLabelText(/código de verificación/i), {
+        target: { value: code },
+      });
 
       // Avanza más allá de la vigencia (60s)
       act(() => {
