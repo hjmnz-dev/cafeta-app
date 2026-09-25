@@ -1,0 +1,296 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ── Cafeta brand tokens ─────────────────────────────
+     Símbolo: dos arcos abiertos + punto. Comunidad cerrada, no encerrada. */
+  --brand-red: #d62828;        /* rojo principal */
+  --brand-red-dark: #7e1418;   /* rojo oscuro (hover / arco interior) */
+  --brand-red-bright: #ff4a46; /* rojo brillante (modo oscuro / acentos) */
+  --brand-ink: #171313;        /* tinta / casi negro */
+  --brand-pink: #ffe9e6;       /* rosa claro (superficies suaves) */
+  --brand-sand: #efebe8;       /* fondo cálido */
+  --brand-sand-soft: #fbf8f7;  /* pozo de tarjeta */
+  --brand-line: #e3ddd9;       /* bordes */
+  --brand-muted: #8a807c;      /* texto tenue */
+  --brand-muted-strong: #4a4340;
+  --font-brand: 'Space Grotesk', system-ui, sans-serif;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: #171313;
+  --card: #ffffff;
+  --card-foreground: #171313;
+  --popover: #ffffff;
+  --popover-foreground: #171313;
+  --primary: #d62828;
+  --primary-foreground: #ffffff;
+  --secondary: #ffe9e6;
+  --secondary-foreground: #7e1418;
+  --muted: #efebe8;
+  --muted-foreground: #8a807c;
+  --accent: #ffe9e6;
+  --accent-foreground: #7e1418;
+  --destructive: #d62828;
+  --destructive-foreground: #ffffff;
+  --border: #e3ddd9;
+  --input: transparent;
+  --input-background: #f1ece9;
+  --switch-background: #e3ddd9;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #d62828;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: #171313;
+  --foreground: #ffffff;
+  --card: #211b1a;
+  --card-foreground: #ffffff;
+  --popover: #211b1a;
+  --popover-foreground: #ffffff;
+  --primary: #ff4a46;
+  --primary-foreground: #171313;
+  --secondary: #2c2523;
+  --secondary-foreground: #ffffff;
+  --muted: #2c2523;
+  --muted-foreground: #b8aca7;
+  --accent: #2c2523;
+  --accent-foreground: #ff9a97;
+  --destructive: #ff4a46;
+  --destructive-foreground: #171313;
+  --border: #2c2523;
+  --input: #2c2523;
+  --ring: #ff4a46;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-ui);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+/* ── Tema de la aplicación (claro / oscuro) ─────────────────────────────────
+   Las pantallas usan estos tokens semánticos en vez de colores literales, para
+   que cambiar de tema sea cambiar un atributo en <html> y no repintar la app.
+   El modo oscuro es el predeterminado (ver settings.theme en AppState).
+
+   Nombres por función, no por color: "superficie" y "tinta" siguen
+   significando lo mismo en ambos temas, aunque uno sea claro y el otro oscuro. */
+:root {
+  --frame: #f3f4f6;        /* lienzo detrás del marco del teléfono */
+  --app-bg: #efebe8;       /* fondo de pantalla */
+  --surface: #ffffff;      /* tarjetas y barras */
+  --surface-2: #fbf8f7;    /* pozo dentro de una tarjeta */
+  --surface-3: #f1ece9;    /* campos y superficies apagadas */
+  --line: #e3ddd9;         /* bordes */
+  --line-soft: #f0ebe8;    /* separadores internos */
+  --ink: #171313;          /* texto principal */
+  --ink-2: #4a4340;        /* texto secundario */
+  --muted: #8a807c;        /* texto tenue e iconos inactivos */
+  --tint: #ffe9e6;         /* superficie de acento (rosa de marca) */
+  --brand: #d62828;        /* rojo Cafeta */
+  --brand-strong: #7e1418; /* estado presionado / hover */
+  --brand-bright: #ff4a46; /* acento vivo */
+  --on-brand: #ffffff;     /* texto sobre rojo */
+  --ok: #34c759;
+  --shadow-card: 0 2px 12px rgba(23, 19, 19, 0.08);
+  --shadow-pop: 0 8px 28px rgba(23, 19, 19, 0.18);
+  --story-ring: linear-gradient(to top right, #d62828, #ff4a46);
+
+  /* Etiquetas del perfil por categoría (DEF-10) */
+  --tag-carrera-bg: #ffe9e6;
+  --tag-carrera-ink: #d62828;
+  --tag-carrera-line: rgba(214, 40, 40, 0.15);
+  --tag-habilidad-bg: #efebe8;
+  --tag-habilidad-ink: #4a4340;
+  --tag-habilidad-line: #e3ddd9;
+  --tag-interes-bg: #fbf8f7;
+  --tag-interes-ink: #8a807c;
+  --tag-interes-line: #e3ddd9;
+}
+
+/* Oscuro cálido, no negro puro: la marca es café, y un gris azulado la
+   desactivaría. Las superficies suben de tono con la jerarquía, igual que en
+   claro bajan de tono. */
+:root[data-theme='dark'] {
+  --frame: #0b0908;
+  --app-bg: #14100f;
+  --surface: #1d1817;
+  --surface-2: #241e1d;
+  --surface-3: #2b2422;
+  --line: #362e2c;
+  --line-soft: #2b2422;
+  --ink: #f5f0ee;
+  --ink-2: #cdc3bf;
+  --muted: #9c918c;
+  --tint: #3a1d1c;
+  --brand: #ff5a52;        /* el rojo de marca se aclara para sostener contraste sobre fondo oscuro */
+  --brand-strong: #ff7a72;
+  --brand-bright: #ff8078;
+  --on-brand: #1a0f0e;     /* sobre un rojo claro, la tinta oscura lee mejor que el blanco */
+  --ok: #4ade80;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --story-ring: linear-gradient(to top right, #ff5a52, #ffa38c);
+
+  --tag-carrera-bg: rgba(255, 90, 82, 0.16);
+  --tag-carrera-ink: #ff8078;
+  --tag-carrera-line: rgba(255, 90, 82, 0.32);
+  --tag-habilidad-bg: #2b2422;
+  --tag-habilidad-ink: #cdc3bf;
+  --tag-habilidad-line: #3d3431;
+  --tag-interes-bg: #241e1d;
+  --tag-interes-ink: #9c918c;
+  --tag-interes-line: #362e2c;
+}
+
+/* El fondo del documento sigue al tema para que no se vea un borde claro
+   alrededor del marco del teléfono en móvil. */
+html, body {
+  background: var(--frame);
+}
+
+/* Avance de la barra de una historia (ver StoryViewerScreen). */
+@keyframes story-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/*
+ * El campo de contraseña ya trae su propio botón de "ver caracteres" (el ojo).
+ * Edge y algunos Chromium añaden además el suyo dentro del input, y aparecen
+ * dos ojos pegados que hacen cosas distintas. Se ocultan los nativos y queda
+ * solo el de la app.
+ */
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+}
