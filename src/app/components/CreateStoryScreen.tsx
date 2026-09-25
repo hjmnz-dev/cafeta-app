@@ -59,10 +59,16 @@ export function CreateStoryScreen() {
     <div className="w-full h-full bg-[var(--surface)] flex flex-col">
       {/* Header propio */}
       <div className="px-4 pt-14 pb-3 flex items-center justify-between border-b border-[var(--line)]">
-        <button onClick={() => navigate(-1)} aria-label="Cerrar" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Cerrar"
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]"
+        >
           <X className="w-5 h-5 text-[var(--ink)]" />
         </button>
-        <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[17px] text-[var(--ink)]">Nueva historia</h1>
+        <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[17px] text-[var(--ink)]">
+          Nueva historia
+        </h1>
         <button
           onClick={publish}
           disabled={!canPublish || publishing}
@@ -82,7 +88,9 @@ export function CreateStoryScreen() {
         <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] bg-[var(--surface-2)] border border-[var(--line)]">
           <Clock className="w-4 h-4 text-[var(--muted)] flex-none" />
           <p className="text-[13px] text-[var(--muted)]">
-            Se mostrará a quienes te siguen durante <strong className="text-[var(--ink-2)]">24 horas</strong> y luego dejará de verse.
+            Se mostrará a quienes te siguen durante{' '}
+            <strong className="text-[var(--ink-2)]">24 horas</strong> y luego
+            dejará de verse.
           </p>
         </div>
 
@@ -102,7 +110,11 @@ export function CreateStoryScreen() {
 
         {preview && (
           <div className="relative">
-            <img src={preview} alt="Vista previa de la historia" className="w-full rounded-[18px] object-cover max-h-[320px]" />
+            <img
+              src={preview}
+              alt="Vista previa de la historia"
+              className="w-full rounded-[18px] object-cover max-h-[320px]"
+            />
             <button
               onClick={clearImage}
               aria-label="Quitar imagen"
@@ -121,7 +133,13 @@ export function CreateStoryScreen() {
             <ImageIcon className="w-[18px] h-[18px]" />
             {preview ? 'Cambiar imagen' : 'Agregar imagen'}
           </button>
-          <input ref={inputRef} type="file" accept="image/*" onChange={pickImage} className="hidden" />
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={pickImage}
+            className="hidden"
+          />
         </div>
       </div>
     </div>

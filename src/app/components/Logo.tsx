@@ -13,16 +13,44 @@ import React from 'react';
 
 type MarkVariant = 'brand' | 'onRed' | 'onDark' | 'monoDark' | 'monoLight';
 
-const MARK_COLORS: Record<MarkVariant, { outer: string; inner: string; dot: string; showDot: boolean }> = {
+const MARK_COLORS: Record<
+  MarkVariant,
+  { outer: string; inner: string; dot: string; showDot: boolean }
+> = {
   // Sobre fondo claro
-  brand: { outer: 'var(--brand)', inner: 'var(--brand-strong)', dot: 'var(--ink)', showDot: true },
+  brand: {
+    outer: 'var(--brand)',
+    inner: 'var(--brand-strong)',
+    dot: 'var(--ink)',
+    showDot: true,
+  },
   // Símbolo blanco sobre rojo pleno (ícono de app principal)
-  onRed: { outer: '#FFFFFF', inner: 'rgba(255,255,255,0.55)', dot: '#FFFFFF', showDot: false },
+  onRed: {
+    outer: '#FFFFFF',
+    inner: 'rgba(255,255,255,0.55)',
+    dot: '#FFFFFF',
+    showDot: false,
+  },
   // Sobre fondo oscuro
-  onDark: { outer: 'var(--brand-bright)', inner: '#FFFFFF', dot: '#FFFFFF', showDot: false },
+  onDark: {
+    outer: 'var(--brand-bright)',
+    inner: '#FFFFFF',
+    dot: '#FFFFFF',
+    showDot: false,
+  },
   // Monocromo
-  monoDark: { outer: 'var(--ink)', inner: 'var(--ink)', dot: 'var(--ink)', showDot: true },
-  monoLight: { outer: '#FFFFFF', inner: '#FFFFFF', dot: '#FFFFFF', showDot: true },
+  monoDark: {
+    outer: 'var(--ink)',
+    inner: 'var(--ink)',
+    dot: 'var(--ink)',
+    showDot: true,
+  },
+  monoLight: {
+    outer: '#FFFFFF',
+    inner: '#FFFFFF',
+    dot: '#FFFFFF',
+    showDot: true,
+  },
 };
 
 interface MarkProps {
@@ -33,7 +61,12 @@ interface MarkProps {
 }
 
 /** Solo el símbolo (arcos + punto). */
-export function CafetaMark({ size = 64, variant = 'brand', className, style }: MarkProps) {
+export function CafetaMark({
+  size = 64,
+  variant = 'brand',
+  className,
+  style,
+}: MarkProps) {
   const c = MARK_COLORS[variant];
   // Proporciones tomadas de la construcción de la guía (base 152px).
   const outerBorder = Math.max(2, Math.round(size * 0.125));
@@ -108,7 +141,13 @@ interface AppIconProps {
 }
 
 /** Ícono de app: el símbolo dentro de un cuadro redondeado. */
-export function CafetaAppIcon({ size = 96, tone = 'red', radius, className, style }: AppIconProps) {
+export function CafetaAppIcon({
+  size = 96,
+  tone = 'red',
+  radius,
+  className,
+  style,
+}: AppIconProps) {
   const bg = tone === 'red' ? 'var(--brand)' : 'var(--ink)';
   const r = radius ?? Math.round(size * 0.24);
   return (
@@ -126,7 +165,10 @@ export function CafetaAppIcon({ size = 96, tone = 'red', radius, className, styl
         ...style,
       }}
     >
-      <CafetaMark size={Math.round(size * 0.62)} variant={tone === 'red' ? 'onRed' : 'onDark'} />
+      <CafetaMark
+        size={Math.round(size * 0.62)}
+        variant={tone === 'red' ? 'onRed' : 'onDark'}
+      />
     </div>
   );
 }
@@ -174,7 +216,14 @@ export function CafetaLogo({
     >
       <CafetaMark size={size} variant={isDark ? 'onDark' : 'brand'} />
       {showWordmark && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: layout === 'row' ? 'flex-start' : 'center', gap: 4 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: layout === 'row' ? 'flex-start' : 'center',
+            gap: 4,
+          }}
+        >
           <span
             style={{
               fontFamily: "'Space Grotesk', sans-serif",

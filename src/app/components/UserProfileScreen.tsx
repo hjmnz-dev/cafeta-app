@@ -1,6 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, MapPin, MessageCircle, Lock, UserCheck, UserPlus, Clock, MoreHorizontal, Flag, Ban, Check } from 'lucide-react';
+import {
+  ArrowLeft,
+  MapPin,
+  MessageCircle,
+  Lock,
+  UserCheck,
+  UserPlus,
+  Clock,
+  MoreHorizontal,
+  Flag,
+  Ban,
+  Check,
+} from 'lucide-react';
 import { useAppState, TAG_CATEGORIES } from '../store/AppState';
 import { ReportDialog } from './ReportDialog';
 
@@ -13,8 +25,15 @@ export function UserProfileScreen() {
   const navigate = useNavigate();
   const { userId = '' } = useParams();
   const {
-    getUser, followState, followUser, unfollowUser,
-    isBlocked, blockUser, unblockUser, reportUser, hasReported,
+    getUser,
+    followState,
+    followUser,
+    unfollowUser,
+    isBlocked,
+    blockUser,
+    unblockUser,
+    reportUser,
+    hasReported,
   } = useAppState();
   const [menuOpen, setMenuOpen] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -25,11 +44,17 @@ export function UserProfileScreen() {
     return (
       <div className="w-full h-full bg-[var(--app-bg)] flex flex-col">
         <div className="h-[60px] flex items-center gap-3 px-4 bg-[var(--surface)] border-b border-[var(--line)] mt-12">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]" aria-label="Volver">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]"
+            aria-label="Volver"
+          >
             <ArrowLeft className="w-6 h-6 text-[var(--ink)]" />
           </button>
         </div>
-        <div className="flex-1 flex items-center justify-center text-[var(--muted)]">Usuario no encontrado</div>
+        <div className="flex-1 flex items-center justify-center text-[var(--muted)]">
+          Usuario no encontrado
+        </div>
       </div>
     );
   }
@@ -40,16 +65,25 @@ export function UserProfileScreen() {
     return (
       <div className="w-full h-full bg-[var(--app-bg)] flex flex-col">
         <div className="h-[60px] flex items-center gap-3 px-4 bg-[var(--surface)] border-b border-[var(--line)] mt-12">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]" aria-label="Volver">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)]"
+            aria-label="Volver"
+          >
             <ArrowLeft className="w-6 h-6 text-[var(--ink)]" />
           </button>
-          <span className="font-semibold text-[16px] text-[var(--ink)]">{user.name}</span>
+          <span className="font-semibold text-[16px] text-[var(--ink)]">
+            {user.name}
+          </span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
           <Ban className="w-9 h-9 text-[var(--muted)]" />
-          <p className="text-[16px] font-semibold text-[var(--ink)]">Bloqueaste a {user.name}</p>
+          <p className="text-[16px] font-semibold text-[var(--ink)]">
+            Bloqueaste a {user.name}
+          </p>
           <p className="text-[14px] text-[var(--muted)] leading-relaxed">
-            No verás su contenido ni podrá interactuar contigo mientras siga bloqueado.
+            No verás su contenido ni podrá interactuar contigo mientras siga
+            bloqueado.
           </p>
           <button
             onClick={() => unblockUser(user.id)}
@@ -67,7 +101,8 @@ export function UserProfileScreen() {
   const pending = state === 'pending';
   const followerCount = user.followers + (following ? 1 : 0);
 
-  const onFollowClick = () => (state === 'none' ? followUser(user.id) : unfollowUser(user.id));
+  const onFollowClick = () =>
+    state === 'none' ? followUser(user.id) : unfollowUser(user.id);
 
   return (
     <div className="w-full h-full bg-[var(--app-bg)] pb-[100px] overflow-y-auto">
@@ -116,16 +151,22 @@ export function UserProfileScreen() {
                 (following
                   ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-3)]'
                   : pending
-                  ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--muted)] hover:bg-[var(--surface-3)]'
-                  : 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]')
+                    ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--muted)] hover:bg-[var(--surface-3)]'
+                    : 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]')
               }
             >
               {following ? (
-                <><UserCheck className="w-[16px] h-[16px]" /> Siguiendo</>
+                <>
+                  <UserCheck className="w-[16px] h-[16px]" /> Siguiendo
+                </>
               ) : pending ? (
-                <><Clock className="w-[16px] h-[16px]" /> Solicitado</>
+                <>
+                  <Clock className="w-[16px] h-[16px]" /> Solicitado
+                </>
               ) : (
-                <><UserPlus className="w-[16px] h-[16px]" /> Seguir</>
+                <>
+                  <UserPlus className="w-[16px] h-[16px]" /> Seguir
+                </>
               )}
             </button>
           </div>
@@ -134,19 +175,36 @@ export function UserProfileScreen() {
         {/* Moderación (HU53/HU55) */}
         {menuOpen && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setMenuOpen(false)}
+            />
             <div className="absolute right-5 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--app-bg)] overflow-hidden w-[210px]">
               <button
-                onClick={() => { setReporting(true); setMenuOpen(false); }}
+                onClick={() => {
+                  setReporting(true);
+                  setMenuOpen(false);
+                }}
                 disabled={hasReported('user', user.id)}
                 className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
               >
-                {hasReported('user', user.id)
-                  ? <><Check className="w-4 h-4 text-[var(--muted)]" /> Usuario reportado</>
-                  : <><Flag className="w-4 h-4 text-[var(--muted)]" /> Reportar usuario</>}
+                {hasReported('user', user.id) ? (
+                  <>
+                    <Check className="w-4 h-4 text-[var(--muted)]" /> Usuario
+                    reportado
+                  </>
+                ) : (
+                  <>
+                    <Flag className="w-4 h-4 text-[var(--muted)]" /> Reportar
+                    usuario
+                  </>
+                )}
               </button>
               <button
-                onClick={() => { blockUser(user.id); setMenuOpen(false); }}
+                onClick={() => {
+                  blockUser(user.id);
+                  setMenuOpen(false);
+                }}
                 className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors border-t border-[var(--app-bg)]"
               >
                 <Ban className="w-4 h-4" />
@@ -161,36 +219,58 @@ export function UserProfileScreen() {
             title="Reportar usuario"
             subject={`Perfil de ${user.name} (${user.handle})`}
             onClose={() => setReporting(false)}
-            onConfirm={(reason) => { reportUser(user.id, reason); setReporting(false); }}
+            onConfirm={(reason) => {
+              reportUser(user.id, reason);
+              setReporting(false);
+            }}
           />
         )}
 
         {/* Nombre */}
         <div className="mb-3">
           <div className="flex items-center gap-2">
-            <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[22px] text-[var(--ink)] leading-tight">{user.name}</h1>
-            {user.visibility === 'private' && <Lock className="w-4 h-4 text-[var(--muted)]" />}
+            <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[22px] text-[var(--ink)] leading-tight">
+              {user.name}
+            </h1>
+            {user.visibility === 'private' && (
+              <Lock className="w-4 h-4 text-[var(--muted)]" />
+            )}
           </div>
-          <p className="text-[var(--muted)] text-[15px] font-medium">{user.handle}</p>
+          <p className="text-[var(--muted)] text-[15px] font-medium">
+            {user.handle}
+          </p>
         </div>
 
         {/* Bio: perfil privado no seguido oculta el contenido (HU07) */}
         {user.visibility === 'private' && !following ? (
           <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[18px] p-6 flex flex-col items-center text-center gap-2 my-4">
             <Lock className="w-6 h-6 text-[var(--muted)]" />
-            <p className="text-[15px] font-semibold text-[var(--ink)]">Esta cuenta es privada</p>
-            <p className="text-[13px] text-[var(--muted)]">Sigue a {user.name.split(' ')[0]} para ver su perfil y contenido.</p>
+            <p className="text-[15px] font-semibold text-[var(--ink)]">
+              Esta cuenta es privada
+            </p>
+            <p className="text-[13px] text-[var(--muted)]">
+              Sigue a {user.name.split(' ')[0]} para ver su perfil y contenido.
+            </p>
           </div>
         ) : (
           <>
-            <p className="text-[var(--ink)] text-[15px] leading-relaxed mb-4">{user.bio}</p>
+            <p className="text-[var(--ink)] text-[15px] leading-relaxed mb-4">
+              {user.bio}
+            </p>
             {user.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {user.tags.map((t) => {
                   const cat = TAG_CATEGORIES[t.category];
                   return (
-                    <span key={t.label} className="px-3 py-1 rounded-full text-[13px] font-semibold border shadow-sm"
-                      style={{ background: cat.bg, color: cat.text, borderColor: cat.border }}>
+                    <span
+                      key={t.label}
+                      className="px-3 py-1 rounded-full text-[13px] font-semibold border shadow-sm"
+                      style={{
+                        background: cat.bg,
+                        color: cat.text,
+                        borderColor: cat.border,
+                      }}
+                    >
                       {t.label}
                     </span>
                   );
@@ -198,7 +278,10 @@ export function UserProfileScreen() {
               </div>
             )}
             <div className="flex items-center gap-4 text-[var(--muted)] text-[13px] font-medium mb-5">
-              <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /><span>{user.career} · INTEC</span></div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4" />
+                <span>{user.career} · INTEC</span>
+              </div>
             </div>
           </>
         )}
@@ -206,20 +289,33 @@ export function UserProfileScreen() {
         {/* Stats */}
         <div className="flex justify-between items-center bg-[var(--surface)] rounded-[20px] p-5 shadow-[0_2px_12px_rgba(23,19,19,0.06)] border border-[var(--line)]">
           <div className="flex flex-col items-center gap-1 flex-1">
-            <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">{user.posts}</span>
-            <span className="text-[var(--muted)] text-[12px] font-medium">Posts</span>
+            <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">
+              {user.posts}
+            </span>
+            <span className="text-[var(--muted)] text-[12px] font-medium">
+              Posts
+            </span>
           </div>
           <div className="w-[1px] h-[30px] bg-[var(--line-soft)]" />
-          <div className="flex flex-col items-center gap-1 flex-1" data-testid="follower-count">
+          <div
+            className="flex flex-col items-center gap-1 flex-1"
+            data-testid="follower-count"
+          >
             <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">
               {followerCount.toLocaleString('es')}
             </span>
-            <span className="text-[var(--muted)] text-[12px] font-medium">Seguidores</span>
+            <span className="text-[var(--muted)] text-[12px] font-medium">
+              Seguidores
+            </span>
           </div>
           <div className="w-[1px] h-[30px] bg-[var(--line-soft)]" />
           <div className="flex flex-col items-center gap-1 flex-1">
-            <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">{user.following.toLocaleString('es')}</span>
-            <span className="text-[var(--muted)] text-[12px] font-medium">Siguiendo</span>
+            <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">
+              {user.following.toLocaleString('es')}
+            </span>
+            <span className="text-[var(--muted)] text-[12px] font-medium">
+              Siguiendo
+            </span>
           </div>
         </div>
       </div>

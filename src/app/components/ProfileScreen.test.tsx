@@ -45,16 +45,27 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     );
 
     // Sin historia propia, la foto lleva a crearla y no hay contador aparte.
-    expect(screen.getByRole('link', { name: /crear historia/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /crear historia/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId('stat-stories')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /ver historia de/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /ver historia de/i }),
+    ).not.toBeInTheDocument();
 
-    await user.type(screen.getByRole('textbox', { name: /texto de la historia/i }), 'Publicando una historia');
+    await user.type(
+      screen.getByRole('textbox', { name: /texto de la historia/i }),
+      'Publicando una historia',
+    );
     await user.click(screen.getByRole('button', { name: /^publicar$/i }));
 
     // Ahora la misma foto abre la historia, y el "+" sigue llevando a publicar.
-    expect(screen.getByRole('link', { name: /ver historia de carlos gómez/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /crear historia/i })).toHaveAttribute('href', '/create-story');
+    expect(
+      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /crear historia/i }),
+    ).toHaveAttribute('href', '/create-story');
     // Una sola foto: la tira de historias ya no se repite abajo.
     expect(screen.queryByText('Tu historia')).not.toBeInTheDocument();
   });
@@ -73,7 +84,9 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     await user.clear(screen.getByDisplayValue(/desarrollo web/i));
     await user.click(screen.getByRole('button', { name: /guardar/i }));
 
-    expect(screen.getByText(/aún no has escrito una biografía/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/aún no has escrito una biografía/i),
+    ).toBeInTheDocument();
   });
 
   it('las pestañas muestran contenido propio o un vacío explicado, no fotos de relleno', async () => {
@@ -84,6 +97,8 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     expect(screen.getByText(/no has compartido recursos/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /guardados/i }));
-    expect(screen.getByText(/no tienes publicaciones guardadas/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no tienes publicaciones guardadas/i),
+    ).toBeInTheDocument();
   });
 });

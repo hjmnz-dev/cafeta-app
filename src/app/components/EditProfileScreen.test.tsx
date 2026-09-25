@@ -46,15 +46,22 @@ describe('DEF-02 · HU10 — Editar perfil', () => {
 
     // Navegó al perfil y muestra los datos nuevos
     expect(screen.getByTestId('location')).toHaveTextContent('/profile');
-    expect(screen.getByRole('heading', { name: 'Carlos M. Gómez' })).toBeInTheDocument();
-    expect(screen.getByText('Bio actualizada para la demo')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Carlos M. Gómez' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Bio actualizada para la demo'),
+    ).toBeInTheDocument();
   });
 
   it('permite agregar una etiqueta académica', async () => {
     const user = userEvent.setup();
     renderWithProviders(<EditProfileScreen />, { route: '/profile/edit' });
 
-    await user.type(screen.getByPlaceholderText(/agregar etiqueta/i), 'GraphQL');
+    await user.type(
+      screen.getByPlaceholderText(/agregar etiqueta/i),
+      'GraphQL',
+    );
     await user.click(screen.getByRole('button', { name: /agregar etiqueta/i }));
 
     expect(screen.getByText('GraphQL')).toBeInTheDocument();

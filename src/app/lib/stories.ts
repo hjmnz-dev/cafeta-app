@@ -39,13 +39,21 @@ export function remainingLabel(story: Story, now: number = Date.now()): string {
  */
 export function visibleStories(
   stories: Story[],
-  { currentUserId, followingIds, now = Date.now() }: { currentUserId: string; followingIds: string[]; now?: number },
+  {
+    currentUserId,
+    followingIds,
+    now = Date.now(),
+  }: { currentUserId: string; followingIds: string[]; now?: number },
 ): Story[] {
   return stories
     .filter((s) => isVigente(s, now))
-    .filter((s) => s.authorId === currentUserId || followingIds.includes(s.authorId))
+    .filter(
+      (s) => s.authorId === currentUserId || followingIds.includes(s.authorId),
+    )
     .sort((a, b) => {
-      const mine = Number(b.authorId === currentUserId) - Number(a.authorId === currentUserId);
+      const mine =
+        Number(b.authorId === currentUserId) -
+        Number(a.authorId === currentUserId);
       return mine !== 0 ? mine : b.createdAt - a.createdAt;
     });
 }
@@ -89,7 +97,9 @@ export function visibleComments(story: Story): StoryComment[] {
 }
 
 /** Conteo de cada emoji para pintar el resumen de reacciones (HU16). */
-export function reactionCounts(story: Story): { emoji: string; count: number }[] {
+export function reactionCounts(
+  story: Story,
+): { emoji: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const emoji of Object.values(story.reactions)) {
     counts.set(emoji, (counts.get(emoji) ?? 0) + 1);

@@ -16,7 +16,10 @@ describe('DEF-06 · HU36/HU37 — Editar y retirar mensajes', () => {
     const user = userEvent.setup();
     await openChat(user);
 
-    await user.type(screen.getByRole('textbox', { name: /escribe un mensaje/i }), 'Te los paso ahora mismo');
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un mensaje/i }),
+      'Te los paso ahora mismo',
+    );
     await user.click(screen.getByRole('button', { name: /enviar mensaje/i }));
 
     expect(screen.getByText('Te los paso ahora mismo')).toBeInTheDocument();
@@ -26,13 +29,21 @@ describe('DEF-06 · HU36/HU37 — Editar y retirar mensajes', () => {
     const user = userEvent.setup();
     await openChat(user);
 
-    await user.click(screen.getByRole('button', { name: /editar mensaje: sí claro, te los comparto/i }));
+    await user.click(
+      screen.getByRole('button', {
+        name: /editar mensaje: sí claro, te los comparto/i,
+      }),
+    );
     const box = screen.getByRole('textbox', { name: /^editar mensaje$/i });
     await user.clear(box);
     await user.type(box, 'Sí claro, te los comparto esta tarde');
-    await user.click(screen.getByRole('button', { name: /guardar cambios del mensaje/i }));
+    await user.click(
+      screen.getByRole('button', { name: /guardar cambios del mensaje/i }),
+    );
 
-    expect(screen.getByText('Sí claro, te los comparto esta tarde')).toBeInTheDocument();
+    expect(
+      screen.getByText('Sí claro, te los comparto esta tarde'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/· Editado/)).toBeInTheDocument();
   });
 
@@ -42,21 +53,35 @@ describe('DEF-06 · HU36/HU37 — Editar y retirar mensajes', () => {
 
     // Mensaje recibido: sin acciones de autor.
     expect(screen.getByText('Hola Carlos! ¿Cómo estás?')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /editar mensaje: hola carlos/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /retirar mensaje: hola carlos/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /editar mensaje: hola carlos/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /retirar mensaje: hola carlos/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('HU37 — retirar un mensaje lo saca de la conversación y de la vista previa', async () => {
     const user = userEvent.setup();
     await openChat(user);
 
-    await user.click(screen.getByRole('button', { name: /retirar mensaje: sí claro, te los comparto/i }));
+    await user.click(
+      screen.getByRole('button', {
+        name: /retirar mensaje: sí claro, te los comparto/i,
+      }),
+    );
 
-    expect(screen.queryByText('Sí claro, te los comparto por aquí')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Sí claro, te los comparto por aquí'),
+    ).not.toBeInTheDocument();
 
     // De vuelta en la lista, la conversación ya no anuncia el mensaje retirado.
-    await user.click(screen.getByRole('button', { name: /volver a conversaciones/i }));
-    expect(screen.queryByText('Sí claro, te los comparto por aquí')).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: /volver a conversaciones/i }),
+    );
+    expect(
+      screen.queryByText('Sí claro, te los comparto por aquí'),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -70,11 +95,15 @@ describe('DEF-06 · HU28 — Reaccionar a publicación', () => {
 
     await user.click(within(card).getByRole('button', { name: /me gusta/i }));
 
-    const marcada = within(card).getByRole('button', { name: /quitar reacción/i });
+    const marcada = within(card).getByRole('button', {
+      name: /quitar reacción/i,
+    });
     expect(marcada).toHaveAttribute('aria-pressed', 'true');
     expect(marcada).toHaveTextContent('46');
 
-    await user.click(within(card).getByRole('button', { name: /quitar reacción/i }));
+    await user.click(
+      within(card).getByRole('button', { name: /quitar reacción/i }),
+    );
 
     const sinMarcar = within(card).getByRole('button', { name: /me gusta/i });
     expect(sinMarcar).toHaveAttribute('aria-pressed', 'false');
@@ -85,9 +114,21 @@ describe('DEF-06 · HU28 — Reaccionar a publicación', () => {
     const user = userEvent.setup();
     renderWithProviders(<FeedScreen />, { route: '/home' });
 
-    await user.click(within(screen.getByTestId('post-p2')).getByRole('button', { name: /me gusta/i }));
+    await user.click(
+      within(screen.getByTestId('post-p2')).getByRole('button', {
+        name: /me gusta/i,
+      }),
+    );
 
-    expect(within(screen.getByTestId('post-p2')).getByRole('button', { name: /quitar reacción/i })).toBeInTheDocument();
-    expect(within(screen.getByTestId('post-p3')).getByRole('button', { name: /me gusta/i })).toHaveTextContent('120');
+    expect(
+      within(screen.getByTestId('post-p2')).getByRole('button', {
+        name: /quitar reacción/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('post-p3')).getByRole('button', {
+        name: /me gusta/i,
+      }),
+    ).toHaveTextContent('120');
   });
 });

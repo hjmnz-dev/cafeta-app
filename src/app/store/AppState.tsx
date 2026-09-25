@@ -64,11 +64,12 @@ export type FollowState = 'none' | 'following' | 'pending';
 /** Id del usuario autenticado (el "yo"). Sin backend, es fijo. */
 export const CURRENT_USER_ID = 'me';
 
-export type PostType = 'text' | 'study-notes' | 'pdf' | 'event' | 'code' | 'study-group';
+export type PostType =
+  'text' | 'study-notes' | 'pdf' | 'event' | 'code' | 'study-group';
 
 export interface Post {
   id: string;
-  authorId: string;   // 'me' = publicación propia (habilita editar/eliminar)
+  authorId: string; // 'me' = publicación propia (habilita editar/eliminar)
   authorName: string;
   authorAvatar: string;
   career: string;
@@ -77,8 +78,8 @@ export interface Post {
   content: string;
   likes: number;
   comments: number;
-  active: boolean;    // baja lógica (HU23: "Desactivar")
-  edited: boolean;    // marca de "Editado" (HU22)
+  active: boolean; // baja lógica (HU23: "Desactivar")
+  edited: boolean; // marca de "Editado" (HU22)
   // Campos por tipo (opcionales)
   resourceTitle?: string;
   resourceSize?: string;
@@ -129,8 +130,8 @@ export interface Message {
   /** Enviado por el usuario actual → habilita editar y retirar. */
   sentByMe: boolean;
   time: string;
-  edited: boolean;   // HU36
-  active: boolean;   // HU37
+  edited: boolean; // HU36
+  active: boolean; // HU37
 }
 
 /** Comentario de una historia (HU17-HU19). */
@@ -139,8 +140,8 @@ export interface StoryComment {
   authorId: string;
   authorName: string;
   text: string;
-  edited: boolean;   // HU18
-  active: boolean;   // HU19 — baja lógica, mismo criterio que en publicaciones
+  edited: boolean; // HU18
+  active: boolean; // HU19 — baja lógica, mismo criterio que en publicaciones
 }
 
 /**
@@ -158,8 +159,8 @@ export interface Story {
   image?: string;
   /** Publicación en epoch ms — base del cálculo de vigencia (HU13). */
   createdAt: number;
-  active: boolean;   // HU15
-  edited: boolean;   // HU14
+  active: boolean; // HU15
+  edited: boolean; // HU14
   /** Reacción rápida por usuario: id de usuario → emoji (HU16). Una por persona. */
   reactions: Record<string, string>;
   comments: StoryComment[];
@@ -185,7 +186,20 @@ interface AppStateValue {
   posts: Post[];
   /** ¿La publicación es del usuario actual? (validación de autoría) */
   isOwnPost: (id: string) => boolean;
-  addPost: (post: Omit<Post, 'id' | 'authorId' | 'authorName' | 'authorAvatar' | 'active' | 'edited' | 'likes' | 'comments'> & Partial<Pick<Post, 'likes' | 'comments'>>) => void;
+  addPost: (
+    post: Omit<
+      Post,
+      | 'id'
+      | 'authorId'
+      | 'authorName'
+      | 'authorAvatar'
+      | 'active'
+      | 'edited'
+      | 'likes'
+      | 'comments'
+    > &
+      Partial<Pick<Post, 'likes' | 'comments'>>,
+  ) => void;
   /** Editar publicación propia (HU22), conservando interacciones. */
   editPost: (id: string, content: string) => void;
   /** Desactivar publicación propia — baja lógica (HU23). */
@@ -258,7 +272,13 @@ const DEFAULT_PROFILE: Profile = {
 
 const DEFAULT_SETTINGS: Settings = {
   visibility: 'public',
-  notifications: { likes: true, comments: true, follows: true, messages: true, stories: false },
+  notifications: {
+    likes: true,
+    comments: true,
+    follows: true,
+    messages: true,
+    stories: false,
+  },
   theme: 'dark',
 };
 
@@ -268,31 +288,64 @@ const AV = (id: string) =>
 /** Directorio de usuarios de demostración (reemplazable por la API). */
 const SAMPLE_USERS: DirectoryUser[] = [
   {
-    id: 'maria', name: 'María Rodríguez', handle: '@mrodriguez', career: 'Medicina',
+    id: 'maria',
+    name: 'María Rodríguez',
+    handle: '@mrodriguez',
+    career: 'Medicina',
     bio: 'Estudiante de Medicina. Apuntes, grupos de estudio y café. ☕',
-    avatar: AV('photo-1557353425-09253747c2bf'), visibility: 'public',
-    followers: 842, following: 310, posts: 27,
-    tags: [{ label: 'Medicina', category: 'carrera' }, { label: 'Anatomía', category: 'habilidad' }],
+    avatar: AV('photo-1557353425-09253747c2bf'),
+    visibility: 'public',
+    followers: 842,
+    following: 310,
+    posts: 27,
+    tags: [
+      { label: 'Medicina', category: 'carrera' },
+      { label: 'Anatomía', category: 'habilidad' },
+    ],
   },
   {
-    id: 'juan', name: 'Juan Pérez', handle: '@jperez', career: 'Ing. Industrial',
+    id: 'juan',
+    name: 'Juan Pérez',
+    handle: '@jperez',
+    career: 'Ing. Industrial',
     bio: 'Ing. Industrial. Optimizando procesos y horarios de estudio.',
-    avatar: AV('photo-1611695434369-a8f5d76ceb7b'), visibility: 'public',
-    followers: 512, following: 280, posts: 40,
-    tags: [{ label: 'Ing. Industrial', category: 'carrera' }, { label: 'Lean', category: 'interes' }],
+    avatar: AV('photo-1611695434369-a8f5d76ceb7b'),
+    visibility: 'public',
+    followers: 512,
+    following: 280,
+    posts: 40,
+    tags: [
+      { label: 'Ing. Industrial', category: 'carrera' },
+      { label: 'Lean', category: 'interes' },
+    ],
   },
   {
-    id: 'laura', name: 'Laura Batista', handle: '@lbatista', career: 'Ing. Software',
+    id: 'laura',
+    name: 'Laura Batista',
+    handle: '@lbatista',
+    career: 'Ing. Software',
     bio: 'Frontend en formación. Buscando equipo para el proyecto final.',
-    avatar: AV('photo-1570078070514-1f84a3cf1736'), visibility: 'private',
-    followers: 1204, following: 190, posts: 63,
-    tags: [{ label: 'Ing. Software', category: 'carrera' }, { label: 'React', category: 'habilidad' }],
+    avatar: AV('photo-1570078070514-1f84a3cf1736'),
+    visibility: 'private',
+    followers: 1204,
+    following: 190,
+    posts: 63,
+    tags: [
+      { label: 'Ing. Software', category: 'carrera' },
+      { label: 'React', category: 'habilidad' },
+    ],
   },
   {
-    id: 'pedro', name: 'Pedro Sánchez', handle: '@psanchez', career: 'Ing. Civil',
+    id: 'pedro',
+    name: 'Pedro Sánchez',
+    handle: '@psanchez',
+    career: 'Ing. Civil',
     bio: 'Ing. Civil. Estructuras, planos y mucho café.',
-    avatar: AV('photo-1557862921-37829c790f19'), visibility: 'public',
-    followers: 231, following: 205, posts: 15,
+    avatar: AV('photo-1557862921-37829c790f19'),
+    visibility: 'public',
+    followers: 231,
+    following: 205,
+    posts: 15,
     tags: [{ label: 'Ing. Civil', category: 'carrera' }],
   },
 ];
@@ -315,44 +368,101 @@ export const MY_FOLLOWERS = 1204;
 /** Publicaciones de demostración. Dos son del usuario actual ('me') → editables. */
 const SAMPLE_POSTS: Post[] = [
   {
-    id: 'p1', authorId: 'me', authorName: 'Carlos Gómez', authorAvatar: ME_AVATAR,
-    career: 'Ing. Software', time: '15m', type: 'text',
-    content: '¿Alguien más va a la charla de IA de esta tarde en el auditorio? Guardo puesto. 🤖',
-    likes: 18, comments: 5, active: true, edited: false,
+    id: 'p1',
+    authorId: 'me',
+    authorName: 'Carlos Gómez',
+    authorAvatar: ME_AVATAR,
+    career: 'Ing. Software',
+    time: '15m',
+    type: 'text',
+    content:
+      '¿Alguien más va a la charla de IA de esta tarde en el auditorio? Guardo puesto. 🤖',
+    likes: 18,
+    comments: 5,
+    active: true,
+    edited: false,
   },
   {
-    id: 'p2', authorId: 'juan', authorName: 'Juan Pérez', authorAvatar: AV('photo-1611695434369-a8f5d76ceb7b'),
-    career: 'Ing. Industrial', time: '2h', type: 'study-notes',
-    content: 'Resumen de Cálculo Diferencial para el parcial de mañana. ¡Espero les sirva! 📚',
-    likes: 45, comments: 12, active: true, edited: false,
+    id: 'p2',
+    authorId: 'juan',
+    authorName: 'Juan Pérez',
+    authorAvatar: AV('photo-1611695434369-a8f5d76ceb7b'),
+    career: 'Ing. Industrial',
+    time: '2h',
+    type: 'study-notes',
+    content:
+      'Resumen de Cálculo Diferencial para el parcial de mañana. ¡Espero les sirva! 📚',
+    likes: 45,
+    comments: 12,
+    active: true,
+    edited: false,
   },
   {
-    id: 'p3', authorId: 'maria', authorName: 'María Rodríguez', authorAvatar: AV('photo-1557353425-09253747c2bf'),
-    career: 'Medicina', time: '4h', type: 'pdf',
-    content: 'Libro de Anatomía Humana en PDF. Lo subo por aquí para quien lo necesite.',
-    resourceTitle: 'Anatomia_Basica_Vol1.pdf', resourceSize: '4.2 MB',
-    likes: 120, comments: 8, active: true, edited: false,
+    id: 'p3',
+    authorId: 'maria',
+    authorName: 'María Rodríguez',
+    authorAvatar: AV('photo-1557353425-09253747c2bf'),
+    career: 'Medicina',
+    time: '4h',
+    type: 'pdf',
+    content:
+      'Libro de Anatomía Humana en PDF. Lo subo por aquí para quien lo necesite.',
+    resourceTitle: 'Anatomia_Basica_Vol1.pdf',
+    resourceSize: '4.2 MB',
+    likes: 120,
+    comments: 8,
+    active: true,
+    edited: false,
   },
   {
-    id: 'p4', authorId: 'comite', authorName: 'Comité de Estudiantes', authorAvatar: AV('photo-1523240795612-9a054b0db644'),
-    career: 'Todas', time: '1d', type: 'event',
-    content: 'Gran asamblea de inicio de trimestre en la Plazoleta. ¡Acompáñanos!',
-    eventDate: 'Vie, 12 Oct • 4:00 PM', eventLocation: 'Plazoleta INTEC',
-    likes: 89, comments: 3, active: true, edited: false,
+    id: 'p4',
+    authorId: 'comite',
+    authorName: 'Comité de Estudiantes',
+    authorAvatar: AV('photo-1523240795612-9a054b0db644'),
+    career: 'Todas',
+    time: '1d',
+    type: 'event',
+    content:
+      'Gran asamblea de inicio de trimestre en la Plazoleta. ¡Acompáñanos!',
+    eventDate: 'Vie, 12 Oct • 4:00 PM',
+    eventLocation: 'Plazoleta INTEC',
+    likes: 89,
+    comments: 3,
+    active: true,
+    edited: false,
   },
   {
-    id: 'p5', authorId: 'me', authorName: 'Carlos Gómez', authorAvatar: ME_AVATAR,
-    career: 'Ing. Software', time: '3h', type: 'code',
+    id: 'p5',
+    authorId: 'me',
+    authorName: 'Carlos Gómez',
+    authorAvatar: ME_AVATAR,
+    career: 'Ing. Software',
+    time: '3h',
+    type: 'code',
     content: 'Gente, ¿por qué este loop no termina? 😅 Me da OutOfMemoryError.',
-    codeSnippet: 'function findMax(arr) {\n  let max = arr[0];\n  for(let i=1; i < arr.length; i--) {\n    if(arr[i] > max) max = arr[i];\n  }\n  return max;\n}',
-    likes: 12, comments: 24, active: true, edited: false,
+    codeSnippet:
+      'function findMax(arr) {\n  let max = arr[0];\n  for(let i=1; i < arr.length; i--) {\n    if(arr[i] > max) max = arr[i];\n  }\n  return max;\n}',
+    likes: 12,
+    comments: 24,
+    active: true,
+    edited: false,
   },
   {
-    id: 'p6', authorId: 'laura', authorName: 'Laura Batista', authorAvatar: AV('photo-1570078070514-1f84a3cf1736'),
-    career: 'Ing. Software', time: '1h', type: 'study-group',
-    content: 'Buscando 2 personas para el proyecto final de Desarrollo Web. Tema: App de delivery en React.',
-    groupName: 'Frontend Ninjas', spotsAvailable: 2,
-    likes: 34, comments: 15, active: true, edited: false,
+    id: 'p6',
+    authorId: 'laura',
+    authorName: 'Laura Batista',
+    authorAvatar: AV('photo-1570078070514-1f84a3cf1736'),
+    career: 'Ing. Software',
+    time: '1h',
+    type: 'study-group',
+    content:
+      'Buscando 2 personas para el proyecto final de Desarrollo Web. Tema: App de delivery en React.',
+    groupName: 'Frontend Ninjas',
+    spotsAvailable: 2,
+    likes: 34,
+    comments: 15,
+    active: true,
+    edited: false,
   },
 ];
 
@@ -365,19 +475,40 @@ const HOUR = 60 * 60 * 1000;
  */
 const sampleStories = (): Story[] => [
   {
-    id: 's1', authorId: 'maria', authorName: 'María Rodríguez', authorAvatar: AV('photo-1557353425-09253747c2bf'),
+    id: 's1',
+    authorId: 'maria',
+    authorName: 'María Rodríguez',
+    authorAvatar: AV('photo-1557353425-09253747c2bf'),
     text: 'Maratón de estudio en la biblioteca hasta que cierre. ☕',
-    createdAt: Date.now() - 1 * HOUR, active: true, edited: false, reactions: {}, comments: [],
+    createdAt: Date.now() - 1 * HOUR,
+    active: true,
+    edited: false,
+    reactions: {},
+    comments: [],
   },
   {
-    id: 's2', authorId: 'juan', authorName: 'Juan Pérez', authorAvatar: AV('photo-1611695434369-a8f5d76ceb7b'),
+    id: 's2',
+    authorId: 'juan',
+    authorName: 'Juan Pérez',
+    authorAvatar: AV('photo-1611695434369-a8f5d76ceb7b'),
     text: 'Fila enorme en la cafetería, avisados quedan.',
-    createdAt: Date.now() - 5 * HOUR, active: true, edited: false, reactions: {}, comments: [],
+    createdAt: Date.now() - 5 * HOUR,
+    active: true,
+    edited: false,
+    reactions: {},
+    comments: [],
   },
   {
-    id: 's3', authorId: 'laura', authorName: 'Laura Batista', authorAvatar: AV('photo-1570078070514-1f84a3cf1736'),
+    id: 's3',
+    authorId: 'laura',
+    authorName: 'Laura Batista',
+    authorAvatar: AV('photo-1570078070514-1f84a3cf1736'),
     text: 'Terminamos el prototipo del proyecto final. 🎉',
-    createdAt: Date.now() - 20 * HOUR, active: true, edited: false, reactions: {}, comments: [],
+    createdAt: Date.now() - 20 * HOUR,
+    active: true,
+    edited: false,
+    reactions: {},
+    comments: [],
   },
 ];
 
@@ -387,25 +518,115 @@ const sampleStories = (): Story[] => [
  * lista, para que la vista previa y el hilo digan lo mismo.
  */
 const SAMPLE_MESSAGES: Message[] = [
-  { id: 'm1', conversationId: '1', text: 'Hola Carlos! ¿Cómo estás?', sentByMe: false, time: '10:30', edited: false, active: true },
-  { id: 'm2', conversationId: '1', text: 'Hola María! Todo bien, estudiando para el examen', sentByMe: true, time: '10:32', edited: false, active: true },
-  { id: 'm3', conversationId: '1', text: '¿Tienes los apuntes de Estructuras de Datos?', sentByMe: false, time: '10:33', edited: false, active: true },
-  { id: 'm4', conversationId: '1', text: 'Sí claro, te los comparto por aquí', sentByMe: true, time: '10:35', edited: false, active: true },
-  { id: 'm5', conversationId: '1', text: 'Muchas gracias! Eres el mejor', sentByMe: false, time: '10:36', edited: false, active: true },
-  { id: 'm6', conversationId: '2', text: 'Claro, nos vemos en la biblioteca a las 3', sentByMe: false, time: '09:15', edited: false, active: true },
-  { id: 'm7', conversationId: '3', text: '¡Gracias por la ayuda con el proyecto!', sentByMe: false, time: 'Ayer', edited: false, active: true },
-  { id: 'm8', conversationId: '4', text: '¿Vamos a estudiar juntos para el examen?', sentByMe: false, time: 'Lun', edited: false, active: true },
-  { id: 'm9', conversationId: '5', text: 'Vi tu post sobre React, muy interesante', sentByMe: false, time: 'Dom', edited: false, active: true },
+  {
+    id: 'm1',
+    conversationId: '1',
+    text: 'Hola Carlos! ¿Cómo estás?',
+    sentByMe: false,
+    time: '10:30',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm2',
+    conversationId: '1',
+    text: 'Hola María! Todo bien, estudiando para el examen',
+    sentByMe: true,
+    time: '10:32',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm3',
+    conversationId: '1',
+    text: '¿Tienes los apuntes de Estructuras de Datos?',
+    sentByMe: false,
+    time: '10:33',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm4',
+    conversationId: '1',
+    text: 'Sí claro, te los comparto por aquí',
+    sentByMe: true,
+    time: '10:35',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm5',
+    conversationId: '1',
+    text: 'Muchas gracias! Eres el mejor',
+    sentByMe: false,
+    time: '10:36',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm6',
+    conversationId: '2',
+    text: 'Claro, nos vemos en la biblioteca a las 3',
+    sentByMe: false,
+    time: '09:15',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm7',
+    conversationId: '3',
+    text: '¡Gracias por la ayuda con el proyecto!',
+    sentByMe: false,
+    time: 'Ayer',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm8',
+    conversationId: '4',
+    text: '¿Vamos a estudiar juntos para el examen?',
+    sentByMe: false,
+    time: 'Lun',
+    edited: false,
+    active: true,
+  },
+  {
+    id: 'm9',
+    conversationId: '5',
+    text: 'Vi tu post sobre React, muy interesante',
+    sentByMe: false,
+    time: 'Dom',
+    edited: false,
+    active: true,
+  },
 ];
 
 /** Semántica de color de las etiquetas del perfil (resuelve DEF-10). */
-export const TAG_CATEGORIES: Record<TagCategory, { label: string; bg: string; text: string; border: string }> = {
+export const TAG_CATEGORIES: Record<
+  TagCategory,
+  { label: string; bg: string; text: string; border: string }
+> = {
   // Tokens del tema (ver styles/theme.css): la distinción entre categorías
   // debe leerse igual en claro y en oscuro, así que se fija el papel de cada
   // una, no un color concreto.
-  carrera: { label: 'Carrera', bg: 'var(--tag-carrera-bg)', text: 'var(--tag-carrera-ink)', border: 'var(--tag-carrera-line)' },
-  habilidad: { label: 'Habilidad', bg: 'var(--tag-habilidad-bg)', text: 'var(--tag-habilidad-ink)', border: 'var(--tag-habilidad-line)' },
-  interes: { label: 'Interés', bg: 'var(--tag-interes-bg)', text: 'var(--tag-interes-ink)', border: 'var(--tag-interes-line)' },
+  carrera: {
+    label: 'Carrera',
+    bg: 'var(--tag-carrera-bg)',
+    text: 'var(--tag-carrera-ink)',
+    border: 'var(--tag-carrera-line)',
+  },
+  habilidad: {
+    label: 'Habilidad',
+    bg: 'var(--tag-habilidad-bg)',
+    text: 'var(--tag-habilidad-ink)',
+    border: 'var(--tag-habilidad-line)',
+  },
+  interes: {
+    label: 'Interés',
+    bg: 'var(--tag-interes-bg)',
+    text: 'var(--tag-interes-ink)',
+    border: 'var(--tag-interes-line)',
+  },
 };
 
 const STORAGE_KEY = 'cafeta.appstate.v1';
@@ -432,13 +653,20 @@ function load(): PersistedState {
         settings: {
           ...DEFAULT_SETTINGS,
           ...parsed.settings,
-          notifications: { ...DEFAULT_SETTINGS.notifications, ...parsed.settings?.notifications },
+          notifications: {
+            ...DEFAULT_SETTINGS.notifications,
+            ...parsed.settings?.notifications,
+          },
         },
         following: Array.isArray(parsed.following) ? parsed.following : [],
         pending: Array.isArray(parsed.pending) ? parsed.pending : [],
         posts: Array.isArray(parsed.posts) ? parsed.posts : SAMPLE_POSTS,
-        stories: Array.isArray(parsed.stories) ? parsed.stories : sampleStories(),
-        messages: Array.isArray(parsed.messages) ? parsed.messages : SAMPLE_MESSAGES,
+        stories: Array.isArray(parsed.stories)
+          ? parsed.stories
+          : sampleStories(),
+        messages: Array.isArray(parsed.messages)
+          ? parsed.messages
+          : SAMPLE_MESSAGES,
         blocked: Array.isArray(parsed.blocked) ? parsed.blocked : [],
         reports: Array.isArray(parsed.reports) ? parsed.reports : [],
       };
@@ -477,10 +705,33 @@ const nextReportId = () => `rep-${++reportSeq}`;
 const AppStateContext = createContext<AppStateValue | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [{ profile, settings, following, pending, posts, stories, messages, blocked, reports }, setState] = useState(load);
+  const [
+    {
+      profile,
+      settings,
+      following,
+      pending,
+      posts,
+      stories,
+      messages,
+      blocked,
+      reports,
+    },
+    setState,
+  ] = useState(load);
 
   useEffect(() => {
-    const snapshot = { profile, settings, following, pending, posts, stories, messages, blocked, reports };
+    const snapshot = {
+      profile,
+      settings,
+      following,
+      pending,
+      posts,
+      stories,
+      messages,
+      blocked,
+      reports,
+    };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     } catch {
@@ -491,15 +742,25 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           STORAGE_KEY,
           JSON.stringify({
             ...snapshot,
-            posts: posts.map(({ images, ...p }) => p),
-            stories: stories.map(({ image, ...st }) => st),
+            posts: posts.map(({ images: _images, ...p }) => p),
+            stories: stories.map(({ image: _image, ...st }) => st),
           }),
         );
       } catch {
         /* almacenamiento no disponible: el estado sigue solo en memoria */
       }
     }
-  }, [profile, settings, following, pending, posts, stories, messages, blocked, reports]);
+  }, [
+    profile,
+    settings,
+    following,
+    pending,
+    posts,
+    stories,
+    messages,
+    blocked,
+    reports,
+  ]);
 
   const updateProfile = (patch: Partial<Profile>) =>
     setState((s) => ({ ...s, profile: { ...s.profile, ...patch } }));
@@ -518,11 +779,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const getUser = (id: string) => SAMPLE_USERS.find((u) => u.id === id);
 
   const followState = (id: string): FollowState =>
-    following.includes(id) ? 'following' : pending.includes(id) ? 'pending' : 'none';
+    following.includes(id)
+      ? 'following'
+      : pending.includes(id)
+        ? 'pending'
+        : 'none';
 
   const followUser = (id: string) =>
     setState((s) => {
-      if (s.following.includes(id) || s.pending.includes(id) || s.blocked.includes(id)) return s;
+      if (
+        s.following.includes(id) ||
+        s.pending.includes(id) ||
+        s.blocked.includes(id)
+      )
+        return s;
       const user = getUser(id);
       // HU26: perfil restringido → solicitud pendiente de aprobación.
       if (user && user.visibility === 'private') {
@@ -538,7 +808,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       pending: s.pending.filter((x) => x !== id),
     }));
 
-  const isOwnPost = (id: string) => posts.find((p) => p.id === id)?.authorId === CURRENT_USER_ID;
+  const isOwnPost = (id: string) =>
+    posts.find((p) => p.id === id)?.authorId === CURRENT_USER_ID;
 
   const addPost: AppStateValue['addPost'] = (post) =>
     setState((s) => ({
@@ -589,21 +860,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       posts: s.posts.map((p) =>
-        p.id === id ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) } : p,
+        p.id === id
+          ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) }
+          : p,
       ),
     }));
 
   const deletePost = (id: string) =>
     setState((s) => ({
       ...s,
-      posts: s.posts.filter((p) => !(p.id === id && p.authorId === CURRENT_USER_ID)),
+      posts: s.posts.filter(
+        (p) => !(p.id === id && p.authorId === CURRENT_USER_ID),
+      ),
     }));
 
   // ── Historias (DEF-04 · FT04) ────────────────────────────────────────────
   // Mismas reglas que en publicaciones: solo el autor edita o desactiva, y la
   // desactivación es lógica (el registro se conserva, HU15/HU19).
 
-  const isOwnStory = (id: string) => stories.find((st) => st.id === id)?.authorId === CURRENT_USER_ID;
+  const isOwnStory = (id: string) =>
+    stories.find((st) => st.id === id)?.authorId === CURRENT_USER_ID;
 
   const addStory: AppStateValue['addStory'] = ({ text, image }) =>
     setState((s) => ({
@@ -640,7 +916,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       stories: s.stories.map((st) =>
-        st.id === id && st.authorId === CURRENT_USER_ID ? { ...st, active: false } : st,
+        st.id === id && st.authorId === CURRENT_USER_ID
+          ? { ...st, active: false }
+          : st,
       ),
     }));
 
@@ -651,7 +929,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         if (st.id !== id) return st;
         const { [CURRENT_USER_ID]: mine, ...others } = st.reactions;
         // Volver a pulsar la misma reacción la retira; otra la sustituye.
-        return { ...st, reactions: mine === emoji ? others : { ...others, [CURRENT_USER_ID]: emoji } };
+        return {
+          ...st,
+          reactions:
+            mine === emoji ? others : { ...others, [CURRENT_USER_ID]: emoji },
+        };
       }),
     }));
 
@@ -690,7 +972,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           ? {
               ...st,
               comments: st.comments.map((c) =>
-                c.id === commentId && c.authorId === CURRENT_USER_ID ? patch(c) : c,
+                c.id === commentId && c.authorId === CURRENT_USER_ID
+                  ? patch(c)
+                  : c,
               ),
             }
           : st,
@@ -698,7 +982,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
 
   const editStoryComment = (storyId: string, commentId: string, text: string) =>
-    mapOwnComment(storyId, commentId, (c) => ({ ...c, text, edited: c.edited || text !== c.text }));
+    mapOwnComment(storyId, commentId, (c) => ({
+      ...c,
+      text,
+      edited: c.edited || text !== c.text,
+    }));
 
   const deactivateStoryComment = (storyId: string, commentId: string) =>
     mapOwnComment(storyId, commentId, (c) => ({ ...c, active: false }));
@@ -720,7 +1008,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           conversationId,
           text,
           sentByMe: true,
-          time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toLocaleTimeString('es', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
           edited: false,
           active: true,
         },
@@ -731,14 +1022,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       messages: s.messages.map((m) =>
-        m.id === id && m.sentByMe ? { ...m, text, edited: m.edited || text !== m.text } : m,
+        m.id === id && m.sentByMe
+          ? { ...m, text, edited: m.edited || text !== m.text }
+          : m,
       ),
     }));
 
   const deactivateMessage = (id: string) =>
     setState((s) => ({
       ...s,
-      messages: s.messages.map((m) => (m.id === id && m.sentByMe ? { ...m, active: false } : m)),
+      messages: s.messages.map((m) =>
+        m.id === id && m.sentByMe ? { ...m, active: false } : m,
+      ),
     }));
 
   // ── Seguridad y moderación (DEF-12 · FT11) ──────────────────────────────
@@ -758,21 +1053,35 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const unblockUser = (id: string) =>
     setState((s) => ({ ...s, blocked: s.blocked.filter((x) => x !== id) }));
 
-  const addReport = (targetType: Report['targetType'], targetId: string, reason: string) =>
+  const addReport = (
+    targetType: Report['targetType'],
+    targetId: string,
+    reason: string,
+  ) =>
     setState((s) =>
-      s.reports.some((r) => r.targetType === targetType && r.targetId === targetId)
+      s.reports.some(
+        (r) => r.targetType === targetType && r.targetId === targetId,
+      )
         ? s // ya reportado: no se duplica la denuncia
         : {
             ...s,
             reports: [
               ...s.reports,
-              { id: nextReportId(), targetType, targetId, reason, createdAt: Date.now() },
+              {
+                id: nextReportId(),
+                targetType,
+                targetId,
+                reason,
+                createdAt: Date.now(),
+              },
             ],
           },
     );
 
-  const reportUser = (id: string, reason: string) => addReport('user', id, reason);
-  const reportPost = (id: string, reason: string) => addReport('post', id, reason);
+  const reportUser = (id: string, reason: string) =>
+    addReport('user', id, reason);
+  const reportPost = (id: string, reason: string) =>
+    addReport('post', id, reason);
 
   const hasReported = (targetType: Report['targetType'], targetId: string) =>
     reports.some((r) => r.targetType === targetType && r.targetId === targetId);
@@ -780,16 +1089,46 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppStateContext.Provider
       value={{
-        profile, updateProfile, settings, updateSettings,
-        users: SAMPLE_USERS, getUser, followState, followUser, unfollowUser,
+        profile,
+        updateProfile,
+        settings,
+        updateSettings,
+        users: SAMPLE_USERS,
+        getUser,
+        followState,
+        followUser,
+        unfollowUser,
         followingIds: following,
-        posts, isOwnPost, addPost, editPost, deactivatePost, reactivatePost, deletePost,
-        stories, isOwnStory, addStory, editStory, deactivateStory, reactToStory,
-        addStoryComment, editStoryComment, deactivateStoryComment,
+        posts,
+        isOwnPost,
+        addPost,
+        editPost,
+        deactivatePost,
+        reactivatePost,
+        deletePost,
+        stories,
+        isOwnStory,
+        addStory,
+        editStory,
+        deactivateStory,
+        reactToStory,
+        addStoryComment,
+        editStoryComment,
+        deactivateStoryComment,
         togglePostReaction,
-        messages, conversationMessages, sendMessage, editMessage, deactivateMessage,
-        blockedIds: blocked, isBlocked, blockUser, unblockUser,
-        reports, reportUser, reportPost, hasReported,
+        messages,
+        conversationMessages,
+        sendMessage,
+        editMessage,
+        deactivateMessage,
+        blockedIds: blocked,
+        isBlocked,
+        blockUser,
+        unblockUser,
+        reports,
+        reportUser,
+        reportPost,
+        hasReported,
       }}
     >
       {children}
@@ -799,6 +1138,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
 export function useAppState(): AppStateValue {
   const ctx = useContext(AppStateContext);
-  if (!ctx) throw new Error('useAppState debe usarse dentro de <AppStateProvider>');
+  if (!ctx)
+    throw new Error('useAppState debe usarse dentro de <AppStateProvider>');
   return ctx;
 }

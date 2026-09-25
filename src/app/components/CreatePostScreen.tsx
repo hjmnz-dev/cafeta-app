@@ -45,7 +45,7 @@ export function CreatePostScreen() {
     'Mercadeo',
     'Psicología',
     'Derecho',
-    'Arquitectura'
+    'Arquitectura',
   ];
 
   const intecLocations = [
@@ -56,7 +56,7 @@ export function CreatePostScreen() {
     'Auditorio',
     'Cancha Deportiva',
     'Área de Parqueo',
-    'Centro de Estudiantes'
+    'Centro de Estudiantes',
   ];
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,14 +64,15 @@ export function CreatePostScreen() {
     if (!files) return;
 
     // Tope de imágenes por publicación (cada una se guarda en localStorage).
-    const room = MAX_IMAGES - mediaFiles.filter((f) => f.type === 'image').length;
+    const room =
+      MAX_IMAGES - mediaFiles.filter((f) => f.type === 'image').length;
     const newFiles = Array.from(files)
       .slice(0, Math.max(0, room))
       .map((file) => ({
         id: Math.random().toString(36).substr(2, 9),
         file,
         preview: URL.createObjectURL(file),
-        type: 'image' as const
+        type: 'image' as const,
       }));
     setMediaFiles((prev) => [...prev, ...newFiles]);
   };
@@ -83,7 +84,7 @@ export function CreatePostScreen() {
         id: Math.random().toString(36).substr(2, 9),
         file,
         preview: URL.createObjectURL(file),
-        type: 'video' as const
+        type: 'video' as const,
       }));
       setMediaFiles((prev) => [...prev, ...newFiles]);
     }
@@ -108,7 +109,9 @@ export function CreatePostScreen() {
     setPublishing(true);
 
     // Reducir las imágenes antes de guardarlas (localStorage es pequeño).
-    const stored = await Promise.all(images.map((m) => toStorableImage(m.file)));
+    const stored = await Promise.all(
+      images.map((m) => toStorableImage(m.file)),
+    );
 
     addPost({
       career: selectedCareer || profile.career,
@@ -138,23 +141,142 @@ export function CreatePostScreen() {
 
   // Emojis comunes para redes sociales
   const popularEmojis = [
-    '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊',
-    '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘',
-    '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪',
-    '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒',
-    '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖',
-    '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡',
-    '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰',
-    '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶',
-    '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮',
-    '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴',
-    '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠',
-    '👍', '👎', '👏', '🙌', '👐', '🤝', '🙏', '✌️',
-    '🤞', '🤟', '🤘', '🤙', '💪', '🦾', '🦿', '🦵',
-    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-    '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘',
-    '🔥', '✨', '💫', '⭐', '🌟', '💥', '💯', '✅',
-    '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉'
+    '😀',
+    '😃',
+    '😄',
+    '😁',
+    '😅',
+    '😂',
+    '🤣',
+    '😊',
+    '😇',
+    '🙂',
+    '🙃',
+    '😉',
+    '😌',
+    '😍',
+    '🥰',
+    '😘',
+    '😗',
+    '😙',
+    '😚',
+    '😋',
+    '😛',
+    '😝',
+    '😜',
+    '🤪',
+    '🤨',
+    '🧐',
+    '🤓',
+    '😎',
+    '🤩',
+    '🥳',
+    '😏',
+    '😒',
+    '😞',
+    '😔',
+    '😟',
+    '😕',
+    '🙁',
+    '☹️',
+    '😣',
+    '😖',
+    '😫',
+    '😩',
+    '🥺',
+    '😢',
+    '😭',
+    '😤',
+    '😠',
+    '😡',
+    '🤬',
+    '🤯',
+    '😳',
+    '🥵',
+    '🥶',
+    '😱',
+    '😨',
+    '😰',
+    '😥',
+    '😓',
+    '🤗',
+    '🤔',
+    '🤭',
+    '🤫',
+    '🤥',
+    '😶',
+    '😐',
+    '😑',
+    '😬',
+    '🙄',
+    '😯',
+    '😦',
+    '😧',
+    '😮',
+    '😲',
+    '🥱',
+    '😴',
+    '🤤',
+    '😪',
+    '😵',
+    '🤐',
+    '🥴',
+    '🤢',
+    '🤮',
+    '🤧',
+    '😷',
+    '🤒',
+    '🤕',
+    '🤑',
+    '🤠',
+    '👍',
+    '👎',
+    '👏',
+    '🙌',
+    '👐',
+    '🤝',
+    '🙏',
+    '✌️',
+    '🤞',
+    '🤟',
+    '🤘',
+    '🤙',
+    '💪',
+    '🦾',
+    '🦿',
+    '🦵',
+    '❤️',
+    '🧡',
+    '💛',
+    '💚',
+    '💙',
+    '💜',
+    '🖤',
+    '🤍',
+    '💔',
+    '❣️',
+    '💕',
+    '💞',
+    '💓',
+    '💗',
+    '💖',
+    '💘',
+    '🔥',
+    '✨',
+    '💫',
+    '⭐',
+    '🌟',
+    '💥',
+    '💯',
+    '✅',
+    '🎉',
+    '🎊',
+    '🎈',
+    '🎁',
+    '🏆',
+    '🥇',
+    '🥈',
+    '🥉',
   ];
 
   return (
@@ -179,7 +301,7 @@ export function CreatePostScreen() {
 
       {/* Header */}
       <div className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--line-soft)] mt-12">
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-2)] transition-colors"
         >
@@ -206,7 +328,9 @@ export function CreatePostScreen() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-[var(--ink)]">{profile.name}</h3>
-            <p className="text-xs text-[var(--muted)]">{selectedCareer || profile.career}</p>
+            <p className="text-xs text-[var(--muted)]">
+              {selectedCareer || profile.career}
+            </p>
           </div>
         </div>
 
@@ -225,7 +349,10 @@ export function CreatePostScreen() {
         {mediaFiles.length > 0 && (
           <div className="mt-4 grid grid-cols-2 gap-2">
             {mediaFiles.map((media) => (
-              <div key={media.id} className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface-3)]">
+              <div
+                key={media.id}
+                className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface-3)]"
+              >
                 {media.type === 'image' ? (
                   <img
                     src={media.preview}
@@ -264,7 +391,9 @@ export function CreatePostScreen() {
           </p>
         )}
         {images.length >= MAX_IMAGES && (
-          <p className="mt-1 text-xs text-[var(--muted)]">Máximo {MAX_IMAGES} imágenes por publicación.</p>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            Máximo {MAX_IMAGES} imágenes por publicación.
+          </p>
         )}
 
         {/* Career Selector */}
@@ -307,7 +436,7 @@ export function CreatePostScreen() {
       {/* Bottom Actions */}
       <div className="border-t border-[var(--line-soft)] px-4 py-3 bg-[var(--surface)]">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               imageInputRef.current?.click();
@@ -316,7 +445,7 @@ export function CreatePostScreen() {
           >
             <ImageIcon className="w-5 h-5 text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
           </button>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               videoInputRef.current?.click();
@@ -346,11 +475,11 @@ export function CreatePostScreen() {
 
       {/* Emoji Picker */}
       {showEmojiPicker && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50"
           onClick={() => setShowEmojiPicker(false)}
         >
-          <div 
+          <div
             className="bg-[var(--surface)] w-full max-w-[390px] p-6 rounded-t-3xl md:rounded-3xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
@@ -365,7 +494,7 @@ export function CreatePostScreen() {
                 <X className="w-5 h-5 text-[var(--muted)]" />
               </button>
             </div>
-            
+
             <div className="grid grid-cols-8 gap-2 max-h-[300px] overflow-y-auto p-2">
               {popularEmojis.map((emoji) => (
                 <button
@@ -383,11 +512,11 @@ export function CreatePostScreen() {
 
       {/* Location Modal */}
       {showLocationModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50"
           onClick={() => setShowLocationModal(false)}
         >
-          <div 
+          <div
             className="bg-[var(--surface)] w-full max-w-[390px] p-6 rounded-t-3xl md:rounded-3xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
@@ -402,7 +531,7 @@ export function CreatePostScreen() {
                 <X className="w-5 h-5 text-[var(--muted)]" />
               </button>
             </div>
-            
+
             <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {intecLocations.map((loc) => (
                 <button
@@ -418,8 +547,12 @@ export function CreatePostScreen() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <MapPin className={`w-5 h-5 ${location === loc ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`} />
-                    <span className="text-[14px] font-medium text-[var(--ink)]">{loc}</span>
+                    <MapPin
+                      className={`w-5 h-5 ${location === loc ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`}
+                    />
+                    <span className="text-[14px] font-medium text-[var(--ink)]">
+                      {loc}
+                    </span>
                   </div>
                 </button>
               ))}

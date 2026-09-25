@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  Heart, MessageCircle, Share2, Bookmark, FileText, Calendar, Code, Users,
-  MoreHorizontal, Pencil, Eye, EyeOff, Trash2, X, MapPin, Flag, Ban, Check,
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  FileText,
+  Calendar,
+  Code,
+  Users,
+  MoreHorizontal,
+  Pencil,
+  Eye,
+  EyeOff,
+  Trash2,
+  X,
+  MapPin,
+  Flag,
+  Ban,
+  Check,
 } from 'lucide-react';
 import { useAppState, Post } from '../store/AppState';
 import { ReportDialog } from './ReportDialog';
@@ -27,7 +43,10 @@ function highlight(snippet: string) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/function|let|for|if|return/g, '<span class="text-[var(--brand)]">$&</span>')
+    .replace(
+      /function|let|for|if|return/g,
+      '<span class="text-[var(--brand)]">$&</span>',
+    )
     .replace(/\barr\b|\bmax\b|\bi\b/g, '<span class="text-sky-400">$&</span>');
 }
 
@@ -38,15 +57,24 @@ function compact(n: number) {
 
 export function PostCard({ post }: { post: Post }) {
   const {
-    isOwnPost, editPost, deactivatePost, reactivatePost, deletePost, togglePostReaction,
-    blockUser, reportPost, hasReported,
+    isOwnPost,
+    editPost,
+    deactivatePost,
+    reactivatePost,
+    deletePost,
+    togglePostReaction,
+    blockUser,
+    reportPost,
+    hasReported,
   } = useAppState();
   const own = isOwnPost(post.id);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.content);
-  const [confirming, setConfirming] = useState<null | 'deactivate' | 'delete'>(null);
+  const [confirming, setConfirming] = useState<null | 'deactivate' | 'delete'>(
+    null,
+  );
   const [reporting, setReporting] = useState(false);
   const reported = hasReported('post', post.id);
 
@@ -121,7 +149,9 @@ export function PostCard({ post }: { post: Post }) {
                 className="w-full min-h-[100px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[16px] p-3 text-[15px] text-[var(--ink)] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand)]"
               />
               <div className="flex items-center justify-end gap-2">
-                <span className="mr-auto text-[12px] text-[var(--muted)]">{draft.length}/500</span>
+                <span className="mr-auto text-[12px] text-[var(--muted)]">
+                  {draft.length}/500
+                </span>
                 <button
                   onClick={() => setEditing(false)}
                   className="px-4 py-2 rounded-full text-[13px] font-semibold text-[var(--muted)] bg-[var(--surface-3)] transition-colors"
@@ -181,14 +211,31 @@ export function PostCard({ post }: { post: Post }) {
                 <FileText className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[13px] text-[var(--ink)] truncate">{post.resourceTitle}</p>
-                <p className="text-[var(--muted)] text-[11px]">{post.resourceSize} • PDF</p>
+                <p className="font-semibold text-[13px] text-[var(--ink)] truncate">
+                  {post.resourceTitle}
+                </p>
+                <p className="text-[var(--muted)] text-[11px]">
+                  {post.resourceSize} • PDF
+                </p>
               </div>
               <button
                 className="w-8 h-8 bg-[var(--surface)] border border-[var(--line)] rounded-full flex items-center justify-center flex-none"
                 aria-label="Descargar recurso"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--brand)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
               </button>
             </div>
           )}
@@ -198,11 +245,15 @@ export function PostCard({ post }: { post: Post }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--brand)] rounded-full blur-[40px] opacity-25 -mr-10 -mt-10" />
               <div className="flex items-center gap-2 relative">
                 <Calendar className="w-4 h-4 text-[var(--brand-bright)]" />
-                <span className="text-white font-semibold text-[13px]">{post.eventDate}</span>
+                <span className="text-white font-semibold text-[13px]">
+                  {post.eventDate}
+                </span>
               </div>
               <div className="flex items-center gap-2 relative">
                 <span className="w-1 h-1 bg-[var(--surface)]/40 rounded-full" />
-                <span className="text-white/70 text-[13px]">{post.eventLocation}</span>
+                <span className="text-white/70 text-[13px]">
+                  {post.eventLocation}
+                </span>
               </div>
               <button className="relative w-full bg-[var(--brand)] text-[var(--on-brand)] rounded-xl py-2.5 text-[13px] font-semibold mt-1">
                 Confirmar asistencia
@@ -216,7 +267,11 @@ export function PostCard({ post }: { post: Post }) {
                 <Code className="w-4 h-4 text-white/40" />
               </div>
               <pre className="text-white/80">
-                <code dangerouslySetInnerHTML={{ __html: highlight(post.codeSnippet) }} />
+                <code
+                  dangerouslySetInnerHTML={{
+                    __html: highlight(post.codeSnippet),
+                  }}
+                />
               </pre>
             </div>
           )}
@@ -228,8 +283,12 @@ export function PostCard({ post }: { post: Post }) {
                   <Users className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-['Space_Grotesk',sans-serif] font-bold text-[14px] text-[var(--ink)] truncate">{post.groupName}</p>
-                  <p className="text-[var(--brand)] font-medium text-[11px]">{post.spotsAvailable} cupos disponibles</p>
+                  <p className="font-['Space_Grotesk',sans-serif] font-bold text-[14px] text-[var(--ink)] truncate">
+                    {post.groupName}
+                  </p>
+                  <p className="text-[var(--brand)] font-medium text-[11px]">
+                    {post.spotsAvailable} cupos disponibles
+                  </p>
                 </div>
               </div>
               <button className="bg-[var(--brand)] text-[var(--on-brand)] px-4 py-2 rounded-full text-[12px] font-semibold flex-none">
@@ -241,9 +300,14 @@ export function PostCard({ post }: { post: Post }) {
           {/* Interacciones (se conservan al editar, HU22) */}
           <div className="flex items-center justify-between pt-1 -ml-1.5">
             <div className="flex items-center gap-1">
-              <button className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group" aria-label="Comentar">
+              <button
+                className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
+                aria-label="Comentar"
+              >
                 <MessageCircle className="w-[19px] h-[19px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
-                <span className="text-[var(--muted)] text-[13px] font-medium">{compact(post.comments)}</span>
+                <span className="text-[var(--muted)] text-[13px] font-medium">
+                  {compact(post.comments)}
+                </span>
               </button>
 
               {/* HU28 — Reaccionar: la marca propia se distingue del conteo total */}
@@ -261,17 +325,28 @@ export function PostCard({ post }: { post: Post }) {
                       : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
                   }
                 />
-                <span className={'text-[13px] font-medium ' + (post.liked ? 'text-[var(--brand)]' : 'text-[var(--muted)]')}>
+                <span
+                  className={
+                    'text-[13px] font-medium ' +
+                    (post.liked ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
+                  }
+                >
                   {compact(post.likes)}
                 </span>
               </button>
 
-              <button className="flex items-center px-1.5 py-1 rounded-full group" aria-label="Compartir">
+              <button
+                className="flex items-center px-1.5 py-1 rounded-full group"
+                aria-label="Compartir"
+              >
                 <Share2 className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--ink)] transition-colors" />
               </button>
             </div>
 
-            <button className="group px-1.5 py-1" aria-label="Guardar en marcadores">
+            <button
+              className="group px-1.5 py-1"
+              aria-label="Guardar en marcadores"
+            >
               <Bookmark className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
             </button>
           </div>
@@ -281,20 +356,33 @@ export function PostCard({ post }: { post: Post }) {
       {/* Menú: acciones de autor (HU22/HU23) o de moderación (HU53/HU56) */}
       {menuOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setMenuOpen(false)}
+          />
           <div className="absolute top-12 right-4 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden w-[210px]">
             {!own && (
               <>
                 <button
-                  onClick={() => { setReporting(true); setMenuOpen(false); }}
+                  onClick={() => {
+                    setReporting(true);
+                    setMenuOpen(false);
+                  }}
                   disabled={reported}
                   className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
                 >
-                  {reported ? <Check className="w-4 h-4 text-[var(--muted)]" /> : <Flag className="w-4 h-4 text-[var(--muted)]" />}
+                  {reported ? (
+                    <Check className="w-4 h-4 text-[var(--muted)]" />
+                  ) : (
+                    <Flag className="w-4 h-4 text-[var(--muted)]" />
+                  )}
                   {reported ? 'Publicación reportada' : 'Reportar publicación'}
                 </button>
                 <button
-                  onClick={() => { blockUser(post.authorId); setMenuOpen(false); }}
+                  onClick={() => {
+                    blockUser(post.authorId);
+                    setMenuOpen(false);
+                  }}
                   className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors border-t border-[var(--line-soft)]"
                 >
                   <Ban className="w-4 h-4" />
@@ -302,39 +390,50 @@ export function PostCard({ post }: { post: Post }) {
                 </button>
               </>
             )}
-            {own && <>
-            <button
-              onClick={startEdit}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
-            >
-              <Pencil className="w-4 h-4 text-[var(--muted)]" />
-              Editar
-            </button>
-            {post.active ? (
-              <button
-                onClick={() => { setConfirming('deactivate'); setMenuOpen(false); }}
-                className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
-              >
-                <EyeOff className="w-4 h-4 text-[var(--muted)]" />
-                Desactivar
-              </button>
-            ) : (
-              <button
-                onClick={() => { reactivatePost(post.id); setMenuOpen(false); }}
-                className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
-              >
-                <Eye className="w-4 h-4 text-[var(--muted)]" />
-                Reactivar
-              </button>
+            {own && (
+              <>
+                <button
+                  onClick={startEdit}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                >
+                  <Pencil className="w-4 h-4 text-[var(--muted)]" />
+                  Editar
+                </button>
+                {post.active ? (
+                  <button
+                    onClick={() => {
+                      setConfirming('deactivate');
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
+                  >
+                    <EyeOff className="w-4 h-4 text-[var(--muted)]" />
+                    Desactivar
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      reactivatePost(post.id);
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
+                  >
+                    <Eye className="w-4 h-4 text-[var(--muted)]" />
+                    Reactivar
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setConfirming('delete');
+                    setMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors border-t border-[var(--line-soft)]"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Eliminar
+                </button>
+              </>
             )}
-            <button
-              onClick={() => { setConfirming('delete'); setMenuOpen(false); }}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors border-t border-[var(--line-soft)]"
-            >
-              <Trash2 className="w-4 h-4" />
-              Eliminar
-            </button>
-            </>}
           </div>
         </>
       )}
@@ -345,17 +444,26 @@ export function PostCard({ post }: { post: Post }) {
           title="Reportar publicación"
           subject={`Publicación de ${post.authorName}`}
           onClose={() => setReporting(false)}
-          onConfirm={(reason) => { reportPost(post.id, reason); setReporting(false); }}
+          onConfirm={(reason) => {
+            reportPost(post.id, reason);
+            setReporting(false);
+          }}
         />
       )}
 
       {/* Confirmación — desactivar (baja lógica) o eliminar (permanente) */}
       {confirming && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-6" role="dialog" aria-modal="true">
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-6"
+          role="dialog"
+          aria-modal="true"
+        >
           <div className="bg-[var(--surface)] w-full max-w-[330px] p-5 rounded-3xl shadow-[var(--shadow-pop)]">
             <div className="flex items-start justify-between mb-2">
               <h2 className="text-[17px] font-semibold text-[var(--ink)] font-['Space_Grotesk',sans-serif]">
-                {confirming === 'deactivate' ? 'Desactivar publicación' : 'Eliminar publicación'}
+                {confirming === 'deactivate'
+                  ? 'Desactivar publicación'
+                  : 'Eliminar publicación'}
               </h2>
               <button onClick={() => setConfirming(null)} aria-label="Cerrar">
                 <X className="w-5 h-5 text-[var(--muted)]" />

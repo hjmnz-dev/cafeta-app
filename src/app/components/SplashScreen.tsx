@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router';
 import { CafetaMark } from './Logo';
 
@@ -25,17 +24,18 @@ export function SplashScreen() {
           <span className="text-[var(--brand)]">Cafeta</span>
         </h1>
         <p className="text-[var(--muted)] text-center text-[15px] mb-8 leading-relaxed px-4">
-          La red social académica exclusiva para la comunidad de estudiantes de INTEC.
+          La red social académica exclusiva para la comunidad de estudiantes de
+          INTEC.
         </p>
 
-        <button 
+        <button
           onClick={() => navigate('/register')}
           className="w-full h-14 bg-[var(--brand)] text-[var(--on-brand)] rounded-[20px] font-semibold text-[16px] mb-4 shadow-[0_4px_16px_rgba(214,40,40,0.25)] hover:bg-[var(--brand-strong)] transition-colors"
         >
           Crear cuenta con correo INTEC
         </button>
 
-        <button 
+        <button
           onClick={() => navigate('/login')}
           className="w-full h-14 bg-transparent text-[var(--brand)] rounded-[20px] font-semibold text-[16px] hover:bg-[var(--tint)] transition-colors"
         >

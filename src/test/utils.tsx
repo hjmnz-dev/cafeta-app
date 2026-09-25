@@ -15,7 +15,10 @@ export function LocationProbe() {
  * comodín para que siga presente aunque navegue; la ruta actual queda
  * disponible vía <LocationProbe />.
  */
-export function renderWithProviders(ui: React.ReactElement, { route = '/' }: { route?: string } = {}) {
+export function renderWithProviders(
+  ui: React.ReactElement,
+  { route = '/' }: { route?: string } = {},
+) {
   return render(
     <AppStateProvider>
       <MemoryRouter initialEntries={[route]}>

@@ -34,17 +34,32 @@ export function queryTerms(query: string): string[] {
     .filter(Boolean);
 }
 
-function matchesAllTerms(fields: (string | undefined)[], terms: string[]): boolean {
+function matchesAllTerms(
+  fields: (string | undefined)[],
+  terms: string[],
+): boolean {
   const haystack = normalize(fields.filter(Boolean).join(' '));
   return terms.every((term) => haystack.includes(term));
 }
 
 /** HU41 — Buscar usuarios por nombre, usuario, carrera, bio o etiquetas. */
-export function searchUsers(users: DirectoryUser[], query: string): DirectoryUser[] {
+export function searchUsers(
+  users: DirectoryUser[],
+  query: string,
+): DirectoryUser[] {
   const terms = queryTerms(query);
   if (terms.length === 0) return [];
   return users.filter((user) =>
-    matchesAllTerms([user.name, user.handle, user.career, user.bio, ...user.tags.map((t) => t.label)], terms),
+    matchesAllTerms(
+      [
+        user.name,
+        user.handle,
+        user.career,
+        user.bio,
+        ...user.tags.map((t) => t.label),
+      ],
+      terms,
+    ),
   );
 }
 

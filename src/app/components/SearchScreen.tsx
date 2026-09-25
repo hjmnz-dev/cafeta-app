@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { useAppState } from '../store/AppState';
@@ -36,7 +36,10 @@ export function SearchScreen() {
 
   /** Sugerencias tomadas del propio directorio, no inventadas. */
   const suggestions = useMemo(() => {
-    const labels = users.flatMap((u) => [u.career, ...u.tags.map((t) => t.label)]);
+    const labels = users.flatMap((u) => [
+      u.career,
+      ...u.tags.map((t) => t.label),
+    ]);
     return Array.from(new Set(labels)).slice(0, 6);
   }, [users]);
 
@@ -48,7 +51,11 @@ export function SearchScreen() {
       {/* Header con la caja de búsqueda */}
       <div className="bg-[var(--surface)] border-b border-[var(--line)] px-4 pt-14 pb-0 flex-none">
         <div className="flex items-center gap-2 py-2">
-          <button onClick={() => navigate(-1)} aria-label="Volver" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] flex-none">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Volver"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] flex-none"
+          >
             <ArrowLeft className="w-5 h-5 text-[var(--ink)]" />
           </button>
           <div className="relative flex-1">
@@ -76,22 +83,28 @@ export function SearchScreen() {
 
         {/* Pestañas: HU41 (personas) · HU42 (contenido) */}
         <div className="flex" role="tablist">
-          {([['people', 'Personas', userResults.length], ['posts', 'Publicaciones', postResults.length]] as const).map(
-            ([id, label, count]) => (
-              <button
-                key={id}
-                role="tab"
-                aria-selected={tab === id}
-                onClick={() => setTab(id)}
-                className={
-                  'flex-1 pb-3 pt-1 text-[14px] font-semibold border-b-2 transition-colors ' +
-                  (tab === id ? 'border-[var(--brand)] text-[var(--ink)]' : 'border-transparent text-[var(--muted)]')
-                }
-              >
-                {label}{trimmed ? ` (${count})` : ''}
-              </button>
-            ),
-          )}
+          {(
+            [
+              ['people', 'Personas', userResults.length],
+              ['posts', 'Publicaciones', postResults.length],
+            ] as const
+          ).map(([id, label, count]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => setTab(id)}
+              className={
+                'flex-1 pb-3 pt-1 text-[14px] font-semibold border-b-2 transition-colors ' +
+                (tab === id
+                  ? 'border-[var(--brand)] text-[var(--ink)]'
+                  : 'border-transparent text-[var(--muted)]')
+              }
+            >
+              {label}
+              {trimmed ? ` (${count})` : ''}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -100,7 +113,8 @@ export function SearchScreen() {
         {!trimmed ? (
           <div className="px-5 py-10">
             <p className="text-center text-[15px] text-[var(--muted)]">
-              Busca compañeros por nombre o carrera, y publicaciones por palabra clave.
+              Busca compañeros por nombre o carrera, y publicaciones por palabra
+              clave.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {suggestions.map((s) => (

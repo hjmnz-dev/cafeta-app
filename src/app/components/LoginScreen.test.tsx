@@ -14,13 +14,17 @@ describe('Login — mostrar y ocultar la contraseña', () => {
     expect(campo).toHaveAttribute('type', 'password');
 
     // Un único control propio: el nativo del navegador se oculta por CSS.
-    const ojos = screen.getAllByRole('button', { name: /^mostrar contraseña$/i });
+    const ojos = screen.getAllByRole('button', {
+      name: /^mostrar contraseña$/i,
+    });
     expect(ojos).toHaveLength(1);
 
     await user.click(ojos[0]);
     expect(campo).toHaveAttribute('type', 'text');
 
-    await user.click(screen.getByRole('button', { name: /ocultar contraseña/i }));
+    await user.click(
+      screen.getByRole('button', { name: /ocultar contraseña/i }),
+    );
     expect(campo).toHaveAttribute('type', 'password');
   });
 });

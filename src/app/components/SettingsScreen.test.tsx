@@ -21,12 +21,21 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
 
     // Por defecto: Público
-    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     await user.click(screen.getByRole('button', { name: /privado/i }));
 
-    expect(screen.getByRole('button', { name: /privado/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /privado/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
     expect(readState().settings.visibility).toBe('private');
   });
 
@@ -46,13 +55,17 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
 
   it('HU06 — la preferencia persiste al volver a montar la pantalla', async () => {
     const user = userEvent.setup();
-    const { unmount } = renderWithProviders(<SettingsScreen />, { route: '/settings' });
+    const { unmount } = renderWithProviders(<SettingsScreen />, {
+      route: '/settings',
+    });
 
     await user.click(screen.getByRole('button', { name: /solo seguidores/i }));
     unmount();
 
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
-    expect(screen.getByRole('button', { name: /solo seguidores/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: /solo seguidores/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
@@ -60,7 +73,10 @@ describe('Apariencia — modo oscuro por defecto', () => {
   it('arranca en oscuro y lo refleja en <html>', () => {
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
 
-    expect(screen.getByRole('button', { name: /oscuro/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /oscuro/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
@@ -70,18 +86,26 @@ describe('Apariencia — modo oscuro por defecto', () => {
 
     await user.click(screen.getByRole('button', { name: /claro/i }));
 
-    expect(screen.getByRole('button', { name: /claro/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /claro/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(document.documentElement.dataset.theme).toBe('light');
   });
 
   it('la preferencia sobrevive a recargar la app', async () => {
     const user = userEvent.setup();
-    const { unmount } = renderWithProviders(<SettingsScreen />, { route: '/settings' });
+    const { unmount } = renderWithProviders(<SettingsScreen />, {
+      route: '/settings',
+    });
 
     await user.click(screen.getByRole('button', { name: /claro/i }));
     unmount();
 
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
-    expect(screen.getByRole('button', { name: /claro/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /claro/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 });

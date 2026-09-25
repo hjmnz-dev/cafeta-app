@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { CafetaLogo } from './Logo';
@@ -52,8 +52,8 @@ export function LoginScreen() {
       isError
         ? 'bg-[var(--tint)] border-2 border-[var(--brand)]'
         : isFocused
-        ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[0_4px_16px_rgba(214,40,40,0.12)]'
-        : 'bg-[var(--surface-3)] border-2 border-transparent',
+          ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[0_4px_16px_rgba(214,40,40,0.12)]'
+          : 'bg-[var(--surface-3)] border-2 border-transparent',
     ].join(' ');
   };
 
@@ -87,7 +87,8 @@ export function LoginScreen() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                if (errors.email)
+                  setErrors((prev) => ({ ...prev, email: undefined }));
               }}
               onFocus={() => setFocusedField('email')}
               onBlur={() => setFocusedField(null)}
@@ -112,7 +113,8 @@ export function LoginScreen() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                  if (errors.password)
+                    setErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 onFocus={() => setFocusedField('password')}
                 onBlur={() => setFocusedField(null)}
@@ -121,11 +123,17 @@ export function LoginScreen() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-label={
+                  showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                }
                 aria-pressed={showPassword}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
             {errors.password && (
