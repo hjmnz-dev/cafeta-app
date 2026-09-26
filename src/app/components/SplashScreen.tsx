@@ -1,8 +1,13 @@
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
+import { useSession } from '../store/SessionStore';
 import { CafetaMark } from './Logo';
 
 export function SplashScreen() {
   const navigate = useNavigate();
+  const { status } = useSession();
+
+  // Con sesión, la portada no tiene nada que ofrecer: directo al feed.
+  if (status === 'authenticated') return <Navigate to="/home" replace />;
 
   return (
     <div className="w-full h-full bg-[#d62828] flex flex-col justify-end relative">
