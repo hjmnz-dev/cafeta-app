@@ -98,9 +98,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [start],
   );
 
+  // Cerrar sesión nunca falla para quien la usa: si la API no puede revocarla
+  // (ya revocada, sin red), la sesión local se borra igual y el token vence solo.
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
+    } catch {
+      /* nada que mostrar: la salida local ya basta */
     } finally {
       clearStoredSession();
       setState(ANONYMOUS);
