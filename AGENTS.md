@@ -6,7 +6,7 @@ App web del estudiante de Cafeta, nacida como prototipo exportado de Figma Make.
 
 ## Stack
 
-- **Language / Runtime**: TypeScript (sin `tsconfig` todavía), React 18, Vite 6
+- **Language / Runtime**: TypeScript strict (`tsconfig.json`), React 18, Vite 6
 - **UI**: Tailwind 4, componentes shadcn sobre Radix UI (`src/app/components/ui/`), MUI, `lucide-react`, `motion`, `sonner`
 - **Routing y formularios**: React Router 7 (`createBrowserRouter`), `react-hook-form`
 - **Pruebas**: Vitest + Testing Library en `jsdom` (`*.test.tsx` junto al componente)
@@ -16,21 +16,31 @@ App web del estudiante de Cafeta, nacida como prototipo exportado de Figma Make.
 ```bash
 npm install
 npm run dev          # http://localhost:5173
+npm run lint
+npm run format       # o format:check para solo revisar
+npm run typecheck
 npm run build
 npm test
+npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el puerto 3000
 ```
 
 ## Key files
 
-| File                             | Owns                                                                                                                         |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/routes.tsx`             | Todas las rutas de la app                                                                                                    |
-| `src/app/store/AppState.tsx`     | Estado simulado de toda la app, persistido en `localStorage` (`cafeta.appstate.v1`); es lo que se va reemplazando por la API |
-| `src/app/components/*Screen.tsx` | Una pantalla por archivo                                                                                                     |
-| `src/app/components/ui/`         | Componentes base shadcn (Radix + Tailwind)                                                                                   |
-| `src/app/lib/`                   | Lógica pura (búsqueda, historias, imágenes) con sus pruebas                                                                  |
-| `src/test/utils.tsx`             | Render con los providers reales (`AppStateProvider` + `MemoryRouter`)                                                        |
-| `src/styles/theme.css`           | Tokens de color y tema (oscuro por defecto)                                                                                  |
+| File                                 | Owns                                                                                                                                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/routes.tsx`                 | Todas las rutas de la app                                                                                                                                   |
+| `src/app/store/AppState.tsx`         | Estado simulado de toda la app, persistido en `localStorage` (`cafeta.appstate.v1`); es lo que se va reemplazando por la API                                |
+| `src/app/components/*Screen.tsx`     | Una pantalla por archivo                                                                                                                                    |
+| `src/app/components/ui/`             | Componentes base shadcn (Radix + Tailwind)                                                                                                                  |
+| `src/app/lib/`                       | Lógica pura (búsqueda, historias, imágenes) con sus pruebas                                                                                                 |
+| `src/test/utils.tsx`                 | Render con los providers reales (`SessionProvider` + `AppStateProvider` + `MemoryRouter`)                                                                   |
+| `src/test/setup.ts`                  | `fetch` simulado por defecto (`/auth/me` responde 401, `/careers` una lista fija); cada prueba lo cambia con `vi.mocked(fetch)`                             |
+| `src/app/lib/http.ts`                | Cliente HTTP único (`apiRequest`): agrega el Bearer, traduce el `code` con `error-messages.ts` y ante un 401 borra la sesión y emite `cafeta:session-ended` |
+| `src/app/lib/api-types.ts`           | Tipos generados desde OpenAPI con `npm run api:types`; se commitea y nunca se edita a mano                                                                  |
+| `src/app/lib/auth-api.ts`            | Llamadas de auth y carreras, con sus tipos tomados de `api-types.ts`                                                                                        |
+| `src/app/store/SessionStore.tsx`     | Sesión real (`useSession()`): token en `localStorage` con "Recordarme", en `sessionStorage` sin él                                                          |
+| `src/app/components/RequireAuth.tsx` | Guardia de las rutas protegidas en `routes.tsx`                                                                                                             |
+| `src/styles/theme.css`               | Tokens de color y tema (oscuro por defecto)                                                                                                                 |
 
 ## Conventions
 
@@ -38,13 +48,15 @@ npm test
 - Pantallas en `components/`, lógica pura en `lib/`, estado en `store/`: se mantiene esta estructura.
 - Al conectar una pantalla a la API, la llamada va por el cliente HTTP común (que traduce el `code` de error), nunca `fetch` suelto dentro del componente.
 - Nuevos componentes base se agregan como componentes shadcn en `components/ui/`.
+- Toda ruta nueva va dentro de `RequireAuth` en `routes.tsx`; las únicas públicas son `/`, `/login`, `/register` y `/forgot-password`.
+- Las pantallas muestran el `userMessage` de `ApiError`, nunca el `message` de la API; un `code` nuevo se suma al mapa de `lib/error-messages.ts`.
 
 ## Gotchas
 
 - En `vite.config.ts`, los plugins de React y Tailwind son obligatorios aunque parezcan sobrar; no los quites.
 - Los imports `figma:asset/<archivo>` se resuelven a `src/assets/` con un plugin propio de Vite.
 - `localStorage` guarda unos 5 MB en total; por eso las imágenes se reducen antes de guardarse (`lib/image.ts`). Deja de importar cuando la pantalla usa la API.
-- Sin `tsconfig` ni typecheck ni lint todavía: `/develop herramientas` los agrega (strict, oxlint, Prettier).
+- La URL de la API sale de `VITE_API_URL` (ver `.env.example`); sin ella usa `http://localhost:3000/api/v1`.
 - `package.json` todavía se llama `@figma/my-make-file` y trae un bloque `pnpm` que no aplica: el repo usa npm.
 - Hay un archivo suelto `src/app/components/ProfileScreen.tsx.tmp` y `guidelines/Guidelines.md` está vacío.
 
@@ -52,5 +64,7 @@ npm test
 
 - [vercel-react-best-practices](../.claude/skills/vercel-react-best-practices/): `vercel-labs/agent-skills`, patrones y rendimiento en componentes React
 - [shadcn](../.claude/skills/shadcn/): `shadcn-ui/ui`, agregar, arreglar y componer componentes shadcn
+
+Declined: skill de `openapi-typescript`
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
