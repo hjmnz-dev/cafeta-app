@@ -19,6 +19,7 @@ import {
   NotificationPrefs,
   Theme,
 } from '../store/AppState';
+import { useSession } from '../store/SessionStore';
 
 /**
  * DEF-03 — Configuración de cuenta. Acceso desde el ícono ⚙️ del perfil.
@@ -131,6 +132,7 @@ function Toggle({
 
 export function SettingsScreen() {
   const navigate = useNavigate();
+  const { logout } = useSession();
   const { profile, settings, updateSettings, users, blockedIds, unblockUser } =
     useAppState();
 
@@ -340,9 +342,11 @@ export function SettingsScreen() {
           </div>
         </section>
 
-        {/* Cerrar sesión */}
+        {/* Cerrar sesión (HU04): revoca la sesión en la API y vuelve al login */}
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => {
+            void logout().finally(() => navigate('/login', { replace: true }));
+          }}
           className="flex items-center justify-center gap-2 w-full py-4 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] text-[var(--brand)] font-semibold text-[15px] hover:bg-[var(--tint)] transition-colors"
         >
           <LogOut className="w-5 h-5" />

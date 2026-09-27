@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+import { ApiError } from '../lib/http';
+import { GENERIC_ERROR_MESSAGE } from '../lib/error-messages';
+import { useSession } from '../store/SessionStore';
 import { CafetaLogo } from './Logo';
 import { Checkbox } from './Checkbox';
 
@@ -11,12 +14,17 @@ interface FieldError {
 
 export function LoginScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<FieldError>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  // Error de la API (credenciales, cuenta inactiva, límite de intentos...).
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors: FieldError = {};
@@ -27,20 +35,30 @@ export function LoginScreen() {
     }
     if (!password) {
       newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     setErrors({});
-    navigate('/home');
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      await login(email.trim(), password, rememberMe);
+      const from = (location.state as { from?: string } | null)?.from;
+      navigate(from ?? '/home', { replace: true });
+    } catch (error) {
+      setFormError(
+        error instanceof ApiError ? error.userMessage : GENERIC_ERROR_MESSAGE,
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass = (field: keyof FieldError) => {
@@ -83,7 +101,7 @@ export function LoginScreen() {
             </label>
             <input
               type="email"
-              placeholder="tu@email.com"
+              placeholder="tu@est.intec.edu.do"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -157,12 +175,22 @@ export function LoginScreen() {
             </button>
           </div>
 
+          {formError && (
+            <p
+              role="alert"
+              className="text-[14px] text-[var(--brand)] font-semibold text-center font-['DM_Sans',sans-serif]"
+            >
+              {formError}
+            </p>
+          )}
+
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
+            disabled={submitting}
             className="w-full h-[52px] bg-[var(--brand)] text-[var(--on-brand)] rounded-[14px] text-[16px] font-semibold mt-2 hover:bg-[var(--brand-strong)] active:scale-[0.98] transition-all duration-150 shadow-[0_4px_16px_rgba(214,40,40,0.3)] font-['DM_Sans',sans-serif]"
           >
-            Iniciar Sesión
+            {submitting ? 'Entrando…' : 'Iniciar Sesión'}
           </button>
 
           {/* Register Link */}

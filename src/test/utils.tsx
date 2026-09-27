@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router';
 import { AppStateProvider } from '../app/store/AppState';
+import { SessionProvider } from '../app/store/SessionStore';
 
 /** Muestra la ruta actual para poder afirmar navegaciones en las pruebas. */
 export function LocationProbe() {
@@ -11,7 +12,7 @@ export function LocationProbe() {
 
 /**
  * Renderiza un componente dentro de los providers reales de la app
- * (AppStateProvider + MemoryRouter). El componente se monta en una ruta
+ * (SessionProvider + AppStateProvider + MemoryRouter). El componente se monta en una ruta
  * comodín para que siga presente aunque navegue; la ruta actual queda
  * disponible vía <LocationProbe />.
  */
@@ -20,14 +21,16 @@ export function renderWithProviders(
   { route = '/' }: { route?: string } = {},
 ) {
   return render(
-    <AppStateProvider>
-      <MemoryRouter initialEntries={[route]}>
-        <LocationProbe />
-        <Routes>
-          <Route path="*" element={ui} />
-        </Routes>
-      </MemoryRouter>
-    </AppStateProvider>,
+    <SessionProvider>
+      <AppStateProvider>
+        <MemoryRouter initialEntries={[route]}>
+          <LocationProbe />
+          <Routes>
+            <Route path="*" element={ui} />
+          </Routes>
+        </MemoryRouter>
+      </AppStateProvider>
+    </SessionProvider>,
   );
 }
 
@@ -41,15 +44,17 @@ export function renderRoutes(
   { route }: { route: string },
 ) {
   return render(
-    <AppStateProvider>
-      <MemoryRouter initialEntries={[route]}>
-        <LocationProbe />
-        <Routes>
-          {routes.map((r) => (
-            <Route key={r.path} path={r.path} element={r.element} />
-          ))}
-        </Routes>
-      </MemoryRouter>
-    </AppStateProvider>,
+    <SessionProvider>
+      <AppStateProvider>
+        <MemoryRouter initialEntries={[route]}>
+          <LocationProbe />
+          <Routes>
+            {routes.map((r) => (
+              <Route key={r.path} path={r.path} element={r.element} />
+            ))}
+          </Routes>
+        </MemoryRouter>
+      </AppStateProvider>
+    </SessionProvider>,
   );
 }

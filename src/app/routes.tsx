@@ -15,6 +15,7 @@ import { PeopleScreen } from './components/PeopleScreen';
 import { SearchScreen } from './components/SearchScreen';
 import { CreateStoryScreen } from './components/CreateStoryScreen';
 import { StoryViewerScreen } from './components/StoryViewerScreen';
+import { RequireAuth } from './components/RequireAuth';
 
 export const router = createBrowserRouter([
   {
@@ -25,19 +26,28 @@ export const router = createBrowserRouter([
       { path: 'login', Component: LoginScreen },
       { path: 'register', Component: RegisterScreen },
       { path: 'forgot-password', Component: ForgotPasswordScreen },
-      { path: 'profile/edit', Component: EditProfileScreen },
-      { path: 'settings', Component: SettingsScreen },
-      { path: 'home', element: <FeedScreen filter="Todas" /> },
-      { path: 'home/software', element: <FeedScreen filter="Ing. Software" /> },
-      { path: 'create-post', Component: CreatePostScreen },
-      { path: 'profile', Component: ProfileScreen },
-      { path: 'u/:userId', Component: UserProfileScreen },
-      { path: 'messages', Component: MessagesScreen },
-      { path: 'search', Component: SearchScreen },
-      { path: 'create-story', Component: CreateStoryScreen },
-      { path: 'stories/:storyId', Component: StoryViewerScreen },
-      { path: 'discover', Component: PeopleScreen },
-      { path: 'network', Component: PeopleScreen },
+      // Todo lo demás exige sesión (spec 0004).
+      {
+        Component: RequireAuth,
+        children: [
+          { path: 'profile/edit', Component: EditProfileScreen },
+          { path: 'settings', Component: SettingsScreen },
+          { path: 'home', element: <FeedScreen filter="Todas" /> },
+          {
+            path: 'home/software',
+            element: <FeedScreen filter="Ing. Software" />,
+          },
+          { path: 'create-post', Component: CreatePostScreen },
+          { path: 'profile', Component: ProfileScreen },
+          { path: 'u/:userId', Component: UserProfileScreen },
+          { path: 'messages', Component: MessagesScreen },
+          { path: 'search', Component: SearchScreen },
+          { path: 'create-story', Component: CreateStoryScreen },
+          { path: 'stories/:storyId', Component: StoryViewerScreen },
+          { path: 'discover', Component: PeopleScreen },
+          { path: 'network', Component: PeopleScreen },
+        ],
+      },
     ],
   },
 ]);

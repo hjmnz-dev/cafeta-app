@@ -1,23 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { CafetaLogo } from './Logo';
 import { Checkbox } from './Checkbox';
+import { careersApi, type Career } from '../lib/auth-api';
+import { ApiError } from '../lib/http';
+import { GENERIC_ERROR_MESSAGE } from '../lib/error-messages';
+import { passwordProblem } from '../lib/password';
+import { useSession } from '../store/SessionStore';
+
+const HANDLE_PATTERN = /^[a-z0-9._]{3,30}$/;
 
 interface FieldErrors {
   nombre?: string;
   apellido?: string;
   email?: string;
+  handle?: string;
+  careerId?: string;
   password?: string;
   confirmPassword?: string;
   terms?: string;
 }
 
+// Errores de la API que pertenecen a un campo del formulario (spec 0004).
+const FIELD_BY_CODE: Readonly<Record<string, keyof FieldErrors>> = {
+  EMAIL_NOT_INSTITUTIONAL: 'email',
+  EMAIL_TAKEN: 'email',
+  HANDLE_TAKEN: 'handle',
+  CAREER_NOT_FOUND: 'careerId',
+};
+
 export function RegisterScreen() {
   const navigate = useNavigate();
+  const { register } = useSession();
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
+  const [handle, setHandle] = useState('');
+  const [careerId, setCareerId] = useState('');
+  const [careers, setCareers] = useState<Career[]>([]);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +46,29 @@ export function RegisterScreen() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // El catálogo de carreras viene de la API (GET /careers).
+  useEffect(() => {
+    let active = true;
+    careersApi
+      .list()
+      .then((list) => {
+        if (active) setCareers(list);
+      })
+      .catch((error: unknown) => {
+        if (active)
+          setFormError(
+            error instanceof ApiError
+              ? error.userMessage
+              : GENERIC_ERROR_MESSAGE,
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const validate = () => {
     const newErrors: FieldErrors = {};
@@ -35,11 +79,12 @@ export function RegisterScreen() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Ingresa un correo electrónico válido';
     }
-    if (!password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    if (!HANDLE_PATTERN.test(handle.trim().toLowerCase())) {
+      newErrors.handle = 'Usa de 3 a 30 letras, números, punto o guion bajo';
     }
+    if (!careerId) newErrors.careerId = 'Elige tu carrera';
+    const passwordError = passwordProblem(password);
+    if (passwordError) newErrors.password = passwordError;
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Confirma tu contraseña';
     } else if (confirmPassword !== password) {
@@ -51,14 +96,37 @@ export function RegisterScreen() {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     setErrors({});
-    navigate('/home');
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      await register({
+        email: email.trim(),
+        password,
+        firstName: nombre.trim(),
+        lastName: apellido.trim(),
+        handle: handle.trim().toLowerCase(),
+        careerId,
+        acceptTerms,
+      });
+      navigate('/home', { replace: true });
+    } catch (error) {
+      if (!(error instanceof ApiError)) {
+        setFormError(GENERIC_ERROR_MESSAGE);
+        return;
+      }
+      const field = FIELD_BY_CODE[error.code];
+      if (field) setErrors({ [field]: error.userMessage });
+      else setFormError(error.userMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass = (field: keyof FieldErrors) => {
@@ -152,7 +220,7 @@ export function RegisterScreen() {
             </label>
             <input
               type="email"
-              placeholder="tu@email.com"
+              placeholder="tu@est.intec.edu.do"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -165,6 +233,68 @@ export function RegisterScreen() {
             {errors.email && (
               <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
                 {errors.email}
+              </p>
+            )}
+          </div>
+
+          {/* Handle */}
+          <div>
+            <label
+              htmlFor="register-handle"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
+              Nombre de usuario
+            </label>
+            <input
+              id="register-handle"
+              type="text"
+              placeholder="cgomez_intec"
+              autoCapitalize="none"
+              value={handle}
+              onChange={(e) => {
+                setHandle(e.target.value);
+                clearError('handle');
+              }}
+              onFocus={() => setFocusedField('handle')}
+              onBlur={() => setFocusedField(null)}
+              className={inputClass('handle')}
+            />
+            {errors.handle && (
+              <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
+                {errors.handle}
+              </p>
+            )}
+          </div>
+
+          {/* Carrera */}
+          <div>
+            <label
+              htmlFor="register-career"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
+              Carrera
+            </label>
+            <select
+              id="register-career"
+              value={careerId}
+              onChange={(e) => {
+                setCareerId(e.target.value);
+                clearError('careerId');
+              }}
+              onFocus={() => setFocusedField('careerId')}
+              onBlur={() => setFocusedField(null)}
+              className={inputClass('careerId')}
+            >
+              <option value="">Elige tu carrera</option>
+              {careers.map((career) => (
+                <option key={career.id} value={career.id}>
+                  {career.name}
+                </option>
+              ))}
+            </select>
+            {errors.careerId && (
+              <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif]">
+                {errors.careerId}
               </p>
             )}
           </div>
@@ -288,12 +418,22 @@ export function RegisterScreen() {
             )}
           </div>
 
+          {formError && (
+            <p
+              role="alert"
+              className="text-[14px] text-[var(--brand)] font-semibold text-center font-['DM_Sans',sans-serif]"
+            >
+              {formError}
+            </p>
+          )}
+
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
+            disabled={submitting}
             className="w-full h-[52px] bg-[var(--brand)] text-[var(--on-brand)] rounded-[14px] text-[16px] font-semibold mt-1 hover:bg-[var(--brand-strong)] active:scale-[0.98] transition-all duration-150 shadow-[0_4px_16px_rgba(214,40,40,0.3)] font-['DM_Sans',sans-serif]"
           >
-            Registrarse
+            {submitting ? 'Creando cuenta…' : 'Registrarse'}
           </button>
 
           {/* Login Link */}

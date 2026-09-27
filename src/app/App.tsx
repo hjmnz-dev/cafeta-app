@@ -1,12 +1,15 @@
 import { RouterProvider } from 'react-router';
 import { router } from './routes';
 import { AppStateProvider } from './store/AppState';
+import { SessionProvider } from './store/SessionStore';
 
 function App() {
   return (
-    <AppStateProvider>
-      <RouterProvider router={router} />
-    </AppStateProvider>
+    <SessionProvider>
+      <AppStateProvider>
+        <RouterProvider router={router} />
+      </AppStateProvider>
+    </SessionProvider>
   );
 }
 
