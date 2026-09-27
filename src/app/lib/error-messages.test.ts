@@ -25,6 +25,16 @@ describe('messageForCode', () => {
     },
   );
 
+  it.each([
+    ['POST_CONTENT_REQUIRED', 'Escribe algo antes de publicar.'],
+    ['INVALID_CURSOR', 'La lista cambió. Vuelve a cargarla.'],
+  ])(
+    'spec 0005 · AC-2: %s se traduce a su mensaje en español',
+    (code, message) => {
+      expect(messageForCode(code)).toBe(message);
+    },
+  );
+
   it('el mensaje genérico es el de la spec', () => {
     expect(GENERIC_ERROR_MESSAGE).toBe('Algo salió mal. Intenta de nuevo.');
   });

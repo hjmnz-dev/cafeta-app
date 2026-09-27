@@ -7,8 +7,10 @@ import {
   readStoredSession,
   SESSION_ENDED_EVENT,
   SESSION_KEY,
+  userMessageOf,
   writeStoredSession,
 } from './http';
+import { GENERIC_ERROR_MESSAGE } from './error-messages';
 
 // Cliente HTTP único (spec 0004, AC-5, AC-8 y AC-13). fetch es el borde que
 // se simula; el almacenamiento es el de jsdom.
@@ -235,5 +237,25 @@ describe('apiRequest', () => {
     expect(error.userMessage).toBe('Tu cuenta no está activa.');
     expect(ended).not.toHaveBeenCalled();
     expect(localStorage.getItem(SESSION_KEY)).not.toBeNull();
+  });
+});
+
+// Texto de un error en pantalla (spec 0005, AC-10): nunca el message crudo.
+describe('userMessageOf', () => {
+  it('de un ApiError toma el mensaje ya traducido', () => {
+    const error = new ApiError(
+      429,
+      'TOO_MANY_REQUESTS',
+      'Demasiados intentos.',
+    );
+    expect(userMessageOf(error)).toBe('Demasiados intentos.');
+  });
+
+  it('de cualquier otro error da el mensaje genérico, sin filtrar el suyo', () => {
+    expect(userMessageOf(new Error('TypeError: x is undefined'))).toBe(
+      GENERIC_ERROR_MESSAGE,
+    );
+    expect(userMessageOf('texto suelto')).toBe(GENERIC_ERROR_MESSAGE);
+    expect(userMessageOf(undefined)).toBe(GENERIC_ERROR_MESSAGE);
   });
 });
