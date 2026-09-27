@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { AppLayout } from './components/AppLayout';
 import { SplashScreen } from './components/SplashScreen';
 import { FeedScreen } from './components/FeedScreen';
@@ -32,11 +32,9 @@ export const router = createBrowserRouter([
         children: [
           { path: 'profile/edit', Component: EditProfileScreen },
           { path: 'settings', Component: SettingsScreen },
-          { path: 'home', element: <FeedScreen filter="Todas" /> },
-          {
-            path: 'home/software',
-            element: <FeedScreen filter="Ing. Software" />,
-          },
+          { path: 'home', Component: FeedScreen },
+          // Enlace viejo: las pestañas de carrera viven en /home?carrera=<id>.
+          { path: 'home/software', element: <Navigate to="/home" replace /> },
           { path: 'create-post', Component: CreatePostScreen },
           { path: 'profile', Component: ProfileScreen },
           { path: 'u/:userId', Component: UserProfileScreen },

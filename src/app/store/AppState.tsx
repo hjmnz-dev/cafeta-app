@@ -186,20 +186,6 @@ interface AppStateValue {
   posts: Post[];
   /** ¿La publicación es del usuario actual? (validación de autoría) */
   isOwnPost: (id: string) => boolean;
-  addPost: (
-    post: Omit<
-      Post,
-      | 'id'
-      | 'authorId'
-      | 'authorName'
-      | 'authorAvatar'
-      | 'active'
-      | 'edited'
-      | 'likes'
-      | 'comments'
-    > &
-      Partial<Pick<Post, 'likes' | 'comments'>>,
-  ) => void;
   /** Editar publicación propia (HU22), conservando interacciones. */
   editPost: (id: string, content: string) => void;
   /** Desactivar publicación propia — baja lógica (HU23). */
@@ -687,9 +673,6 @@ function load(): PersistedState {
   };
 }
 
-let postSeq = 0;
-const nextPostId = () => `local-${++postSeq}`;
-
 let storySeq = 0;
 const nextStoryId = () => `story-${++storySeq}`;
 
@@ -810,25 +793,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const isOwnPost = (id: string) =>
     posts.find((p) => p.id === id)?.authorId === CURRENT_USER_ID;
-
-  const addPost: AppStateValue['addPost'] = (post) =>
-    setState((s) => ({
-      ...s,
-      posts: [
-        {
-          id: nextPostId(),
-          authorId: CURRENT_USER_ID,
-          authorName: s.profile.name,
-          authorAvatar: ME_AVATAR,
-          active: true,
-          edited: false,
-          likes: post.likes ?? 0,
-          comments: post.comments ?? 0,
-          ...post,
-        },
-        ...s.posts,
-      ],
-    }));
 
   // Solo el autor puede editar/desactivar/eliminar (validación de autoría).
   // Solo se marca como editada si el contenido realmente cambió: guardar sin
@@ -1101,7 +1065,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         followingIds: following,
         posts,
         isOwnPost,
-        addPost,
         editPost,
         deactivatePost,
         reactivatePost,

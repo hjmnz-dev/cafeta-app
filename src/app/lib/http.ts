@@ -7,7 +7,7 @@
  * (lo escucha el SessionStore). No guarda nada en variables del módulo: la
  * sesión se lee del almacenamiento en cada llamada.
  */
-import { messageForCode } from './error-messages';
+import { GENERIC_ERROR_MESSAGE, messageForCode } from './error-messages';
 
 export const API_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1';
@@ -29,6 +29,11 @@ export class ApiError extends Error {
     super(userMessage);
     this.name = 'ApiError';
   }
+}
+
+/** Texto para el usuario de cualquier error: el traducido si vino de la API. */
+export function userMessageOf(error: unknown): string {
+  return error instanceof ApiError ? error.userMessage : GENERIC_ERROR_MESSAGE;
 }
 
 function parseSession(raw: string | null): StoredSession | null {

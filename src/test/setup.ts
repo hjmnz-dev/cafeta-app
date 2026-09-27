@@ -10,28 +10,54 @@ export const TEST_CAREERS = [
   { id: '01926f00-0000-7000-8000-0000000000c2', name: 'Medicina' },
 ];
 
-const json = (status: number, body: unknown) =>
+export const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
 
+const EMPTY_PAGE = { items: [], nextCursor: null };
+
 // La API no existe en las pruebas (spec 0004): fetch simulado por defecto.
-// /auth/me responde 401 (sin sesión) y /careers una lista fija; cada prueba
-// puede sobreescribirlo con vi.mocked(fetch).
+// /auth/me responde 401 (sin sesión), /careers una lista fija y las listas de
+// publicaciones vacías (spec 0005); cada prueba puede sobreescribirlo con
+// vi.mocked(fetch).
 export const defaultFetch = (input: RequestInfo | URL): Promise<Response> => {
   const url = String(input);
+  const path = new URL(url).pathname;
   if (url.endsWith('/auth/me')) {
     return Promise.resolve(
       json(401, { statusCode: 401, code: 'UNAUTHORIZED' }),
     );
   }
   if (url.endsWith('/careers')) return Promise.resolve(json(200, TEST_CAREERS));
+  if (path.endsWith('/posts/feed'))
+    return Promise.resolve(json(200, EMPTY_PAGE));
+  if (/\/users\/[^/]+\/posts\/count$/.test(path)) {
+    return Promise.resolve(json(200, { count: 0 }));
+  }
+  if (/\/users\/[^/]+\/posts$/.test(path)) {
+    return Promise.resolve(json(200, EMPTY_PAGE));
+  }
   return Promise.resolve(json(404, { statusCode: 404, code: 'NOT_FOUND' }));
 };
 
+// jsdom no trae matchMedia; el Toaster de sonner lo usa para el tema.
+const matchMedia = (query: string): MediaQueryList =>
+  ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    dispatchEvent: () => false,
+  }) as MediaQueryList;
+
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(defaultFetch));
+  vi.stubGlobal('matchMedia', matchMedia);
 });
 
 // Aísla cada prueba: desmonta el árbol y limpia el estado persistido

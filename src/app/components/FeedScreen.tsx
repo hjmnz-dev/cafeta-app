@@ -1,25 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, Heart, MessageSquare, Search, X } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { CafetaAppIcon } from './Logo';
-import { PostCard } from './PostCard';
+import { LivePostList } from './LivePostList';
 import { StoriesStrip } from './StoriesStrip';
-import { useAppState } from '../store/AppState';
+import { orderCareerTabs } from '../lib/posts';
+import { useCareers, useFeed } from '../store/posts-queries';
+import { useSession } from '../store/SessionStore';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
-
-const CAREERS = [
-  'Todas',
-  'Ing. Software',
-  'Ing. Industrial',
-  'Ing. Civil',
-  'Medicina',
-  'Adm. Empresas',
-];
 
 const AVATARS = [
   'https://images.unsplash.com/photo-1611695434369-a8f5d76ceb7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMG1hbiUyMHNtaWxlJTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczODg2OTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080',
@@ -27,18 +20,25 @@ const AVATARS = [
   'https://images.unsplash.com/photo-1570078070514-1f84a3cf1736?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwc3R1ZGVudCUyMGhpc3BhbmljfGVufDF8fHx8MTc3Mzg4Njk0Nnww&ixlib=rb-4.1.0&q=80&w=1080',
 ];
 
-export function FeedScreen({ filter = 'Todas' }: { filter?: string }) {
-  const isSoftware = filter === 'Ing. Software';
-  const { posts: allPosts, isBlocked } = useAppState();
-
-  // El feed solo muestra publicaciones activas (HU23: las desactivadas
-  // desaparecen para todos y quedan visibles solo en el perfil del autor) y
-  // omite a los usuarios bloqueados (HU53).
-  const posts = allPosts.filter(
-    (p) =>
-      p.active &&
-      !isBlocked(p.authorId) &&
-      (filter === 'Todas' || p.career === filter),
+/**
+ * Feed (spec 0005): "Para ti" y una pestaña por carrera, con la elegida en la
+ * dirección (`/home?carrera=<id>`) para que sobreviva a recargar y a volver.
+ */
+export function FeedScreen() {
+  const { user } = useSession();
+  const [params] = useSearchParams();
+  const careers = useCareers();
+  const tabs = orderCareerTabs(
+    careers.data ?? [],
+    user?.profile.careerId ?? null,
+  );
+  const requested = params.get('carrera');
+  // Ausente o fuera de la lista: "Para ti". Mientras llega la lista, se espera
+  // para no pedir "Para ti" de más.
+  const selected = tabs.find((c) => c.id === requested) ?? null;
+  const feed = useFeed(
+    selected?.id ?? null,
+    requested === null || !careers.isPending,
   );
 
   const [showHeader, setShowHeader] = useState(true);
@@ -46,6 +46,17 @@ export function FeedScreen({ filter = 'Todas' }: { filter?: string }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLAnchorElement>(null);
+
+  // Al abrir /home?carrera=<id> la pestaña puede quedar fuera de la fila:
+  // se trae a la vista (depende de que la lista ya esté para encontrarla).
+  const selectedId = selected?.id ?? null;
+  useEffect(() => {
+    activeTabRef.current?.scrollIntoView?.({
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [selectedId]);
 
   // Notificaciones de solicitudes de seguimiento
   const followRequests = [
@@ -189,12 +200,13 @@ export function FeedScreen({ filter = 'Todas' }: { filter?: string }) {
         {/* Filtro por carrera (HU11): pestañas, para que se lea como una sola
             línea de tiempo con secciones y no como etiquetas sueltas. */}
         <div className="px-1 flex gap-1 overflow-x-auto no-scrollbar border-b border-[var(--line-soft)]">
-          {CAREERS.map((c) => {
-            const active = isSoftware ? c === 'Ing. Software' : c === filter;
+          {[{ id: null, name: 'Para ti' }, ...tabs].map((c) => {
+            const active = c.id === selectedId;
             return (
               <Link
-                to={c === 'Ing. Software' ? '/home/software' : '/home'}
-                key={c}
+                to={c.id ? `/home?carrera=${c.id}` : '/home'}
+                key={c.id ?? 'para-ti'}
+                ref={active ? activeTabRef : undefined}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'relative px-3.5 py-3 text-[14px] whitespace-nowrap transition-colors',
@@ -203,7 +215,7 @@ export function FeedScreen({ filter = 'Todas' }: { filter?: string }) {
                     : 'text-[var(--muted)] font-medium hover:text-[var(--ink-2)]',
                 )}
               >
-                {c === 'Todas' ? 'Para ti' : c}
+                {c.name}
                 {active && (
                   <span className="absolute left-3 right-3 bottom-0 h-[3px] rounded-full bg-[var(--brand)]" />
                 )}
@@ -332,35 +344,61 @@ export function FeedScreen({ filter = 'Todas' }: { filter?: string }) {
         />
       )}
 
-      {isSoftware && (
-        <p className="px-4 py-2.5 text-[12px] text-[var(--muted)] border-b border-[var(--line-soft)]">
-          {posts.length} {posts.length === 1 ? 'publicación' : 'publicaciones'}{' '}
-          en Ing. Software
-        </p>
-      )}
-
       {/* Historias vigentes (DEF-04 · FT04) */}
       <div className="border-b border-[var(--line-soft)]">
         <StoriesStrip />
       </div>
 
-      {/* Publicaciones (DEF-09) — el menú de autor vive en <PostCard /> */}
+      {/* Publicaciones reales (spec 0005) */}
       <div>
-        {posts.length === 0 ? (
-          <div className="bg-[var(--surface)] px-5 py-10 text-center">
-            <p className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] mb-1">
-              Todavía no hay publicaciones
-            </p>
-            <p className="text-[13px] text-[var(--muted)] leading-relaxed">
-              {isSoftware
-                ? 'Nadie ha publicado en Ing. Software por ahora. ¡Sé el primero!'
-                : 'Cuando publiques algo, aparecerá aquí.'}
-            </p>
-          </div>
-        ) : (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
-        )}
+        <LivePostList
+          query={feed}
+          scrollRootRef={scrollContainerRef}
+          empty={
+            selected ? (
+              <EmptyFeed
+                title={`Nadie de ${selected.name} ha publicado todavía`}
+                detail="Cuando alguien de esta carrera publique, lo verás aquí."
+              />
+            ) : (
+              <EmptyFeed
+                title="Tu feed está vacío"
+                detail="Sigue a otros estudiantes para ver aquí lo que publican."
+                action
+              />
+            )
+          }
+        />
       </div>
+    </div>
+  );
+}
+
+function EmptyFeed({
+  title,
+  detail,
+  action = false,
+}: {
+  title: string;
+  detail: string;
+  action?: boolean;
+}) {
+  return (
+    <div className="bg-[var(--surface)] px-5 py-10 text-center flex flex-col items-center">
+      <p className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] mb-1">
+        {title}
+      </p>
+      <p className="text-[13px] text-[var(--muted)] leading-relaxed">
+        {detail}
+      </p>
+      {action && (
+        <Link
+          to="/discover"
+          className="mt-4 px-5 py-2 rounded-full text-[13px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-strong)] transition-colors"
+        >
+          Descubrir estudiantes
+        </Link>
+      )}
     </div>
   );
 }

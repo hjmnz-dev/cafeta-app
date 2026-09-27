@@ -2,8 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MessagesScreen } from './MessagesScreen';
-import { FeedScreen } from './FeedScreen';
-import { renderWithProviders } from '../../test/utils';
+import { AppStatePosts, renderWithProviders } from '../../test/utils';
 
 /** Abre la conversación con María, que es la que trae hilo de demostración. */
 async function openChat(user: ReturnType<typeof userEvent.setup>) {
@@ -88,7 +87,8 @@ describe('DEF-06 · HU36/HU37 — Editar y retirar mensajes', () => {
 describe('DEF-06 · HU28 — Reaccionar a publicación', () => {
   it('reaccionar marca la publicación y suma al conteo; repetir la retira', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<FeedScreen />, { route: '/home' });
+    // Reaccionar sigue en AppState: el feed real llega sin botones (spec 0005).
+    renderWithProviders(<AppStatePosts />);
 
     // p2 (Juan, 45 reacciones) es una publicación ajena del feed de ejemplo.
     const card = screen.getByTestId('post-p2');
@@ -112,7 +112,8 @@ describe('DEF-06 · HU28 — Reaccionar a publicación', () => {
 
   it('la reacción es independiente en cada publicación', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<FeedScreen />, { route: '/home' });
+    // Reaccionar sigue en AppState: el feed real llega sin botones (spec 0005).
+    renderWithProviders(<AppStatePosts />);
 
     await user.click(
       within(screen.getByTestId('post-p2')).getByRole('button', {

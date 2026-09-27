@@ -1,14 +1,19 @@
 import { RouterProvider } from 'react-router';
+import { Toaster } from './components/ui/sonner';
 import { router } from './routes';
 import { AppStateProvider } from './store/AppState';
+import { QueryProvider } from './store/QueryProvider';
 import { SessionProvider } from './store/SessionStore';
 
 function App() {
   return (
     <SessionProvider>
-      <AppStateProvider>
-        <RouterProvider router={router} />
-      </AppStateProvider>
+      <QueryProvider>
+        <AppStateProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-center" />
+        </AppStateProvider>
+      </QueryProvider>
     </SessionProvider>
   );
 }

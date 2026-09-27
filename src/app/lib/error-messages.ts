@@ -16,6 +16,8 @@ const MESSAGES: Readonly<Record<string, string>> = {
   TOO_MANY_REQUESTS: 'Demasiados intentos. Espera un minuto.',
   VALIDATION_ERROR: 'Revisa los datos del formulario.',
   NETWORK_ERROR: 'No hay conexión con Cafeta. Intenta de nuevo.',
+  POST_CONTENT_REQUIRED: 'Escribe algo antes de publicar.',
+  INVALID_CURSOR: 'La lista cambió. Vuelve a cargarla.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';
