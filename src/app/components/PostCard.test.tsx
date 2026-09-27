@@ -328,6 +328,20 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     );
   });
 
+  it('con un solo conteo el lector de pantalla lo dice en singular', () => {
+    const view = postView({ id: 'uno', reactionCount: 1, commentCount: 1 });
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(view, now)}
+        live={{ isMine: false, isAnnouncement: false }}
+      />,
+    );
+
+    const card = within(screen.getByTestId('post-uno'));
+    expect(card.getByLabelText('1 reacción')).toBeInTheDocument();
+    expect(card.getByLabelText('1 comentario')).toBeInTheDocument();
+  });
+
   it('mi nombre lleva a mi perfil y un anuncio lleva su marca', () => {
     const view = postView({
       id: 'a1',

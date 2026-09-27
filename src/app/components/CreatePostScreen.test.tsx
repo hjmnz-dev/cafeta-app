@@ -71,7 +71,12 @@ describe('Spec 0005 — Crear publicación', () => {
     await user.click(
       screen.getByRole('button', { name: /agregar ubicación/i }),
     );
+    expect(
+      screen.getByRole('button', { name: 'Cerrar ubicaciones' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Biblioteca' }));
+    await user.click(screen.getByRole('button', { name: /agregar emoji/i }));
+    await user.click(screen.getByRole('button', { name: 'Cerrar emojis' }));
     await user.click(publishButton());
 
     await waitFor(() =>
@@ -93,6 +98,7 @@ describe('Spec 0005 — Crear publicación', () => {
     renderWithProviders(<CreatePostScreen />, { route: '/create-post' });
 
     expect(await screen.findByText('Carlos Gómez')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument();
     expect(
       await screen.findByText('Ingeniería de Software'),
     ).toBeInTheDocument();
@@ -178,6 +184,9 @@ describe('Spec 0005 — Crear publicación', () => {
     ).toBeInTheDocument();
     expect(textbox()).toHaveValue('Otra más');
     expect(screen.getByText('Auditorio')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Quitar ubicación' }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent('/create-post');
     expect(publishButton()).toBeEnabled();
   });

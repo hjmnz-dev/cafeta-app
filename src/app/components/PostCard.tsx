@@ -94,16 +94,18 @@ function Avatar({ post }: { post: Post }) {
 function Count({
   icon: Icon,
   value,
-  label,
+  singular,
+  plural,
 }: {
   icon: typeof Heart;
   value: number;
-  label: string;
+  singular: string;
+  plural: string;
 }) {
   return (
     <span
       className="flex items-center gap-1.5 px-1.5 py-1 text-[var(--muted)]"
-      aria-label={`${value} ${label}`}
+      aria-label={`${value} ${value === 1 ? singular : plural}`}
     >
       <Icon className="w-[19px] h-[19px]" aria-hidden="true" />
       <span className="text-[13px] font-medium" aria-hidden="true">
@@ -383,9 +385,15 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
               <Count
                 icon={MessageCircle}
                 value={post.comments}
-                label="comentarios"
+                singular="comentario"
+                plural="comentarios"
               />
-              <Count icon={Heart} value={post.likes} label="reacciones" />
+              <Count
+                icon={Heart}
+                value={post.likes}
+                singular="reacción"
+                plural="reacciones"
+              />
             </div>
           )}
 

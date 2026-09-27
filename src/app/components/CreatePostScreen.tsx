@@ -214,6 +214,7 @@ export function CreatePostScreen() {
       <div className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--line-soft)] mt-12">
         <button
           onClick={() => navigate(-1)}
+          aria-label="Cerrar"
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-2)] transition-colors"
         >
           <X className="w-6 h-6 text-[var(--ink-2)]" />
@@ -264,6 +265,7 @@ export function CreatePostScreen() {
                 e.stopPropagation();
                 setLocation(null);
               }}
+              aria-label="Quitar ubicación"
               className="ml-auto"
             >
               <X className="w-4 h-4 text-[var(--muted)] hover:text-[var(--brand)] transition-colors" />
@@ -320,6 +322,7 @@ export function CreatePostScreen() {
               </h2>
               <button
                 onClick={() => setShowEmojiPicker(false)}
+                aria-label="Cerrar emojis"
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--surface-2)] transition-colors"
               >
                 <X className="w-5 h-5 text-[var(--muted)]" />
@@ -357,6 +360,7 @@ export function CreatePostScreen() {
               </h2>
               <button
                 onClick={() => setShowLocationModal(false)}
+                aria-label="Cerrar ubicaciones"
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--surface-2)] transition-colors"
               >
                 <X className="w-5 h-5 text-[var(--muted)]" />
