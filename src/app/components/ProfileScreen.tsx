@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Settings,
   Edit2,
@@ -18,6 +18,9 @@ import {
   MY_FOLLOWERS,
 } from '../store/AppState';
 import { PostCard } from './PostCard';
+import { LivePostList } from './LivePostList';
+import { useUserPostCount, useUserPosts } from '../store/posts-queries';
+import { useSession } from '../store/SessionStore';
 import { MyStoryAvatar } from './MyStoryAvatar';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -60,11 +63,14 @@ export function ProfileScreen() {
   );
   const navigate = useNavigate();
   const { profile, posts, followingIds } = useAppState();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // DEF-09: publicaciones propias. El autor también ve las desactivadas
-  // (marcadas como tales); para el resto de la app ya no existen.
+  // Mis publicaciones y su conteo vienen de la API (spec 0005); cabecera,
+  // recursos y guardados siguen con AppState hasta sus funcionalidades.
+  const { user } = useSession();
+  const myLivePosts = useUserPosts(user?.id);
+  const postCount = useUserPostCount(user?.id);
   const myPosts = posts.filter((p) => p.authorId === CURRENT_USER_ID);
-  const activeCount = myPosts.filter((p) => p.active).length;
 
   // Recursos: publicaciones propias que aportan material de estudio.
   const myResources = myPosts.filter(
@@ -72,7 +78,10 @@ export function ProfileScreen() {
   );
 
   return (
-    <div className="w-full h-full bg-[var(--app-bg)] pb-[100px] overflow-y-auto">
+    <div
+      ref={scrollRef}
+      className="w-full h-full bg-[var(--app-bg)] pb-[100px] overflow-y-auto"
+    >
       {/* Cabecera: sin portada. El banner rojo ocupaba un tercio de la pantalla
           para no decir nada que no esté ya en el perfil; las cifras suben junto
           al avatar, que es donde se leen de un vistazo. */}
@@ -100,7 +109,7 @@ export function ProfileScreen() {
             {[
               {
                 testid: 'stat-posts',
-                value: activeCount,
+                value: postCount.data?.count ?? '–',
                 label: 'Publicaciones',
               },
               {
@@ -264,24 +273,27 @@ export function ProfileScreen() {
           </button>
         </div>
 
-        {/* Publicaciones propias (DEF-09) — mismo menú de autor que en el feed */}
-        {activeTab === 'posts' &&
-          (myPosts.length === 0 ? (
-            <EmptyTab
-              title="Aún no has publicado nada"
-              detail="Comparte apuntes, dudas o eventos con tu carrera."
-              action={{
-                label: 'Crear publicación',
-                onClick: () => navigate('/create-post'),
-              }}
+        {/* Publicaciones propias, de la API (spec 0005) */}
+        {activeTab === 'posts' && (
+          <div className="-mx-5 border-t border-[var(--line-soft)]">
+            <LivePostList
+              query={myLivePosts}
+              scrollRootRef={scrollRef}
+              empty={
+                <div className="px-5">
+                  <EmptyTab
+                    title="Aún no has publicado nada"
+                    detail="Comparte apuntes, dudas o eventos con tu carrera."
+                    action={{
+                      label: 'Crear publicación',
+                      onClick: () => navigate('/create-post'),
+                    }}
+                  />
+                </div>
+              }
             />
-          ) : (
-            <div className="-mx-5 border-t border-[var(--line-soft)]">
-              {myPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          ))}
+          </div>
+        )}
 
         {/* Recursos: material propio real (PDF y apuntes), no fotos de relleno */}
         {activeTab === 'resources' &&

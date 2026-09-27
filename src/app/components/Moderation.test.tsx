@@ -4,9 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { UserProfileScreen } from './UserProfileScreen';
 import { PeopleScreen } from './PeopleScreen';
 import { SettingsScreen } from './SettingsScreen';
-import { FeedScreen } from './FeedScreen';
 import { SearchScreen } from './SearchScreen';
-import { renderRoutes, renderWithProviders } from '../../test/utils';
+import {
+  AppStatePosts,
+  renderRoutes,
+  renderWithProviders,
+} from '../../test/utils';
 
 const perfilDe = (id: string) =>
   renderRoutes([{ path: '/u/:userId', element: <UserProfileScreen /> }], {
@@ -76,24 +79,16 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU53 — el contenido del bloqueado desaparece del feed y de la búsqueda', async () => {
+  // El feed ya viene de la API (spec 0005); ocultar a los bloqueados en él
+  // llega con la funcionalidad 29. Aquí queda la búsqueda, que sigue en AppState.
+  it('HU53 — el contenido del bloqueado desaparece de la búsqueda', async () => {
     const user = userEvent.setup();
-    perfilYPantallas(
-      'juan',
-      <>
-        <FeedScreen />
-        <SearchScreen />
-      </>,
-    );
-
-    expect(screen.getByTestId('post-p2')).toBeInTheDocument();
+    perfilYPantallas('juan', <SearchScreen />);
 
     await user.click(
       screen.getByRole('button', { name: /opciones sobre juan/i }),
     );
     await user.click(screen.getByRole('button', { name: /bloquear a juan/i }));
-
-    expect(screen.queryByTestId('post-p2')).not.toBeInTheDocument();
 
     await user.type(screen.getByRole('textbox', { name: /^buscar$/i }), 'juan');
     expect(
@@ -182,7 +177,7 @@ describe('DEF-12 · HU55/HU56 — Reportar usuario y publicación', () => {
 
   it('HU56 — reportar una publicación ajena queda registrado', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<FeedScreen />, { route: '/home' });
+    renderWithProviders(<AppStatePosts />);
 
     const card = screen.getByTestId('post-p2');
     await user.click(within(card).getByRole('button', { name: /opciones/i }));

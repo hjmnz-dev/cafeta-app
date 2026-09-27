@@ -11,9 +11,6 @@
 const MAX_SIDE = 1080;
 const QUALITY = 0.72;
 
-/** Máximo de imágenes por publicación, para no agotar el almacenamiento. */
-export const MAX_IMAGES = 4;
-
 function readAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

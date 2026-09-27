@@ -18,7 +18,9 @@ import {
   Flag,
   Ban,
   Check,
+  Megaphone,
 } from 'lucide-react';
+import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
 import { ReportDialog } from './ReportDialog';
 
@@ -35,7 +37,17 @@ import { ReportDialog } from './ReportDialog';
  * porque el contenido dominante son preguntas y avisos de clase. Lo visual
  * (imágenes a sangre, corazón que se llena) toma el lenguaje de Instagram,
  * que es donde la app se juega el "darse a conocer".
+ *
+ * Con `live` (spec 0005) la publicación viene de la API: la autoría la decide
+ * la pantalla, y se ocultan las acciones que todavía no tienen backend
+ * (reaccionar, comentar, guardar, compartir, menú de autor, reportar). Sin
+ * `live` sigue igual para las pantallas que aún usan AppState.
  */
+
+export interface LivePost {
+  isMine: boolean;
+  isAnnouncement: boolean;
+}
 
 /** Resalta palabras clave sin permitir HTML del contenido (evita inyección). */
 function highlight(snippet: string) {
@@ -55,7 +67,55 @@ function compact(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', '')}k` : String(n);
 }
 
-export function PostCard({ post }: { post: Post }) {
+/** Sin foto todavía: un círculo con la inicial, como en crear publicación. */
+function Avatar({ post }: { post: Post }) {
+  if (post.authorAvatar) {
+    return (
+      <img
+        src={post.authorAvatar}
+        className="w-11 h-11 rounded-full object-cover bg-[var(--surface-3)] flex-none"
+        alt={post.authorName}
+      />
+    );
+  }
+  return (
+    <div
+      role="img"
+      aria-label={post.authorName}
+      className="w-11 h-11 rounded-full flex-none bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] flex items-center justify-center"
+    >
+      <span className="text-white font-semibold text-[16px]">
+        {(post.authorName.trim()[0] ?? 'C').toUpperCase()}
+      </span>
+    </div>
+  );
+}
+
+function Count({
+  icon: Icon,
+  value,
+  singular,
+  plural,
+}: {
+  icon: typeof Heart;
+  value: number;
+  singular: string;
+  plural: string;
+}) {
+  return (
+    <span
+      className="flex items-center gap-1.5 px-1.5 py-1 text-[var(--muted)]"
+      aria-label={`${value} ${value === 1 ? singular : plural}`}
+    >
+      <Icon className="w-[19px] h-[19px]" aria-hidden="true" />
+      <span className="text-[13px] font-medium" aria-hidden="true">
+        {compact(value)}
+      </span>
+    </span>
+  );
+}
+
+export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
   const {
     isOwnPost,
     editPost,
@@ -67,7 +127,7 @@ export function PostCard({ post }: { post: Post }) {
     reportPost,
     hasReported,
   } = useAppState();
-  const own = isOwnPost(post.id);
+  const own = live ? live.isMine : isOwnPost(post.id);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -99,23 +159,36 @@ export function PostCard({ post }: { post: Post }) {
       className="relative bg-[var(--surface)] px-4 py-3.5 border-b border-[var(--line-soft)]"
     >
       <div className="flex gap-3">
-        <img
-          src={post.authorAvatar}
-          className="w-11 h-11 rounded-full object-cover bg-[var(--surface-3)] flex-none"
-          alt={post.authorName}
-        />
+        <Avatar post={post} />
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {/* Una sola línea de identidad: nombre · carrera · tiempo */}
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] leading-tight">
-                  {post.authorName}
-                </span>
-                <span className="text-[var(--brand)] font-semibold text-[11px] bg-[var(--tint)] px-2 py-0.5 rounded-md">
-                  {post.career}
-                </span>
+                {live?.isMine ? (
+                  <Link
+                    to="/profile"
+                    className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] leading-tight hover:underline"
+                  >
+                    {post.authorName}
+                  </Link>
+                ) : (
+                  <span className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] leading-tight">
+                    {post.authorName}
+                  </span>
+                )}
+                {live?.isAnnouncement && (
+                  <span className="flex items-center gap-1 text-[var(--on-brand)] font-semibold text-[11px] bg-[var(--brand)] px-2 py-0.5 rounded-md">
+                    <Megaphone className="w-3 h-3" aria-hidden="true" />
+                    Anuncio oficial
+                  </span>
+                )}
+                {post.career && (
+                  <span className="text-[var(--brand)] font-semibold text-[11px] bg-[var(--tint)] px-2 py-0.5 rounded-md">
+                    {post.career}
+                  </span>
+                )}
                 <span className="text-[var(--muted)] text-[12px]">
                   · {post.time}
                   {post.edited && ' · Editado'}
@@ -128,14 +201,16 @@ export function PostCard({ post }: { post: Post }) {
               </div>
             </div>
 
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={`Opciones de la publicación de ${post.authorName}`}
-              aria-expanded={menuOpen}
-              className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
-            >
-              <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
-            </button>
+            {!live && (
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label={`Opciones de la publicación de ${post.authorName}`}
+                aria-expanded={menuOpen}
+                className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
+              >
+                <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
+              </button>
+            )}
           </div>
 
           {/* Contenido */}
@@ -218,25 +293,27 @@ export function PostCard({ post }: { post: Post }) {
                   {post.resourceSize} • PDF
                 </p>
               </div>
-              <button
-                className="w-8 h-8 bg-[var(--surface)] border border-[var(--line)] rounded-full flex items-center justify-center flex-none"
-                aria-label="Descargar recurso"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--brand)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              {!live && (
+                <button
+                  className="w-8 h-8 bg-[var(--surface)] border border-[var(--line)] rounded-full flex items-center justify-center flex-none"
+                  aria-label="Descargar recurso"
                 >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-              </button>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--brand)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
 
@@ -255,9 +332,11 @@ export function PostCard({ post }: { post: Post }) {
                   {post.eventLocation}
                 </span>
               </div>
-              <button className="relative w-full bg-[var(--brand)] text-[var(--on-brand)] rounded-xl py-2.5 text-[13px] font-semibold mt-1">
-                Confirmar asistencia
-              </button>
+              {!live && (
+                <button className="relative w-full bg-[var(--brand)] text-[var(--on-brand)] rounded-xl py-2.5 text-[13px] font-semibold mt-1">
+                  Confirmar asistencia
+                </button>
+              )}
             </div>
           )}
 
@@ -291,65 +370,90 @@ export function PostCard({ post }: { post: Post }) {
                   </p>
                 </div>
               </div>
-              <button className="bg-[var(--brand)] text-[var(--on-brand)] px-4 py-2 rounded-full text-[12px] font-semibold flex-none">
-                Unirme
-              </button>
+              {!live && (
+                <button className="bg-[var(--brand)] text-[var(--on-brand)] px-4 py-2 rounded-full text-[12px] font-semibold flex-none">
+                  Unirme
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Con live, solo los conteos reales: reaccionar y comentar llegan
+              con sus funcionalidades (spec 0005). */}
+          {live && (
+            <div className="flex items-center gap-1 pt-1 -ml-1.5">
+              <Count
+                icon={MessageCircle}
+                value={post.comments}
+                singular="comentario"
+                plural="comentarios"
+              />
+              <Count
+                icon={Heart}
+                value={post.likes}
+                singular="reacción"
+                plural="reacciones"
+              />
             </div>
           )}
 
           {/* Interacciones (se conservan al editar, HU22) */}
-          <div className="flex items-center justify-between pt-1 -ml-1.5">
-            <div className="flex items-center gap-1">
-              <button
-                className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
-                aria-label="Comentar"
-              >
-                <MessageCircle className="w-[19px] h-[19px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
-                <span className="text-[var(--muted)] text-[13px] font-medium">
-                  {compact(post.comments)}
-                </span>
-              </button>
-
-              {/* HU28 — Reaccionar: la marca propia se distingue del conteo total */}
-              <button
-                onClick={() => togglePostReaction(post.id)}
-                aria-label={post.liked ? 'Quitar reacción' : 'Me gusta'}
-                aria-pressed={Boolean(post.liked)}
-                className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
-              >
-                <Heart
-                  className={
-                    'w-[19px] h-[19px] transition-all ' +
-                    (post.liked
-                      ? 'text-[var(--brand)] fill-[var(--brand)] scale-110'
-                      : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
-                  }
-                />
-                <span
-                  className={
-                    'text-[13px] font-medium ' +
-                    (post.liked ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
-                  }
+          {!live && (
+            <div className="flex items-center justify-between pt-1 -ml-1.5">
+              <div className="flex items-center gap-1">
+                <button
+                  className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
+                  aria-label="Comentar"
                 >
-                  {compact(post.likes)}
-                </span>
-              </button>
+                  <MessageCircle className="w-[19px] h-[19px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
+                  <span className="text-[var(--muted)] text-[13px] font-medium">
+                    {compact(post.comments)}
+                  </span>
+                </button>
+
+                {/* HU28 — Reaccionar: la marca propia se distingue del conteo total */}
+                <button
+                  onClick={() => togglePostReaction(post.id)}
+                  aria-label={post.liked ? 'Quitar reacción' : 'Me gusta'}
+                  aria-pressed={Boolean(post.liked)}
+                  className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
+                >
+                  <Heart
+                    className={
+                      'w-[19px] h-[19px] transition-all ' +
+                      (post.liked
+                        ? 'text-[var(--brand)] fill-[var(--brand)] scale-110'
+                        : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
+                    }
+                  />
+                  <span
+                    className={
+                      'text-[13px] font-medium ' +
+                      (post.liked
+                        ? 'text-[var(--brand)]'
+                        : 'text-[var(--muted)]')
+                    }
+                  >
+                    {compact(post.likes)}
+                  </span>
+                </button>
+
+                <button
+                  className="flex items-center px-1.5 py-1 rounded-full group"
+                  aria-label="Compartir"
+                >
+                  <Share2 className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--ink)] transition-colors" />
+                </button>
+              </div>
 
               <button
-                className="flex items-center px-1.5 py-1 rounded-full group"
-                aria-label="Compartir"
+                className="group px-1.5 py-1"
+                aria-label="Guardar en marcadores"
               >
-                <Share2 className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--ink)] transition-colors" />
+                <Bookmark className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
               </button>
             </div>
-
-            <button
-              className="group px-1.5 py-1"
-              aria-label="Guardar en marcadores"
-            >
-              <Bookmark className="w-[18px] h-[18px] text-[var(--muted)] group-hover:text-[var(--brand)] transition-colors" />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 

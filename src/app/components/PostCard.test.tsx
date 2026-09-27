@@ -1,72 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import { screen, within, waitFor } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FeedScreen } from './FeedScreen';
-import { ProfileScreen } from './ProfileScreen';
-import { CreatePostScreen } from './CreatePostScreen';
-import { renderRoutes, renderWithProviders } from '../../test/utils';
+import { PostCard } from './PostCard';
+import { AppStatePosts, renderWithProviders } from '../../test/utils';
+import { postView } from '../../test/api';
+import { toCardPost } from '../lib/posts';
 
 /**
- * DEF-09 · HU21/HU22/HU23 — Publicaciones: crear, editar, desactivar y eliminar,
- * siempre validando la autoría.
+ * DEF-09 · HU22/HU23 — La tarjeta sin `live`: editar, desactivar y eliminar,
+ * siempre validando la autoría. Es el modo que siguen usando las pantallas
+ * que aún leen AppState; el feed y el perfil ya usan `live` (spec 0005).
  *
  * Datos de partida (AppState): p1 y p5 son del usuario actual; p2 es de Juan Pérez.
  */
 
-const feed = () =>
-  renderWithProviders(<FeedScreen filter="Todas" />, { route: '/home' });
-const profile = () =>
-  renderWithProviders(<ProfileScreen />, { route: '/profile' });
+const cards = () => renderWithProviders(<AppStatePosts />);
 
 const ownMenu = (postId: string) =>
   within(screen.getByTestId(`post-${postId}`)).getByRole('button', {
     name: /opciones de la publicación/i,
   });
 
-describe('DEF-09 · HU21 — Crear publicación', () => {
-  it('la publicación creada aparece en el feed como propia', async () => {
-    const user = userEvent.setup();
-    renderRoutes(
-      [
-        { path: '/create-post', element: <CreatePostScreen /> },
-        { path: '/home', element: <FeedScreen filter="Todas" /> },
-      ],
-      { route: '/create-post' },
-    );
-
-    await user.type(
-      screen.getByPlaceholderText(/qué está pasando en intec/i),
-      'Llevo café para el grupo de estudio ☕',
-    );
-    await user.click(screen.getByRole('button', { name: /^publicar$/i }));
-
-    // Publicar es asíncrono (procesa las imágenes antes de guardar).
-    await waitFor(() =>
-      expect(screen.getByTestId('location')).toHaveTextContent('/home'),
-    );
-
-    const nueva = screen
-      .getByText(/llevo café para el grupo de estudio/i)
-      .closest('[data-testid^="post-"]') as HTMLElement;
-    expect(nueva).not.toBeNull();
-    // Es propia: ofrece el menú de autor.
-    expect(
-      within(nueva).getByRole('button', {
-        name: /opciones de la publicación de carlos gómez/i,
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it('no permite publicar sin contenido', () => {
-    renderWithProviders(<CreatePostScreen />, { route: '/create-post' });
-    expect(screen.getByRole('button', { name: /^publicar$/i })).toBeDisabled();
-  });
-});
-
 describe('DEF-09 — Validación de autoría', () => {
   it('las publicaciones de terceros no ofrecen acciones de autor', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
 
     // El menú existe en toda publicación, pero en las ajenas solo modera (FT11).
     await user.click(
@@ -85,13 +43,9 @@ describe('DEF-09 — Validación de autoría', () => {
 
   it('las publicaciones propias ofrecen editar, desactivar y eliminar', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
 
-    await user.click(
-      within(screen.getByTestId('post-p1')).getByRole('button', {
-        name: /opciones/i,
-      }),
-    );
+    await user.click(ownMenu('p1'));
 
     expect(
       screen.getByRole('button', { name: /^editar$/i }),
@@ -111,7 +65,7 @@ describe('DEF-09 — Validación de autoría', () => {
 describe('DEF-09 · HU22 — Editar publicación propia', () => {
   it('guarda el nuevo contenido, lo marca como editado y conserva las interacciones', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^editar$/i }));
@@ -138,7 +92,7 @@ describe('DEF-09 · HU22 — Editar publicación propia', () => {
 
   it('guardar sin cambios no la marca como editada', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^editar$/i }));
@@ -155,7 +109,7 @@ describe('DEF-09 · HU22 — Editar publicación propia', () => {
 
   it('cancelar deja el contenido original', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
     const original = screen.getByTestId('post-p1').textContent;
 
     await user.click(ownMenu('p1'));
@@ -169,9 +123,9 @@ describe('DEF-09 · HU22 — Editar publicación propia', () => {
     expect(screen.getByTestId('post-p1').textContent).toBe(original);
   });
 
-  it('la edición persiste al volver a montar la pantalla', async () => {
+  it('la edición persiste al volver a montar', async () => {
     const user = userEvent.setup();
-    const { unmount } = feed();
+    const { unmount } = cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^editar$/i }));
@@ -187,15 +141,15 @@ describe('DEF-09 · HU22 — Editar publicación propia', () => {
     );
     unmount();
 
-    feed();
+    cards();
     expect(screen.getByText('Contenido persistido')).toBeInTheDocument();
   });
 });
 
-describe('DEF-09 · HU23 — Desactivar (baja lógica)', () => {
-  it('la saca del feed pero el autor la sigue viendo marcada en su perfil', async () => {
+describe('DEF-09 · HU23 — Desactivar, reactivar y eliminar', () => {
+  it('desactivar la marca como tal y reactivar le quita la marca', async () => {
     const user = userEvent.setup();
-    const { unmount } = feed();
+    cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
@@ -204,19 +158,21 @@ describe('DEF-09 · HU23 — Desactivar (baja lógica)', () => {
         name: /^desactivar$/i,
       }),
     );
-
-    expect(screen.queryByTestId('post-p1')).toBeNull();
-    unmount();
-
-    profile();
     expect(
       within(screen.getByTestId('post-p1')).getByText(/desactivada/i),
     ).toBeInTheDocument();
+
+    // Reactivar no pide confirmación (no es destructivo).
+    await user.click(ownMenu('p1'));
+    await user.click(screen.getByRole('button', { name: /^reactivar$/i }));
+    expect(
+      within(screen.getByTestId('post-p1')).queryByText(/desactivada/i),
+    ).toBeNull();
   });
 
   it('cancelar en la confirmación no desactiva nada', async () => {
     const user = userEvent.setup();
-    feed();
+    cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
@@ -226,14 +182,25 @@ describe('DEF-09 · HU23 — Desactivar (baja lógica)', () => {
       }),
     );
 
-    expect(screen.getByTestId('post-p1')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('post-p1')).queryByText(/desactivada/i),
+    ).toBeNull();
   });
-});
 
-describe('DEF-09 · HU23 — Eliminar (borrado permanente)', () => {
-  it('la elimina de todas las vistas y no vuelve tras recargar', async () => {
+  it('una publicación activa no ofrece "Reactivar"', async () => {
     const user = userEvent.setup();
-    const { unmount } = feed();
+    cards();
+
+    await user.click(ownMenu('p1'));
+    expect(
+      screen.getByRole('button', { name: /^desactivar$/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^reactivar$/i })).toBeNull();
+  });
+
+  it('eliminar la borra y no vuelve al montar de nuevo', async () => {
+    const user = userEvent.setup();
+    const { unmount } = cards();
 
     await user.click(ownMenu('p1'));
     await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
@@ -246,57 +213,8 @@ describe('DEF-09 · HU23 — Eliminar (borrado permanente)', () => {
     expect(screen.queryByTestId('post-p1')).toBeNull();
     unmount();
 
-    profile();
+    cards();
     expect(screen.queryByTestId('post-p1')).toBeNull();
-  });
-});
-
-describe('DEF-09 — Perfil del autor', () => {
-  it('lista solo las publicaciones propias y cuenta las activas', () => {
-    profile();
-    expect(screen.getByTestId('post-p1')).toBeInTheDocument();
-    expect(screen.getByTestId('post-p5')).toBeInTheDocument();
-    expect(screen.queryByTestId('post-p2')).toBeNull(); // de otro usuario
-    expect(screen.getByTestId('stat-posts')).toHaveTextContent('2');
-  });
-});
-
-describe('DEF-09 · HU23 — Reactivar una publicación desactivada', () => {
-  it('vuelve a estar visible en el feed para todos', async () => {
-    const user = userEvent.setup();
-    const primero = feed();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: /^desactivar$/i,
-      }),
-    );
-    primero.unmount();
-
-    // El autor la reactiva desde su perfil, sin confirmación (no es destructivo).
-    const segundo = profile();
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^reactivar$/i }));
-    expect(
-      within(screen.getByTestId('post-p1')).queryByText(/desactivada/i),
-    ).toBeNull();
-    segundo.unmount();
-
-    feed();
-    expect(screen.getByTestId('post-p1')).toBeInTheDocument();
-  });
-
-  it('una publicación activa no ofrece "Reactivar"', async () => {
-    const user = userEvent.setup();
-    feed();
-
-    await user.click(ownMenu('p1'));
-    expect(
-      screen.getByRole('button', { name: /^desactivar$/i }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^reactivar$/i })).toBeNull();
   });
 });
 
@@ -327,12 +245,12 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
     );
   }
 
-  it('las imágenes guardadas se muestran en el feed y sobreviven a la recarga', () => {
+  it('las imágenes guardadas se muestran y sobreviven a la recarga', () => {
     seedConImagenes([
       'data:image/jpeg;base64,AAAA',
       'data:image/jpeg;base64,BBBB',
     ]);
-    feed();
+    cards();
 
     const card = within(screen.getByTestId('post-img1'));
     expect(card.getByAltText(/imagen 1 de la publicación/i)).toHaveAttribute(
@@ -347,7 +265,7 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
   it('editar el texto no pierde las imágenes', async () => {
     const user = userEvent.setup();
     seedConImagenes(['data:image/jpeg;base64,AAAA']);
-    feed();
+    cards();
 
     await user.click(ownMenu('img1'));
     await user.click(screen.getByRole('button', { name: /^editar$/i }));
@@ -367,5 +285,81 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
     expect(
       card.getByAltText(/imagen 1 de la publicación/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => {
+  const now = new Date('2026-09-26T12:00:00Z');
+
+  it('muestra los datos reales y ningún botón sin backend', () => {
+    const view = postView({
+      id: 'e1',
+      type: 'EVENT',
+      content: 'Hackathon',
+      location: 'Auditorio',
+      editedAt: '2026-09-26T11:00:00Z',
+      eventStartsAt: '2026-10-10T14:00:00Z',
+      eventLocation: 'Laboratorio 3',
+      reactionCount: 12,
+      commentCount: 3,
+      createdAt: '2026-09-26T10:00:00Z',
+    });
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(view, now)}
+        live={{ isMine: false, isAnnouncement: false }}
+      />,
+    );
+
+    const card = within(screen.getByTestId('post-e1'));
+    expect(card.getByText('Juan Pérez')).toBeInTheDocument();
+    expect(card.queryByRole('link', { name: 'Juan Pérez' })).toBeNull();
+    expect(card.getByText('Medicina')).toBeInTheDocument();
+    expect(card.getByText(/2h/)).toHaveTextContent('Editado');
+    expect(card.getByText('Auditorio')).toBeInTheDocument();
+    expect(card.getByText('Laboratorio 3')).toBeInTheDocument();
+    expect(card.getByLabelText('12 reacciones')).toBeInTheDocument();
+    expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
+    // Sin backend todavía: ni reaccionar, comentar, guardar, menú ni asistir.
+    expect(card.queryAllByRole('button')).toHaveLength(0);
+    // Sin foto: la inicial en un círculo.
+    expect(card.getByRole('img', { name: 'Juan Pérez' })).toHaveTextContent(
+      'J',
+    );
+  });
+
+  it('con un solo conteo el lector de pantalla lo dice en singular', () => {
+    const view = postView({ id: 'uno', reactionCount: 1, commentCount: 1 });
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(view, now)}
+        live={{ isMine: false, isAnnouncement: false }}
+      />,
+    );
+
+    const card = within(screen.getByTestId('post-uno'));
+    expect(card.getByLabelText('1 reacción')).toBeInTheDocument();
+    expect(card.getByLabelText('1 comentario')).toBeInTheDocument();
+  });
+
+  it('mi nombre lleva a mi perfil y un anuncio lleva su marca', () => {
+    const view = postView({
+      id: 'a1',
+      type: 'ANNOUNCEMENT',
+      author: { displayName: 'Cafeta INTEC', careerName: null },
+    });
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(view, now)}
+        live={{ isMine: true, isAnnouncement: true }}
+      />,
+    );
+
+    const card = within(screen.getByTestId('post-a1'));
+    expect(card.getByRole('link', { name: 'Cafeta INTEC' })).toHaveAttribute(
+      'href',
+      '/profile',
+    );
+    expect(card.getByText(/anuncio oficial/i)).toBeInTheDocument();
   });
 });

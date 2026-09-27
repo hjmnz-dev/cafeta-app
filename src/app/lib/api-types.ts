@@ -100,6 +100,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/feed': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PostsController_feed'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['UserPostsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/posts/count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['UserPostsController_count'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -168,6 +232,66 @@ export interface components {
       password: string;
       /** @description Con true la sesión dura 30 días; sin él, 12 horas. */
       remember?: boolean;
+    };
+    CreatePostDto: {
+      /** @enum {string} */
+      location?:
+        | 'Campus Principal'
+        | 'Biblioteca'
+        | 'Cafetería INTEC'
+        | 'Laboratorio de Computación'
+        | 'Auditorio'
+        | 'Cancha Deportiva'
+        | 'Área de Parqueo'
+        | 'Centro de Estudiantes';
+      /** @description Texto de la publicación, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
+      content: string;
+    };
+    /** @enum {string} */
+    PostType:
+      | 'TEXT'
+      | 'STUDY_NOTES'
+      | 'PDF'
+      | 'EVENT'
+      | 'CODE'
+      | 'STUDY_GROUP'
+      | 'ANNOUNCEMENT';
+    PostAuthorDto: {
+      /** @example Ingeniería de Software */
+      careerName: string | null;
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+      /** @description true si la cuenta está verificada. */
+      verified: boolean;
+    };
+    PostViewDto: {
+      type: components['schemas']['PostType'];
+      content: string | null;
+      /** @example Biblioteca */
+      location: string | null;
+      editedAt: string | null;
+      eventStartsAt: string | null;
+      eventLocation: string | null;
+      codeSnippet: string | null;
+      groupName: string | null;
+      groupSpots: number | null;
+      id: string;
+      /** @description Fecha de creación en ISO 8601. */
+      createdAt: string;
+      author: components['schemas']['PostAuthorDto'];
+      reactionCount: number;
+      commentCount: number;
+    };
+    PostPageDto: {
+      items: components['schemas']['PostViewDto'][];
+      /** @description id para pedir la página siguiente; null cuando no hay más. */
+      nextCursor: string | null;
+    };
+    PostCountDto: {
+      /** @example 12 */
+      count: number;
     };
   };
   responses: never;
@@ -301,6 +425,102 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['CurrentUserDto'];
+        };
+      };
+    };
+  };
+  PostsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreatePostDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostViewDto'];
+        };
+      };
+    };
+  };
+  PostsController_feed: {
+    parameters: {
+      query: {
+        /** @description Sin careerId es "Para ti"; con él, la pestaña de esa carrera. */
+        careerId?: string;
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
+      };
+    };
+  };
+  UserPostsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
+      };
+    };
+  };
+  UserPostsController_count: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostCountDto'];
         };
       };
     };

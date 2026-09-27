@@ -6,6 +6,8 @@ import { EditProfileScreen } from './EditProfileScreen';
 import { PeopleScreen } from './PeopleScreen';
 import { CreateStoryScreen } from './CreateStoryScreen';
 import { renderWithProviders, renderRoutes } from '../../test/utils';
+import { page, postView, signIn, TEST_USER } from '../../test/api';
+import { json } from '../../test/setup';
 
 describe('DEF-08 — La información del perfil refleja el estado real', () => {
   it('las cifras salen del estado: seguir a alguien mueve el contador "Siguiendo"', async () => {
@@ -27,11 +29,43 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     expect(screen.getByTestId('stat-following')).toHaveTextContent('2');
   });
 
-  it('el contador de publicaciones cuenta solo las activas del usuario', () => {
+  it('spec 0005 · AC-3: mis publicaciones y su conteo vienen de la API', async () => {
+    const fetchMock = signIn((url) => {
+      if (url.pathname.endsWith(`/users/${TEST_USER.id}/posts/count`)) {
+        return json(200, { count: 7 });
+      }
+      if (url.pathname.endsWith(`/users/${TEST_USER.id}/posts`)) {
+        return page([
+          postView({
+            id: 'mia',
+            content: 'Mi primera publicación',
+            author: { id: TEST_USER.id, displayName: 'Carlos Gómez' },
+          }),
+        ]);
+      }
+      return undefined;
+    });
     renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
-    // El feed de ejemplo trae dos publicaciones propias (p1 y p5), ambas activas.
-    expect(screen.getByTestId('stat-posts')).toHaveTextContent('2');
+    expect(await screen.findByTestId('post-mia')).toHaveTextContent(
+      'Mi primera publicación',
+    );
+    expect(screen.getByTestId('stat-posts')).toHaveTextContent('7');
+    // Solo pide las mías: el id sale de la sesión.
+    const paths = fetchMock.mock.calls.map(
+      ([input]) => new URL(String(input)).pathname,
+    );
+    expect(paths).toContain(`/api/v1/users/${TEST_USER.id}/posts`);
+  });
+
+  it('spec 0005: sin publicaciones propias explica el vacío', async () => {
+    signIn();
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
+
+    expect(
+      await screen.findByText(/aún no has publicado nada/i),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('stat-posts')).toHaveTextContent('0');
   });
 
   it('la foto del perfil abre las historias propias y ofrece publicar otra', async () => {
