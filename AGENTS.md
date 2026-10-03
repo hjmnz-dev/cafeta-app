@@ -27,26 +27,28 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 
 ## Key files
 
-| File                                  | Owns                                                                                                                                                                                               |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/routes.tsx`                  | Todas las rutas de la app                                                                                                                                                                          |
-| `src/app/store/AppState.tsx`          | Estado simulado de toda la app, persistido en `localStorage` (`cafeta.appstate.v1`); es lo que se va reemplazando por la API                                                                       |
-| `src/app/components/*Screen.tsx`      | Una pantalla por archivo                                                                                                                                                                           |
-| `src/app/components/ui/`              | Componentes base shadcn (Radix + Tailwind)                                                                                                                                                         |
-| `src/app/lib/`                        | Lógica pura (búsqueda, historias, imágenes) con sus pruebas                                                                                                                                        |
-| `src/test/utils.tsx`                  | Render con los providers reales (`SessionProvider` + `QueryClientProvider` nuevo por prueba + `AppStateProvider` + `MemoryRouter`) y el arnés `AppStatePosts`                                      |
-| `src/test/setup.ts`                   | `fetch` simulado por defecto (`/auth/me` responde 401, `/careers` una lista fija, listas de publicaciones vacías y conteo 0) y `matchMedia` simulado; cada prueba lo cambia con `vi.mocked(fetch)` |
-| `src/test/api.ts`                     | `signIn(handler)` (sesión confirmada con respuestas propias), `postView()` y `page()` para simular la API en las pruebas                                                                           |
-| `src/app/store/QueryProvider.tsx`     | Cliente de TanStack Query (30 s de caché, sin reintentar 4xx) que se vacía al cerrar sesión                                                                                                        |
-| `src/app/lib/query-keys.ts`           | Claves de caché por dominio; las de publicaciones cuelgan de `postKeys.all`                                                                                                                        |
-| `src/app/store/posts-queries.ts`      | Hooks de publicaciones (`useFeed`, `useUserPosts`, `useCreatePost`, `useCareers`…)                                                                                                                 |
-| `src/app/components/LivePostList.tsx` | Lista real paginada (esqueletos, error con "Reintentar", vacío y scroll infinito con `InfiniteListFooter`), la misma en feed y perfil                                                              |
-| `src/app/lib/http.ts`                 | Cliente HTTP único (`apiRequest`): agrega el Bearer, traduce el `code` con `error-messages.ts` y ante un 401 borra la sesión y emite `cafeta:session-ended`                                        |
-| `src/app/lib/api-types.ts`            | Tipos generados desde OpenAPI con `npm run api:types`; se commitea y nunca se edita a mano                                                                                                         |
-| `src/app/lib/auth-api.ts`             | Llamadas de auth y carreras, con sus tipos tomados de `api-types.ts`                                                                                                                               |
-| `src/app/store/SessionStore.tsx`      | Sesión real (`useSession()`): token en `localStorage` con "Recordarme", en `sessionStorage` sin él                                                                                                 |
-| `src/app/components/RequireAuth.tsx`  | Guardia de las rutas protegidas en `routes.tsx`                                                                                                                                                    |
-| `src/styles/theme.css`                | Tokens de color y tema (oscuro por defecto)                                                                                                                                                        |
+| File                                  | Owns                                                                                                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/routes.tsx`                  | Todas las rutas de la app                                                                                                                                                                              |
+| `src/app/store/AppState.tsx`          | Estado simulado de toda la app, persistido en `localStorage` (`cafeta.appstate.v1`); es lo que se va reemplazando por la API                                                                           |
+| `src/app/components/*Screen.tsx`      | Una pantalla por archivo                                                                                                                                                                               |
+| `src/app/components/ui/`              | Componentes base shadcn (Radix + Tailwind)                                                                                                                                                             |
+| `src/app/lib/`                        | Lógica pura (búsqueda, historias, imágenes) con sus pruebas                                                                                                                                            |
+| `src/test/utils.tsx`                  | Render con los providers reales (`SessionProvider` + `QueryClientProvider` nuevo por prueba + `AppStateProvider` + `MemoryRouter`) y el arnés `AppStatePosts`                                          |
+| `src/test/setup.ts`                   | `fetch` simulado por defecto (`/auth/me` responde 401, `/careers` una lista fija, listas de publicaciones vacías y conteo 0) y `matchMedia` simulado; cada prueba lo cambia con `vi.mocked(fetch)`     |
+| `src/test/api.ts`                     | `signIn(handler)` (sesión confirmada con respuestas propias), `postView()` y `page()` para simular la API en las pruebas                                                                               |
+| `src/app/store/QueryProvider.tsx`     | Cliente de TanStack Query (30 s de caché, sin reintentar 4xx) que se vacía al cerrar sesión                                                                                                            |
+| `src/app/lib/query-keys.ts`           | Claves de caché por dominio; las de publicaciones cuelgan de `postKeys.all`                                                                                                                            |
+| `src/app/store/posts-queries.ts`      | Hooks de publicaciones (`useFeed`, `useUserPosts`, `useCreatePost`, `useCareers`…)                                                                                                                     |
+| `src/app/components/LivePostList.tsx` | Lista real paginada (esqueletos, error con "Reintentar", vacío y scroll infinito con `InfiniteListFooter`), la misma en feed y perfil                                                                  |
+| `src/app/lib/http.ts`                 | Cliente HTTP único (`apiRequest`): agrega el Bearer, traduce el `code` con `error-messages.ts` y ante un 401 borra la sesión y emite `cafeta:session-ended`                                            |
+| `src/app/lib/api-types.ts`            | Tipos generados desde OpenAPI con `npm run api:types`; se commitea y nunca se edita a mano                                                                                                             |
+| `src/app/lib/auth-api.ts`             | Llamadas de auth y carreras, con sus tipos tomados de `api-types.ts`                                                                                                                                   |
+| `src/app/store/SessionStore.tsx`      | Sesión real (`useSession()`): token en `localStorage` con "Recordarme", en `sessionStorage` sin él                                                                                                     |
+| `src/app/components/RequireAuth.tsx`  | Guardia de las rutas protegidas en `routes.tsx`                                                                                                                                                        |
+| `src/styles/theme.css`                | Tokens de color y tema (oscuro por defecto)                                                                                                                                                            |
+| `deploy/server.mjs`                   | Servidor estático de producción en App Service (spec 0006): solo `GET`/`HEAD`, nunca sale de `dist/`, `index.html` para las rutas internas, 404 para estáticos que no existen; igual en `Cafeta-Admin` |
+| `.github/workflows/ci.yml`            | CI en cada push; job `deploy` solo en `main`: build con `VITE_API_URL` del ambiente `production`, `dist/version.txt` con el commit, subida con OIDC y prueba de humo que espera ese commit             |
 
 ## Conventions
 
@@ -70,6 +72,8 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 - Hay un archivo suelto `src/app/components/ProfileScreen.tsx.tmp` y `guidelines/Guidelines.md` está vacío.
 - El scroll infinito observa el contenedor con scroll de cada pantalla (el marco del teléfono), no la ventana. jsdom no trae `IntersectionObserver`: las pruebas lo simulan (ver `InfiniteListFooter.test.tsx`).
 - TanStack Query pausa los reintentos mientras la pestaña está oculta; en una verificación en navegador, el panel tiene que estar visible para ver los estados de error.
+- `deploy/server.mjs` es el mismo archivo que en `Cafeta-Admin`: un cambio va en los dos. Si un build nuevo emite una extensión que no está en su tabla de tipos, súmala ahí.
+- Producción: https://cafeta-web-hj01.azurewebsites.net (`/version.txt` muestra el commit publicado). Un cambio que toca el contrato se despliega después del de la API.
 
 ## Agent skills
 
