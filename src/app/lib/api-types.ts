@@ -179,6 +179,11 @@ export interface components {
        * @enum {string}
        */
       db: 'up';
+      /**
+       * @description Commit desplegado, o `dev` fuera de producción.
+       * @example 727fb36d0c1e9a4b5f2d8e3c6a7b1f0e9d8c7b6a
+       */
+      version: string;
     };
     CareerDto: {
       /** @example 01926f00-0000-7000-8000-000000000001 */
