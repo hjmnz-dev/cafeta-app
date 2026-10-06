@@ -28,3 +28,11 @@ export const profileKeys = {
   view: (userId: string) => ['profiles', 'view', userId] as const,
   privacy: ['profiles', 'privacy'] as const,
 };
+
+/** Seguimiento y red (decisión 16): todo cuelga de ['follows']. */
+export const followKeys = {
+  all: ['follows'] as const,
+  followers: (userId: string) => ['follows', 'followers', userId] as const,
+  following: (userId: string) => ['follows', 'following', userId] as const,
+  requests: ['follows', 'requests'] as const,
+};

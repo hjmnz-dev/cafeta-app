@@ -17,6 +17,8 @@ import { CreateStoryScreen } from './components/CreateStoryScreen';
 import { StoryViewerScreen } from './components/StoryViewerScreen';
 import { RequireAuth } from './components/RequireAuth';
 import { ConversationScreen } from './components/ConversationScreen';
+import { NetworkScreen } from './components/NetworkScreen';
+import { FollowListScreen } from './components/FollowListScreen';
 import {
   RootErrorBoundary,
   ThrowOnRender,
@@ -52,8 +54,17 @@ export const router = createBrowserRouter([
           { path: 'create-story', Component: CreateStoryScreen },
           { path: 'stories/:storyId', Component: StoryViewerScreen },
           { path: 'discover', Component: PeopleScreen },
-          { path: 'network', Component: PeopleScreen },
+          // Mi red: seguidores, seguidos y solicitudes (decisión 16).
+          { path: 'network', Component: NetworkScreen },
           { path: 'messages/:conversationId', Component: ConversationScreen },
+          {
+            path: 'u/:userId/followers',
+            element: <FollowListScreen kind="followers" />,
+          },
+          {
+            path: 'u/:userId/following',
+            element: <FollowListScreen kind="following" />,
+          },
         ],
       },
     ],

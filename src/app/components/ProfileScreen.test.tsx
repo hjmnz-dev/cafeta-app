@@ -1,32 +1,51 @@
 import { describe, it, expect } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfileScreen } from './ProfileScreen';
 import { EditProfileScreen } from './EditProfileScreen';
-import { PeopleScreen } from './PeopleScreen';
 import { CreateStoryScreen } from './CreateStoryScreen';
 import { renderWithProviders, renderRoutes } from '../../test/utils';
 import { page, postView, signIn, TEST_USER } from '../../test/api';
 import { json } from '../../test/setup';
 
 describe('DEF-08 — La información del perfil refleja el estado real', () => {
-  it('las cifras salen del estado: seguir a alguien mueve el contador "Siguiendo"', async () => {
+  it('decisión 16 — seguidores y seguidos vienen de la API y llevan a Mi red', async () => {
     const user = userEvent.setup();
-    // Ambas pantallas bajo el mismo estado, para ver el efecto de una en la otra.
-    renderWithProviders(
-      <>
-        <PeopleScreen />
-        <ProfileScreen />
-      </>,
+    signIn((url) =>
+      url.pathname.endsWith(`/users/${TEST_USER.id}/profile`)
+        ? json(200, {
+            id: TEST_USER.id,
+            handle: 'cgomez_intec',
+            displayName: 'Carlos Gómez',
+            careerName: 'Ingeniería de Software',
+            verified: false,
+            visibility: 'PUBLIC',
+            isSelf: true,
+            canSeeContent: true,
+            followStatus: 'NONE',
+            canFollow: false,
+            bio: null,
+            tags: [],
+            counts: { posts: 0, followers: 12, following: 3 },
+          })
+        : undefined,
+    );
+    renderRoutes(
+      [
+        { path: '/profile', element: <ProfileScreen /> },
+        { path: '/network', element: <p>Mi red</p> },
+      ],
       { route: '/profile' },
     );
 
-    expect(screen.getByTestId('stat-following')).toHaveTextContent('0');
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-followers')).toHaveTextContent('12'),
+    );
+    expect(screen.getByTestId('stat-following')).toHaveTextContent('3');
 
-    await user.click(screen.getByRole('button', { name: /^seguir a maría/i }));
-    await user.click(screen.getByRole('button', { name: /^seguir a juan/i }));
-
-    expect(screen.getByTestId('stat-following')).toHaveTextContent('2');
+    await user.click(screen.getByRole('button', { name: /seguidores/i }));
+    expect(await screen.findByText('Mi red')).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/network');
   });
 
   it('spec 0005 · AC-3: mis publicaciones y su conteo vienen de la API', async () => {

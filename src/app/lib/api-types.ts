@@ -277,6 +277,102 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/users/{userId}/follow': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['UserFollowsController_follow'];
+    delete: operations['UserFollowsController_unfollow'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/followers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['UserFollowsController_followers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/following': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['UserFollowsController_following'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/follows/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FollowsController_pendingRequests'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/follows/{id}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['FollowsController_accept'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/follows/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['FollowsController_reject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -551,6 +647,33 @@ export interface components {
     EditMessageDto: {
       /** @description Texto corregido del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
+    };
+    FollowStatusViewDto: {
+      id: string;
+      /** @enum {string} */
+      status: 'ACCEPTED' | 'PENDING';
+    };
+    FollowUserViewDto: {
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+    };
+    FollowUserPageDto: {
+      items: components['schemas']['FollowUserViewDto'][];
+      nextCursor: string | null;
+    };
+    FollowRequestViewDto: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      follower: components['schemas']['FollowUserViewDto'];
+    };
+    FollowRequestPageDto: {
+      items: components['schemas']['FollowRequestViewDto'][];
+      nextCursor: string | null;
     };
   };
   responses: never;
@@ -1051,6 +1174,154 @@ export interface operations {
         content: {
           'application/json': components['schemas']['UploadViewDto'];
         };
+      };
+    };
+  };
+  UserFollowsController_follow: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowStatusViewDto'];
+        };
+      };
+    };
+  };
+  UserFollowsController_unfollow: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  UserFollowsController_followers: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowUserPageDto'];
+        };
+      };
+    };
+  };
+  UserFollowsController_following: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowUserPageDto'];
+        };
+      };
+    };
+  };
+  FollowsController_pendingRequests: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowRequestPageDto'];
+        };
+      };
+    };
+  };
+  FollowsController_accept: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FollowsController_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

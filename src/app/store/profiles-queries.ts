@@ -6,10 +6,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { profilesApi } from '../lib/profiles-api';
 import { postKeys, profileKeys } from '../lib/query-keys';
 
-export function useProfile(userId: string) {
+export function useProfile(userId: string, enabled = true) {
   return useQuery({
     queryKey: profileKeys.view(userId),
     queryFn: () => profilesApi.view(userId),
+    enabled: enabled && Boolean(userId),
   });
 }
 

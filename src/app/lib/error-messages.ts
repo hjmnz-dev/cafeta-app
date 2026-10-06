@@ -36,6 +36,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
+  CANNOT_FOLLOW_SELF: 'No puedes seguirte a ti mismo.',
+  FOLLOW_NOT_FOUND: 'No sigues a este usuario.',
+  FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
+  PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';
