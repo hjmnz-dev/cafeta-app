@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-query';
 import { careersApi } from '../lib/auth-api';
 import { postsApi } from '../lib/posts-api';
+import { uploadsApi } from '../lib/uploads-api';
 import { careerKeys, postKeys } from '../lib/query-keys';
 
 const firstPage = null as string | null;
@@ -54,4 +55,9 @@ export function useCreatePost() {
     mutationFn: postsApi.create,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: postKeys.all }),
   });
+}
+
+/** Sube un archivo; no toca la caché (aún no es parte de ninguna publicación). */
+export function useUploadFile() {
+  return useMutation({ mutationFn: uploadsApi.upload });
 }

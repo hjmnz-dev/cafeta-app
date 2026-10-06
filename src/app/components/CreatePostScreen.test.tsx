@@ -93,7 +93,7 @@ describe('Spec 0005 — Crear publicación', () => {
     ]);
   });
 
-  it('AC-11: sin imagen, video ni carrera; nombre y carrera de la sesión; contador de 2000', async () => {
+  it('AC-11: sin selector de carrera; nombre y carrera de la sesión; contador de 2000', async () => {
     fakePostsApi();
     renderWithProviders(<CreatePostScreen />, { route: '/create-post' });
 
@@ -103,7 +103,11 @@ describe('Spec 0005 — Crear publicación', () => {
       await screen.findByText('Ingeniería de Software'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('combobox')).toBeNull();
-    expect(document.querySelector('input[type="file"]')).toBeNull();
+    // Los adjuntos llegaron con la subida de archivos (spec 0008, decisión 13).
+    expect(screen.getByTestId('media-input')).toHaveAttribute(
+      'accept',
+      expect.stringContaining('image/jpeg'),
+    );
     expect(screen.getByTestId('char-count')).toHaveTextContent('0/2000');
 
     fireEvent.change(textbox(), { target: { value: 'a'.repeat(2001) } });

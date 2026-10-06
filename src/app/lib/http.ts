@@ -87,13 +87,21 @@ function codeOf(data: unknown): string {
   return 'UNKNOWN';
 }
 
+// FormData viaja tal cual: el navegador pone el Content-Type con su boundary.
+function encodeBody(body: unknown): BodyInit | undefined {
+  if (body === undefined) return undefined;
+  return body instanceof FormData ? body : JSON.stringify(body);
+}
+
 export async function apiRequest<T>(
   path: string,
   { method = 'GET', body }: { method?: string; body?: unknown } = {},
 ): Promise<T> {
   const session = readStoredSession();
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !(body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
   if (session) headers.Authorization = `Bearer ${session.accessToken}`;
 
   let res: Response;
@@ -101,7 +109,7 @@ export async function apiRequest<T>(
     res = await fetch(`${API_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: encodeBody(body),
     });
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', messageForCode('NETWORK_ERROR'));

@@ -64,6 +64,7 @@ export function postView(
     codeSnippet: null,
     groupName: null,
     groupSpots: null,
+    media: [],
     reactionCount: 0,
     commentCount: 0,
     ...rest,

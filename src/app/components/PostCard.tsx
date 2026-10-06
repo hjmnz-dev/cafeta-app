@@ -279,6 +279,32 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             </div>
           )}
 
+          {post.videoUrl && (
+            <video
+              src={post.videoUrl}
+              controls
+              preload="metadata"
+              aria-label="Video de la publicación"
+              className="w-full max-h-[440px] rounded-[18px] border border-[var(--line-soft)] bg-black"
+            />
+          )}
+
+          {post.documentUrl && (
+            <a
+              href={post.documentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[16px] p-3 flex items-center gap-3 hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <div className="w-11 h-11 bg-[var(--tint)] rounded-[12px] flex items-center justify-center text-[var(--brand)] flex-none">
+                <FileText className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-[13px] text-[var(--ink)]">
+                Ver documento PDF
+              </span>
+            </a>
+          )}
+
           {/* Adjuntos por tipo de publicación (HU21) */}
           {post.type === 'pdf' && (
             <div className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[16px] p-3 flex items-center gap-3">

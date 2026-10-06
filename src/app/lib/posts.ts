@@ -80,6 +80,9 @@ export function toCardPost(view: PostView, now: Date): Post {
     groupName: view.groupName ?? undefined,
     spotsAvailable: view.groupSpots ?? undefined,
     location: view.location ?? undefined,
+    images: view.media.filter((m) => m.mediaType === 'IMAGE').map((m) => m.url),
+    videoUrl: view.media.find((m) => m.mediaType === 'VIDEO')?.url,
+    documentUrl: view.media.find((m) => m.mediaType === 'DOCUMENT')?.url,
   };
 }
 
