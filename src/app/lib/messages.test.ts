@@ -5,6 +5,8 @@ import {
   initialsOf,
   socketUrl,
   withIncomingMessage,
+  withoutMessage,
+  withUpdatedMessage,
 } from './messages';
 
 const msg = (id: string): MessageView => ({
@@ -41,6 +43,39 @@ describe('withIncomingMessage', () => {
   it('no duplica un mensaje que ya estaba (el propio llega también por el socket)', () => {
     const data = { pages: pages(['m2'], ['m1']), pageParams: [null, 'm2'] };
     expect(withIncomingMessage(data, msg('m1'))).toBe(data);
+  });
+});
+
+describe('withUpdatedMessage', () => {
+  it('reemplaza el mensaje con el nuevo contenido y fecha de edición', () => {
+    const data = {
+      pages: pages(['m3', 'm2'], ['m1']),
+      pageParams: [null, 'm2'],
+    };
+    const updated: MessageView = {
+      ...msg('m2'),
+      content: 'nuevo contenido',
+      editedAt: '2026-10-06T12:05:00.000Z',
+    };
+    const next = withUpdatedMessage(data, updated);
+    expect(next.pages[0].items.find((m) => m.id === 'm2')?.content).toBe(
+      'nuevo contenido',
+    );
+    expect(next.pages[0].items.find((m) => m.id === 'm2')?.editedAt).toBe(
+      '2026-10-06T12:05:00.000Z',
+    );
+  });
+});
+
+describe('withoutMessage', () => {
+  it('remueve el mensaje desactivado de la lista de páginas', () => {
+    const data = {
+      pages: pages(['m3', 'm2'], ['m1']),
+      pageParams: [null, 'm2'],
+    };
+    const next = withoutMessage(data, 'm2');
+    expect(next.pages[0].items.map((m) => m.id)).toEqual(['m3']);
+    expect(next.pages[1].items.map((m) => m.id)).toEqual(['m1']);
   });
 });
 

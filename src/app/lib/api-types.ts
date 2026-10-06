@@ -548,6 +548,10 @@ export interface components {
       /** @description Texto del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
     };
+    EditMessageDto: {
+      /** @description Texto corregido del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
+      content: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -968,6 +972,52 @@ export interface operations {
       header?: never;
       path: {
         id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ConversationsController_edit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EditMessageDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessageViewDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        messageId: string;
       };
       cookie?: never;
     };

@@ -33,4 +33,17 @@ export const conversationsApi = {
     }),
   markRead: (id: string) =>
     apiRequest<void>(`/conversations/${id}/read`, { method: 'POST' }),
+  edit: (conversationId: string, messageId: string, content: string) =>
+    apiRequest<MessageView>(
+      `/conversations/${conversationId}/messages/${messageId}`,
+      {
+        method: 'PATCH',
+        body: { content },
+      },
+    ),
+  deactivate: (conversationId: string, messageId: string) =>
+    apiRequest<void>(
+      `/conversations/${conversationId}/messages/${messageId}/deactivate`,
+      { method: 'POST' },
+    ),
 };

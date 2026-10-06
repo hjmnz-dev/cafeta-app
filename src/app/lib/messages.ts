@@ -40,6 +40,34 @@ export function withIncomingMessage(
   };
 }
 
+/** Reemplaza el mensaje editado conservando el orden de las páginas. */
+export function withUpdatedMessage(
+  data: Pages<MessagePage>,
+  updated: MessageView,
+): Pages<MessagePage> {
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      items: page.items.map((m) => (m.id === updated.id ? updated : m)),
+    })),
+  };
+}
+
+/** Quita un mensaje desactivado de la caché sin recargar. */
+export function withoutMessage(
+  data: Pages<MessagePage>,
+  messageId: string,
+): Pages<MessagePage> {
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      items: page.items.filter((m) => m.id !== messageId),
+    })),
+  };
+}
+
 /** El socket vive en la raíz del servidor de la API, fuera de /api/v1. */
 export function socketUrl(apiUrl: string): string {
   return new URL(apiUrl).origin;

@@ -13,7 +13,11 @@ import type { MessageView } from '../lib/conversations-api';
 import { API_URL, readStoredSession } from '../lib/http';
 import { socketUrl } from '../lib/messages';
 import { conversationKeys } from '../lib/query-keys';
-import { applyIncomingMessage } from './conversations-queries';
+import {
+  applyDeactivatedMessage,
+  applyIncomingMessage,
+  applyUpdatedMessage,
+} from './conversations-queries';
 import { useSession } from './SessionStore';
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
@@ -30,6 +34,18 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     });
     socket.on('message:new', (message: MessageView) =>
       applyIncomingMessage(queryClient, message),
+    );
+    socket.on('message:updated', (message: MessageView) =>
+      applyUpdatedMessage(queryClient, message),
+    );
+    socket.on(
+      'message:deactivated',
+      (payload: { id: string; conversationId: string }) =>
+        applyDeactivatedMessage(
+          queryClient,
+          payload.conversationId,
+          payload.id,
+        ),
     );
     // Al reconectar pudo llegar algo mientras no había socket: se vuelve a pedir.
     socket.io.on('reconnect', () => {
