@@ -61,6 +61,7 @@ export function LivePostList({
           post={toCardPost(view, now)}
           live={{
             isMine: view.author.id === user?.id,
+            authorId: view.author.id,
             isAnnouncement: view.type === 'ANNOUNCEMENT',
           }}
         />

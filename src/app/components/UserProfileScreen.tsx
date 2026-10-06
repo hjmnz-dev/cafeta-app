@@ -14,16 +14,30 @@ import {
   Check,
 } from 'lucide-react';
 import { useAppState, TAG_CATEGORIES } from '../store/AppState';
+import { isApiUserId } from '../lib/profiles';
+import { LiveUserProfileScreen } from './LiveUserProfileScreen';
 import { ReportDialog } from './ReportDialog';
 
 /**
- * Perfil de otro usuario. Base para DEF-05 (seguir/dejar de seguir) y punto
- * desde donde se bloquea o denuncia a esa persona (DEF-12 · HU53-HU55).
- * Ruta: /u/:userId
+ * Perfil de otro usuario. Ruta: /u/:userId. Con un id de la API (UUID) es el
+ * perfil real con su privacidad (decisión 15); con un id de la demo sigue el
+ * prototipo de AppState hasta que Descubrir y Red usen la API (16 y 28).
  */
 export function UserProfileScreen() {
-  const navigate = useNavigate();
   const { userId = '' } = useParams();
+  return isApiUserId(userId) ? (
+    <LiveUserProfileScreen key={userId} userId={userId} />
+  ) : (
+    <DemoUserProfileScreen userId={userId} />
+  );
+}
+
+/**
+ * Perfil de la demo. Base para DEF-05 (seguir/dejar de seguir) y punto
+ * desde donde se bloquea o denuncia a esa persona (DEF-12 · HU53-HU55).
+ */
+function DemoUserProfileScreen({ userId }: { userId: string }) {
+  const navigate = useNavigate();
   const {
     getUser,
     followState,

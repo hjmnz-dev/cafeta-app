@@ -164,6 +164,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/users/{userId}/profile': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ProfilesController_view'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/me/privacy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PrivacyController_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['PrivacyController_update'];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -297,6 +329,54 @@ export interface components {
     PostCountDto: {
       /** @example 12 */
       count: number;
+    };
+    /** @enum {string} */
+    ProfileVisibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
+    /**
+     * @description Seguimiento de quien pregunta hacia este perfil.
+     * @enum {string}
+     */
+    FollowState: 'NONE' | 'PENDING' | 'ACCEPTED';
+    /** @enum {string} */
+    TagCategory: 'CAREER' | 'SKILL' | 'INTEREST';
+    ProfileTagDto: {
+      category: components['schemas']['TagCategory'];
+      /** @example React */
+      label: string;
+    };
+    ProfileCountsDto: {
+      posts: number;
+      followers: number;
+      following: number;
+    };
+    ProfileViewDto: {
+      /** @example Ingeniería de Software */
+      careerName: string | null;
+      visibility: components['schemas']['ProfileVisibility'];
+      /** @description Seguimiento de quien pregunta hacia este perfil. */
+      followStatus: components['schemas']['FollowState'];
+      bio: string | null;
+      tags: components['schemas']['ProfileTagDto'][];
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+      /** @description true si la cuenta está verificada. */
+      verified: boolean;
+      /** @description true si es el perfil de quien pregunta. */
+      isSelf: boolean;
+      /** @description false en la versión limitada: no se muestran bio, etiquetas ni publicaciones. */
+      canSeeContent: boolean;
+      /** @description false en el propio perfil y en los PRIVATE: no se muestra el botón Seguir. */
+      canFollow: boolean;
+      counts: components['schemas']['ProfileCountsDto'];
+    };
+    PrivacyDto: {
+      /** @description PUBLIC: todos ven tu contenido. FOLLOWERS: solo quien te sigue. PRIVATE: solo tú. */
+      visibility: components['schemas']['ProfileVisibility'];
+    };
+    UpdatePrivacyDto: {
+      visibility: components['schemas']['ProfileVisibility'];
     };
   };
   responses: never;
@@ -526,6 +606,69 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PostCountDto'];
+        };
+      };
+    };
+  };
+  ProfilesController_view: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProfileViewDto'];
+        };
+      };
+    };
+  };
+  PrivacyController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PrivacyDto'];
+        };
+      };
+    };
+  };
+  PrivacyController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdatePrivacyDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PrivacyDto'];
         };
       };
     };

@@ -46,6 +46,8 @@ import { ReportDialog } from './ReportDialog';
 
 export interface LivePost {
   isMine: boolean;
+  /** Para enlazar al perfil del autor (/u/:id), que aplica su privacidad. */
+  authorId: string;
   isAnnouncement: boolean;
 }
 
@@ -166,9 +168,9 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                {live?.isMine ? (
+                {live ? (
                   <Link
-                    to="/profile"
+                    to={live.isMine ? '/profile' : `/u/${live.authorId}`}
                     className="font-['Space_Grotesk',sans-serif] font-bold text-[15px] text-[var(--ink)] leading-tight hover:underline"
                   >
                     {post.authorName}

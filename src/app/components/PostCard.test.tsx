@@ -307,13 +307,16 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: false, isAnnouncement: false }}
+        live={{ isMine: false, authorId: 'u-2', isAnnouncement: false }}
       />,
     );
 
     const card = within(screen.getByTestId('post-e1'));
-    expect(card.getByText('Juan Pérez')).toBeInTheDocument();
-    expect(card.queryByRole('link', { name: 'Juan Pérez' })).toBeNull();
+    // El nombre lleva a su perfil, que aplica su privacidad (decisión 15).
+    expect(card.getByRole('link', { name: 'Juan Pérez' })).toHaveAttribute(
+      'href',
+      '/u/u-2',
+    );
     expect(card.getByText('Medicina')).toBeInTheDocument();
     expect(card.getByText(/2h/)).toHaveTextContent('Editado');
     expect(card.getByText('Auditorio')).toBeInTheDocument();
@@ -333,7 +336,7 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: false, isAnnouncement: false }}
+        live={{ isMine: false, authorId: 'u-2', isAnnouncement: false }}
       />,
     );
 
@@ -351,7 +354,7 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: true, isAnnouncement: true }}
+        live={{ isMine: true, authorId: 'u-1', isAnnouncement: true }}
       />,
     );
 
