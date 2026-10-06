@@ -14,6 +14,14 @@ export const careerKeys = {
   all: ['careers'] as const,
 };
 
+/** Mensajería (spec 0008, decisión 25): todo cuelga de ['conversations']. */
+export const conversationKeys = {
+  all: ['conversations'] as const,
+  inbox: ['conversations', 'inbox'] as const,
+  detail: (id: string) => ['conversations', 'detail', id] as const,
+  messages: (id: string) => ['conversations', 'messages', id] as const,
+};
+
 /** Perfiles y privacidad (decisión 15): cambiar la privacidad invalida profileKeys.all. */
 export const profileKeys = {
   all: ['profiles'] as const,

@@ -19,6 +19,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   POST_CONTENT_REQUIRED: 'Escribe algo antes de publicar.',
   INVALID_CURSOR: 'La lista cambió. Vuelve a cargarla.',
   USER_NOT_FOUND: 'Este perfil no existe o ya no está disponible.',
+  CANNOT_MESSAGE_SELF: 'No puedes escribirte a ti mismo.',
+  CONVERSATION_NOT_FOUND: 'Esta conversación ya no está disponible.',
+  MESSAGE_CONTENT_REQUIRED: 'Escribe algo antes de enviar.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
 };

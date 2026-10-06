@@ -1,135 +1,294 @@
 import { describe, it, expect } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Route, Routes } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { MessagesScreen } from './MessagesScreen';
-import { AppStatePosts, renderWithProviders } from '../../test/utils';
+import { ConversationScreen } from './ConversationScreen';
+import { renderWithProviders } from '../../test/utils';
+import { signIn, TEST_USER } from '../../test/api';
+import { json } from '../../test/setup';
+import type { ConversationView, MessageView } from '../lib/conversations-api';
+import { applyIncomingMessage } from '../store/conversations-queries';
 
-/** Abre la conversación con María, que es la que trae hilo de demostración. */
-async function openChat(user: ReturnType<typeof userEvent.setup>) {
-  renderWithProviders(<MessagesScreen />, { route: '/messages' });
-  await user.click(screen.getByRole('button', { name: /maría rodríguez/i }));
+// Mensajería real (spec 0008, decisión 25) con la API simulada.
+const BETO = '01926f00-0000-7000-8000-0000000000b0';
+const CONV = '01926f00-0000-7000-8000-0000000000d1';
+
+function conversation(
+  overrides: Partial<ConversationView> & { id: string },
+): ConversationView {
+  return {
+    otherUser: {
+      id: BETO,
+      handle: 'beto',
+      displayName: 'Beto Díaz',
+      careerName: 'Medicina',
+      verified: false,
+    },
+    lastMessage: null,
+    unread: false,
+    ...overrides,
+  };
 }
 
-describe('DEF-06 · HU36/HU37 — Editar y retirar mensajes', () => {
-  it('HU35 — enviar un mensaje lo agrega a la conversación', async () => {
-    const user = userEvent.setup();
-    await openChat(user);
+function message(
+  overrides: Partial<MessageView> & { id: string },
+): MessageView {
+  return {
+    conversationId: CONV,
+    senderId: BETO,
+    content: 'Hola',
+    createdAt: '2026-10-06T12:00:00.000Z',
+    editedAt: null,
+    ...overrides,
+  };
+}
 
-    await user.type(
-      screen.getByRole('textbox', { name: /escribe un mensaje/i }),
-      'Te los paso ahora mismo',
-    );
-    await user.click(screen.getByRole('button', { name: /enviar mensaje/i }));
+const page = <T,>(items: T[], nextCursor: string | null = null) =>
+  json(200, { items, nextCursor });
 
-    expect(screen.getByText('Te los paso ahora mismo')).toBeInTheDocument();
+function Screens() {
+  return (
+    <Routes>
+      <Route path="/messages" element={<MessagesScreen />} />
+      <Route
+        path="/messages/:conversationId"
+        element={<ConversationScreen />}
+      />
+    </Routes>
+  );
+}
+
+describe('HU33 — Bandeja de mensajes', () => {
+  it('E1: muestra las conversaciones en el orden de la API y marca las no leídas', async () => {
+    signIn((url) => {
+      if (url.pathname.endsWith('/conversations')) {
+        return page([
+          conversation({
+            id: 'c1',
+            unread: true,
+            lastMessage: {
+              id: 'm1',
+              senderId: BETO,
+              content: '¿Vamos a estudiar?',
+              createdAt: new Date().toISOString(),
+            },
+          }),
+          conversation({
+            id: 'c2',
+            otherUser: {
+              id: '01926f00-0000-7000-8000-0000000000c3',
+              handle: 'carla',
+              displayName: 'Carla Peña',
+              careerName: null,
+              verified: false,
+            },
+            lastMessage: {
+              id: 'm2',
+              senderId: TEST_USER.id,
+              content: 'Nos vemos',
+              createdAt: '2026-10-01T12:00:00.000Z',
+            },
+          }),
+        ]);
+      }
+    });
+    renderWithProviders(<MessagesScreen />, { route: '/messages' });
+
+    const rows = await screen.findAllByRole('button', {
+      name: /conversación con/i,
+    });
+    expect(rows.map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Conversación con Beto Díaz, sin leer',
+      'Conversación con Carla Peña',
+    ]);
+    expect(screen.getByText('¿Vamos a estudiar?')).toBeInTheDocument();
+    expect(screen.getByText('Tú: Nos vemos')).toBeInTheDocument();
+    expect(screen.getAllByTestId('unread-dot')).toHaveLength(1);
   });
 
-  it('HU36 — el autor edita su mensaje y queda marcado como editado', async () => {
-    const user = userEvent.setup();
-    await openChat(user);
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /editar mensaje: sí claro, te los comparto/i,
-      }),
+  it('E2: sin conversaciones muestra el estado vacío que invita a escribir', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/conversations') ? page([]) : undefined,
     );
-    const box = screen.getByRole('textbox', { name: /^editar mensaje$/i });
-    await user.clear(box);
-    await user.type(box, 'Sí claro, te los comparto esta tarde');
-    await user.click(
-      screen.getByRole('button', { name: /guardar cambios del mensaje/i }),
-    );
+    renderWithProviders(<MessagesScreen />, { route: '/messages' });
 
     expect(
-      screen.getByText('Sí claro, te los comparto esta tarde'),
+      await screen.findByText('Aún no tienes conversaciones'),
     ).toBeInTheDocument();
-    expect(screen.getByText(/· Editado/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /buscar personas/i }),
+    ).toBeInTheDocument();
   });
 
-  it('HU36 — solo se pueden editar los mensajes propios', async () => {
-    const user = userEvent.setup();
-    await openChat(user);
-
-    // Mensaje recibido: sin acciones de autor.
-    expect(screen.getByText('Hola Carlos! ¿Cómo estás?')).toBeInTheDocument();
+  it('si la bandeja falla, muestra el mensaje traducido y deja reintentar', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/conversations')
+        ? json(500, { statusCode: 500, code: 'INTERNAL' })
+        : undefined,
+    );
+    renderWithProviders(<MessagesScreen />, { route: '/messages' });
     expect(
-      screen.queryByRole('button', { name: /editar mensaje: hola carlos/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /retirar mensaje: hola carlos/i }),
-    ).not.toBeInTheDocument();
+      await screen.findByRole('button', { name: /reintentar/i }),
+    ).toBeInTheDocument();
   });
 
-  it('HU37 — retirar un mensaje lo saca de la conversación y de la vista previa', async () => {
-    const user = userEvent.setup();
-    await openChat(user);
+  it('?to=<id> abre la conversación con esa persona y salta a ella', async () => {
+    const fetchMock = signIn((url, init) => {
+      if (url.pathname.endsWith('/conversations') && init?.method === 'POST') {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}`)) {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/messages`)) {
+        return page([]);
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/read`)) {
+        return new Response(null, { status: 204 });
+      }
+    });
+    renderWithProviders(<Screens />, { route: `/messages?to=${BETO}` });
 
-    await user.click(
-      screen.getByRole('button', {
-        name: /retirar mensaje: sí claro, te los comparto/i,
-      }),
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        `/messages/${CONV}`,
+      ),
     );
-
-    expect(
-      screen.queryByText('Sí claro, te los comparto por aquí'),
-    ).not.toBeInTheDocument();
-
-    // De vuelta en la lista, la conversación ya no anuncia el mensaje retirado.
-    await user.click(
-      screen.getByRole('button', { name: /volver a conversaciones/i }),
+    expect(await screen.findByText('Beto Díaz')).toBeInTheDocument();
+    const post = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'POST',
     );
-    expect(
-      screen.queryByText('Sí claro, te los comparto por aquí'),
-    ).not.toBeInTheDocument();
+    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ userId: BETO });
   });
 });
 
-describe('DEF-06 · HU28 — Reaccionar a publicación', () => {
-  it('reaccionar marca la publicación y suma al conteo; repetir la retira', async () => {
-    const user = userEvent.setup();
-    // Reaccionar sigue en AppState: el feed real llega sin botones (spec 0005).
-    renderWithProviders(<AppStatePosts />);
-
-    // p2 (Juan, 45 reacciones) es una publicación ajena del feed de ejemplo.
-    const card = screen.getByTestId('post-p2');
-
-    await user.click(within(card).getByRole('button', { name: /me gusta/i }));
-
-    const marcada = within(card).getByRole('button', {
-      name: /quitar reacción/i,
+describe('HU34, HU35 y HU38 — Ver una conversación y enviar', () => {
+  const threadApi = (extra?: Parameters<typeof signIn>[0]) =>
+    signIn(async (url, init) => {
+      const custom = await extra?.(url, init);
+      if (custom) return custom;
+      if (url.pathname.endsWith(`/conversations/${CONV}`)) {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/messages`)) {
+        // La API responde del más reciente al más antiguo.
+        return page([
+          message({ id: 'm3', senderId: TEST_USER.id, content: 'Dale' }),
+          message({ id: 'm2', content: '¿Mañana a las 3?' }),
+          message({ id: 'm1', content: 'Hola Carlos' }),
+        ]);
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/read`)) {
+        return new Response(null, { status: 204 });
+      }
     });
-    expect(marcada).toHaveAttribute('aria-pressed', 'true');
-    expect(marcada).toHaveTextContent('46');
 
-    await user.click(
-      within(card).getByRole('button', { name: /quitar reacción/i }),
+  it('HU38 E1: dibuja el historial en orden cronológico y marca la conversación como leída', async () => {
+    const fetchMock = threadApi();
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+
+    await screen.findByText('Hola Carlos');
+    const items = screen.getAllByRole('listitem').map((li) => li.textContent);
+    expect(items[0]).toContain('Hola Carlos');
+    expect(items[2]).toContain('Dale');
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([input]) =>
+          String(input).endsWith(`/conversations/${CONV}/read`),
+        ),
+      ).toBe(true),
     );
-
-    const sinMarcar = within(card).getByRole('button', { name: /me gusta/i });
-    expect(sinMarcar).toHaveAttribute('aria-pressed', 'false');
-    expect(sinMarcar).toHaveTextContent('45');
   });
 
-  it('la reacción es independiente en cada publicación', async () => {
+  it('HU34 E1: enviar manda el texto recortado, lo agrega al historial y limpia la caja', async () => {
     const user = userEvent.setup();
-    // Reaccionar sigue en AppState: el feed real llega sin botones (spec 0005).
-    renderWithProviders(<AppStatePosts />);
+    const fetchMock = threadApi((url, init) => {
+      if (
+        url.pathname.endsWith(`/conversations/${CONV}/messages`) &&
+        init?.method === 'POST'
+      ) {
+        return json(
+          201,
+          message({
+            id: 'm4',
+            senderId: TEST_USER.id,
+            content: 'Perfecto, allá nos vemos',
+          }),
+        );
+      }
+    });
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('Hola Carlos');
 
-    await user.click(
-      within(screen.getByTestId('post-p2')).getByRole('button', {
-        name: /me gusta/i,
-      }),
-    );
+    const box = screen.getByRole('textbox', { name: /escribe un mensaje/i });
+    await user.type(box, '  Perfecto, allá nos vemos  ');
+    await user.click(screen.getByRole('button', { name: /enviar mensaje/i }));
 
     expect(
-      within(screen.getByTestId('post-p2')).getByRole('button', {
-        name: /quitar reacción/i,
-      }),
+      await screen.findByText('Perfecto, allá nos vemos'),
     ).toBeInTheDocument();
+    expect(box).toHaveValue('');
+    const sent = fetchMock.mock.calls.find(
+      ([input, init]) =>
+        init?.method === 'POST' && String(input).endsWith('/messages'),
+    );
+    expect(JSON.parse(String(sent?.[1]?.body))).toEqual({
+      content: 'Perfecto, allá nos vemos',
+    });
+  });
+
+  it('HU34 E2: con la caja vacía o solo espacios no se puede enviar', async () => {
+    const user = userEvent.setup();
+    threadApi();
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('Hola Carlos');
+
+    const send = screen.getByRole('button', { name: /enviar mensaje/i });
+    expect(send).toBeDisabled();
+    await user.type(
+      screen.getByRole('textbox', { name: /escribe un mensaje/i }),
+      '   ',
+    );
+    expect(send).toBeDisabled();
+  });
+
+  it('HU35 E1: un mensaje que llega por el socket aparece sin recargar', async () => {
+    threadApi();
+    let client: ReturnType<typeof useQueryClient> | null = null;
+    function GrabClient() {
+      client = useQueryClient();
+      return null;
+    }
+    renderWithProviders(
+      <>
+        <GrabClient />
+        <Screens />
+      </>,
+      { route: `/messages/${CONV}` },
+    );
+    await screen.findByText('Hola Carlos');
+
+    // Lo mismo que hace RealtimeProvider con el evento message:new.
+    applyIncomingMessage(
+      client!,
+      message({ id: 'm9', content: 'Ya llegué a la biblioteca' }),
+    );
     expect(
-      within(screen.getByTestId('post-p3')).getByRole('button', {
-        name: /me gusta/i,
-      }),
-    ).toHaveTextContent('120');
+      await screen.findByText('Ya llegué a la biblioteca'),
+    ).toBeInTheDocument();
+  });
+
+  it('una conversación ajena o inexistente muestra el aviso traducido', async () => {
+    signIn((url) =>
+      url.pathname.includes(`/conversations/${CONV}`)
+        ? json(404, { statusCode: 404, code: 'CONVERSATION_NOT_FOUND' })
+        : undefined,
+    );
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    expect(
+      await screen.findByText('Esta conversación ya no está disponible.'),
+    ).toBeInTheDocument();
   });
 });
