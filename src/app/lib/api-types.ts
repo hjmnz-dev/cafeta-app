@@ -164,6 +164,103 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/users/{userId}/profile': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ProfilesController_view'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/me/privacy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PrivacyController_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['PrivacyController_update'];
+    trace?: never;
+  };
+  '/api/v1/conversations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ConversationsController_inbox'];
+    put?: never;
+    /** Crea la conversación con esa persona, o devuelve la que ya existe. */
+    post: operations['ConversationsController_open'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/conversations/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ConversationsController_findOne'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/conversations/{id}/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ConversationsController_messages'];
+    put?: never;
+    post: operations['ConversationsController_send'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/conversations/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['ConversationsController_markRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/uploads': {
     parameters: {
       query?: never;
@@ -343,6 +440,113 @@ export interface components {
       /** @example image/jpeg */
       mimeType: string;
       sizeBytes: number;
+    };
+    /** @enum {string} */
+    ProfileVisibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
+    /**
+     * @description Seguimiento de quien pregunta hacia este perfil.
+     * @enum {string}
+     */
+    FollowState: 'NONE' | 'PENDING' | 'ACCEPTED';
+    /** @enum {string} */
+    TagCategory: 'CAREER' | 'SKILL' | 'INTEREST';
+    ProfileTagDto: {
+      category: components['schemas']['TagCategory'];
+      /** @example React */
+      label: string;
+    };
+    ProfileCountsDto: {
+      posts: number;
+      followers: number;
+      following: number;
+    };
+    ProfileViewDto: {
+      /** @example Ingeniería de Software */
+      careerName: string | null;
+      visibility: components['schemas']['ProfileVisibility'];
+      /** @description Seguimiento de quien pregunta hacia este perfil. */
+      followStatus: components['schemas']['FollowState'];
+      bio: string | null;
+      tags: components['schemas']['ProfileTagDto'][];
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+      /** @description true si la cuenta está verificada. */
+      verified: boolean;
+      /** @description true si es el perfil de quien pregunta. */
+      isSelf: boolean;
+      /** @description false en la versión limitada: no se muestran bio, etiquetas ni publicaciones. */
+      canSeeContent: boolean;
+      /** @description false en el propio perfil y en los PRIVATE: no se muestra el botón Seguir. */
+      canFollow: boolean;
+      counts: components['schemas']['ProfileCountsDto'];
+    };
+    PrivacyDto: {
+      /** @description PUBLIC: todos ven tu contenido. FOLLOWERS: solo quien te sigue. PRIVATE: solo tú. */
+      visibility: components['schemas']['ProfileVisibility'];
+    };
+    UpdatePrivacyDto: {
+      visibility: components['schemas']['ProfileVisibility'];
+    };
+    LastMessageDto: {
+      id: string;
+      senderId: string;
+      content: string;
+      /** @description Fecha de envío en ISO 8601. */
+      createdAt: string;
+    };
+    ConversationUserDto: {
+      /** @example Ingeniería de Software */
+      careerName: string | null;
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+      /** @description true si la cuenta está verificada. */
+      verified: boolean;
+    };
+    ConversationViewDto: {
+      /** @description Último mensaje visible; null si todavía no hay mensajes. */
+      lastMessage: components['schemas']['LastMessageDto'] | null;
+      id: string;
+      /** @description La otra persona de la conversación. */
+      otherUser: components['schemas']['ConversationUserDto'];
+      /** @description true si el último mensaje es del otro y no lo he leído. */
+      unread: boolean;
+    };
+    ConversationPageDto: {
+      /** @description De la actividad más reciente a la más antigua. */
+      items: components['schemas']['ConversationViewDto'][];
+      /** @description id para pedir la página siguiente; null cuando no hay más. */
+      nextCursor: string | null;
+    };
+    OpenConversationDto: {
+      /**
+       * Format: uuid
+       * @description id de la otra persona. Si ya hay conversación con ella, se reusa.
+       */
+      userId: string;
+    };
+    MessageViewDto: {
+      editedAt: string | null;
+      id: string;
+      conversationId: string;
+      /** @description id de quien lo envió; la web lo compara con el usuario actual. */
+      senderId: string;
+      content: string;
+      /** @description Fecha de envío en ISO 8601. */
+      createdAt: string;
+    };
+    MessagePageDto: {
+      /** @description Del más reciente al más antiguo; la web los invierte para dibujarlos. */
+      items: components['schemas']['MessageViewDto'][];
+      /** @description id para pedir mensajes más antiguos; null cuando no hay más. */
+      nextCursor: string | null;
+    };
+    SendMessageDto: {
+      /** @description Texto del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
+      content: string;
     };
   };
   responses: never;
@@ -573,6 +777,207 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PostCountDto'];
         };
+      };
+    };
+  };
+  ProfilesController_view: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProfileViewDto'];
+        };
+      };
+    };
+  };
+  PrivacyController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PrivacyDto'];
+        };
+      };
+    };
+  };
+  PrivacyController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdatePrivacyDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PrivacyDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_inbox: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ConversationPageDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_open: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['OpenConversationDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ConversationViewDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_findOne: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ConversationViewDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_messages: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessagePageDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_send: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SendMessageDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessageViewDto'];
+        };
+      };
+    };
+  };
+  ConversationsController_markRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

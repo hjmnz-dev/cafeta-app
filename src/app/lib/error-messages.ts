@@ -27,6 +27,12 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
   MEDIA_COMBINATION_INVALID:
     'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',
+  USER_NOT_FOUND: 'Este perfil no existe o ya no está disponible.',
+  CANNOT_MESSAGE_SELF: 'No puedes escribirte a ti mismo.',
+  CONVERSATION_NOT_FOUND: 'Esta conversación ya no está disponible.',
+  MESSAGE_CONTENT_REQUIRED: 'Escribe algo antes de enviar.',
+  PROFILE_RESTRICTED:
+    'Este perfil comparte su contenido solo con quien lo sigue.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';

@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   User,
-  Globe,
-  Users,
-  Lock,
   Bell,
   ChevronRight,
   LogOut,
@@ -13,13 +10,9 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
-import {
-  useAppState,
-  ProfileVisibility,
-  NotificationPrefs,
-  Theme,
-} from '../store/AppState';
+import { useAppState, NotificationPrefs, Theme } from '../store/AppState';
 import { useSession } from '../store/SessionStore';
+import { PrivacySettings } from './PrivacySettings';
 
 /**
  * DEF-03 — Configuración de cuenta. Acceso desde el ícono ⚙️ del perfil.
@@ -29,32 +22,6 @@ import { useSession } from '../store/SessionStore';
  * desaparece del directorio, así que este es el único sitio desde donde se
  * puede revertir sin recordar su enlace.
  */
-
-const VISIBILITY_OPTIONS: {
-  value: ProfileVisibility;
-  label: string;
-  desc: string;
-  icon: React.ElementType;
-}[] = [
-  {
-    value: 'public',
-    label: 'Público',
-    desc: 'Cualquier estudiante puede ver tu perfil y contenido.',
-    icon: Globe,
-  },
-  {
-    value: 'followers',
-    label: 'Solo seguidores',
-    desc: 'Solo quienes ya te siguen ven tu contenido.',
-    icon: Users,
-  },
-  {
-    value: 'private',
-    label: 'Privado',
-    desc: 'Debes aprobar cada solicitud para ver tu perfil.',
-    icon: Lock,
-  },
-];
 
 /** Apariencia. El oscuro es el predeterminado; el claro está a un toque. */
 const THEME_OPTIONS: {
@@ -138,8 +105,6 @@ export function SettingsScreen() {
 
   const blockedUsers = users.filter((u) => blockedIds.includes(u.id));
 
-  const setVisibility = (visibility: ProfileVisibility) =>
-    updateSettings({ visibility });
   const setTheme = (theme: Theme) => updateSettings({ theme });
   const setNotif = (key: keyof NotificationPrefs, value: boolean) =>
     updateSettings({
@@ -200,45 +165,8 @@ export function SettingsScreen() {
           </div>
         </section>
 
-        {/* HU07 — Privacidad */}
-        <section>
-          <h2 className={sectionTitle}>Privacidad del perfil</h2>
-          <div className={card}>
-            {VISIBILITY_OPTIONS.map((opt, i) => {
-              const Icon = opt.icon;
-              const active = settings.visibility === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setVisibility(opt.value)}
-                  aria-pressed={active}
-                  className={`w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-[var(--surface-2)] transition-colors ${i > 0 ? 'border-t border-[var(--line-soft)]' : ''}`}
-                >
-                  <Icon
-                    className={`w-5 h-5 flex-none ${active ? 'text-[var(--brand)]' : 'text-[var(--muted)]'}`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-[15px] ${active ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink)]'}`}
-                    >
-                      {opt.label}
-                    </p>
-                    <p className="text-[12px] text-[var(--muted)] leading-snug">
-                      {opt.desc}
-                    </p>
-                  </div>
-                  <span
-                    className={`w-5 h-5 rounded-full flex-none flex items-center justify-center border-2 ${active ? 'border-[var(--brand)]' : 'border-[var(--line)]'}`}
-                  >
-                    {active && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand)]" />
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        {/* HU07 — Privacidad, contra la API (decisión 15) */}
+        <PrivacySettings sectionTitle={sectionTitle} card={card} />
 
         {/* Apariencia */}
         <section>
