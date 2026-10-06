@@ -4,6 +4,8 @@
  * La app nunca muestra el `message` crudo de la API: traduce el `code` estable
  * a un texto en español pensado para quien usa Cafeta.
  */
+import { ALLOWED_FORMATS_TEXT } from './media';
+
 const MESSAGES: Readonly<Record<string, string>> = {
   EMAIL_NOT_INSTITUTIONAL: 'Usa tu correo institucional de INTEC.',
   EMAIL_TAKEN: 'Ya existe una cuenta con ese correo.',
@@ -18,6 +20,13 @@ const MESSAGES: Readonly<Record<string, string>> = {
   NETWORK_ERROR: 'No hay conexión con Cafeta. Intenta de nuevo.',
   POST_CONTENT_REQUIRED: 'Escribe algo antes de publicar.',
   INVALID_CURSOR: 'La lista cambió. Vuelve a cargarla.',
+  UNSUPPORTED_MEDIA_TYPE: `Ese formato no se puede subir. ${ALLOWED_FORMATS_TEXT}`,
+  FILE_TOO_LARGE: `El archivo es muy grande. ${ALLOWED_FORMATS_TEXT}`,
+  FILE_REQUIRED: 'Elige un archivo para subir.',
+  STORAGE_UNAVAILABLE: 'No pudimos subir el archivo ahora. Intenta más tarde.',
+  MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
+  MEDIA_COMBINATION_INVALID:
+    'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',
   USER_NOT_FOUND: 'Este perfil no existe o ya no está disponible.',
   CANNOT_MESSAGE_SELF: 'No puedes escribirte a ti mismo.',
   CONVERSATION_NOT_FOUND: 'Esta conversación ya no está disponible.',

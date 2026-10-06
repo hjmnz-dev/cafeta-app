@@ -90,8 +90,12 @@ export interface Post {
   spotsAvailable?: number;
   /** Ubicación opcional en el campus (HU21). */
   location?: string;
-  /** Imágenes adjuntas como data URL (ver lib/image.ts). */
+  /** Imágenes adjuntas: data URL en el prototipo, enlace de Blob con la API. */
   images?: string[];
+  /** Video adjunto (enlace de Blob, spec 0008 decisión 13). */
+  videoUrl?: string;
+  /** PDF adjunto (enlace de Blob, spec 0008 decisión 13). */
+  documentUrl?: string;
   /** ¿El usuario actual reaccionó a esta publicación? (HU28) */
   liked?: boolean;
 }
