@@ -28,6 +28,7 @@ import {
   SESSION_ENDED_EVENT,
   writeStoredSession,
 } from '../lib/http';
+import { setMonitoringUser } from '../lib/monitoring';
 
 export type SessionStatus = 'loading' | 'anonymous' | 'authenticated';
 
@@ -67,6 +68,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     // Solo al montar: después el estado lo cambian login, register y logout.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Los errores de Sentry llevan solo el id de la cuenta (spec 0007); en
+  // loading no se cambia nada.
+  const userId = state.user?.id ?? null;
+  useEffect(() => {
+    if (state.status === 'loading') return;
+    setMonitoringUser(userId);
+  }, [state.status, userId]);
 
   // Cualquier 401 del cliente HTTP termina la sesión en toda la app.
   useEffect(() => {
