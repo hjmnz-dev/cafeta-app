@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event';
 import { SettingsScreen } from './SettingsScreen';
 import { renderWithProviders } from '../../test/utils';
 import { SESSION_KEY } from '../lib/http';
+import { signIn } from '../../test/api';
+import { Toaster } from './ui/sonner';
+import { json } from '../../test/setup';
 
 // HU04, cerrar sesión contra la API con fetch simulado (spec 0004, AC-8).
 describe('HU04 · Cerrar sesión', () => {
@@ -82,6 +85,14 @@ describe('HU04 · Cerrar sesión', () => {
 
 const STORAGE_KEY = 'cafeta.appstate.v1';
 const readState = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+const renderSettingsWithToasts = () =>
+  renderWithProviders(
+    <>
+      <SettingsScreen />
+      <Toaster />
+    </>,
+    { route: '/settings' },
+  );
 
 describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
   it('HU06 — muestra las tres áreas: cuenta, privacidad y notificaciones', () => {
@@ -91,27 +102,79 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     expect(screen.getByText('Notificaciones')).toBeInTheDocument();
   });
 
-  it('HU07 — cambiar la privacidad marca la opción y la persiste', async () => {
+  it('HU07 E1 — cambiar la privacidad la guarda en la API y marca la opción', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<SettingsScreen />, { route: '/settings' });
+    let saved = 'PUBLIC';
+    const fetchMock = signIn((url, init) => {
+      if (!url.pathname.endsWith('/me/privacy')) return undefined;
+      if (init?.method === 'PATCH') {
+        saved = (JSON.parse(String(init.body)) as { visibility: string })
+          .visibility;
+      }
+      return json(200, { visibility: saved });
+    });
+    renderSettingsWithToasts();
 
-    // Por defecto: Público
-    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    // Las cuentas nuevas empiezan en Público (decisión 15).
+    expect(
+      await screen.findByRole('button', { name: /público/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
 
-    await user.click(screen.getByRole('button', { name: /privado/i }));
+    await user.click(screen.getByRole('button', { name: /solo seguidores/i }));
 
-    expect(screen.getByRole('button', { name: /privado/i })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /solo seguidores/i }),
+      ).toHaveAttribute('aria-pressed', 'true'),
     );
     expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute(
       'aria-pressed',
       'false',
     );
-    expect(readState().settings.visibility).toBe('private');
+    const patch = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'PATCH',
+    );
+    expect(JSON.parse(String(patch?.[1]?.body))).toEqual({
+      visibility: 'FOLLOWERS',
+    });
+    expect(
+      await screen.findByText('Privacidad actualizada'),
+    ).toBeInTheDocument();
+  });
+
+  it('HU07 E2 — al volver a entrar se muestra la opción guardada en la API', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/me/privacy')
+        ? json(200, { visibility: 'PRIVATE' })
+        : undefined,
+    );
+    renderSettingsWithToasts();
+
+    expect(
+      await screen.findByRole('button', { name: /privado/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('HU07 — si la API falla al guardar, avisa y deja la opción anterior', async () => {
+    const user = userEvent.setup();
+    signIn((url, init) => {
+      if (!url.pathname.endsWith('/me/privacy')) return undefined;
+      return init?.method === 'PATCH'
+        ? json(400, { statusCode: 400, code: 'VALIDATION_ERROR' })
+        : json(200, { visibility: 'PUBLIC' });
+    });
+    renderSettingsWithToasts();
+
+    await screen.findByRole('button', { name: /público/i, pressed: true });
+    await user.click(screen.getByRole('button', { name: /privado/i }));
+
+    expect(
+      await screen.findByText('Revisa los datos del formulario.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /público/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('HU08 — alternar una preferencia de notificación cambia y persiste su estado', async () => {
@@ -126,21 +189,6 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
 
     expect(switches[0]).toHaveAttribute('aria-checked', 'false');
     expect(readState().settings.notifications.likes).toBe(false);
-  });
-
-  it('HU06 — la preferencia persiste al volver a montar la pantalla', async () => {
-    const user = userEvent.setup();
-    const { unmount } = renderWithProviders(<SettingsScreen />, {
-      route: '/settings',
-    });
-
-    await user.click(screen.getByRole('button', { name: /solo seguidores/i }));
-    unmount();
-
-    renderWithProviders(<SettingsScreen />, { route: '/settings' });
-    expect(
-      screen.getByRole('button', { name: /solo seguidores/i }),
-    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
