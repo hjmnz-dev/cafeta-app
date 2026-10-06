@@ -28,3 +28,9 @@ export const profileKeys = {
   view: (userId: string) => ['profiles', 'view', userId] as const,
   privacy: ['profiles', 'privacy'] as const,
 };
+
+/** Bloqueos (decisión 29): lista de usuarios bloqueados. */
+export const blockKeys = {
+  all: ['blocks'] as const,
+  list: ['blocks', 'list'] as const,
+};

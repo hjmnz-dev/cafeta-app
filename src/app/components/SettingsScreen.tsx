@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAppState, NotificationPrefs, Theme } from '../store/AppState';
 import { useSession } from '../store/SessionStore';
+import { useBlockedUsers, useUnblockUser } from '../store/blocks-queries';
 import { PrivacySettings } from './PrivacySettings';
 
 /**
@@ -99,11 +100,31 @@ function Toggle({
 
 export function SettingsScreen() {
   const navigate = useNavigate();
-  const { logout } = useSession();
+  const { user: sessionUser, logout } = useSession();
   const { profile, settings, updateSettings, users, blockedIds, unblockUser } =
     useAppState();
 
-  const blockedUsers = users.filter((u) => blockedIds.includes(u.id));
+  const apiBlocked = useBlockedUsers();
+  const unblockMutation = useUnblockUser();
+
+  const isLive = Boolean(sessionUser);
+  const blockedUsers =
+    isLive && apiBlocked.data
+      ? apiBlocked.data.items.map((b) => ({
+          id: b.id,
+          name: b.displayName,
+          handle: `@${b.handle.replace(/^@/, '')}`,
+        }))
+      : users
+          .filter((u) => blockedIds.includes(u.id))
+          .map((u) => ({ id: u.id, name: u.name, handle: u.handle }));
+
+  const handleUnblock = (userId: string) => {
+    if (isLive) {
+      unblockMutation.mutate(userId);
+    }
+    unblockUser(userId);
+  };
 
   const setTheme = (theme: Theme) => updateSettings({ theme });
   const setNotif = (key: keyof NotificationPrefs, value: boolean) =>
@@ -258,7 +279,7 @@ export function SettingsScreen() {
                     </p>
                   </div>
                   <button
-                    onClick={() => unblockUser(u.id)}
+                    onClick={() => handleUnblock(u.id)}
                     aria-label={`Desbloquear a ${u.name}`}
                     className="h-[32px] px-4 rounded-full text-[13px] font-semibold text-[var(--brand)] border-2 border-[var(--line)] hover:bg-[var(--tint)] transition-colors flex-none"
                   >

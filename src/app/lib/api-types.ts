@@ -277,6 +277,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/blocks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['BlocksController_blockedUsers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/block': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['BlocksController_block'];
+    delete: operations['BlocksController_unblock'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -551,6 +583,23 @@ export interface components {
     EditMessageDto: {
       /** @description Texto corregido del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
+    };
+    BlockStatusViewDto: {
+      blocked: boolean;
+      blockedAt: string;
+    };
+    BlockedUserViewDto: {
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+      blockedAt: string;
+    };
+    BlockedUserPageDto: {
+      items: components['schemas']['BlockedUserViewDto'][];
+      nextCursor: string | null;
     };
   };
   responses: never;
@@ -1051,6 +1100,68 @@ export interface operations {
         content: {
           'application/json': components['schemas']['UploadViewDto'];
         };
+      };
+    };
+  };
+  BlocksController_blockedUsers: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockedUserPageDto'];
+        };
+      };
+    };
+  };
+  BlocksController_block: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockStatusViewDto'];
+        };
+      };
+    };
+  };
+  BlocksController_unblock: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
