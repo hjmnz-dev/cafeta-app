@@ -5,10 +5,9 @@ import type {
 } from '@tanstack/react-query';
 import { userMessageOf } from '../lib/http';
 import type { PostPage } from '../lib/posts-api';
-import { toCardPost } from '../lib/posts';
 import { useSession } from '../store/SessionStore';
 import { InfiniteListFooter } from './InfiniteListFooter';
-import { PostCard } from './PostCard';
+import { LivePostCard } from './LivePostCard';
 import { PostListSkeleton } from './PostCardSkeleton';
 
 export type PostPagesQuery = UseInfiniteQueryResult<InfiniteData<PostPage>>;
@@ -56,14 +55,11 @@ export function LivePostList({
   return (
     <>
       {views.map((view) => (
-        <PostCard
+        <LivePostCard
           key={view.id}
-          post={toCardPost(view, now)}
-          live={{
-            isMine: view.author.id === user?.id,
-            authorId: view.author.id,
-            isAnnouncement: view.type === 'ANNOUNCEMENT',
-          }}
+          view={view}
+          now={now}
+          isMine={view.author.id === user?.id}
         />
       ))}
       <InfiniteListFooter

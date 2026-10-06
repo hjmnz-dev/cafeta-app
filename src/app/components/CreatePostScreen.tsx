@@ -78,14 +78,15 @@ export function CreatePostScreen() {
 
   const handlePost = () => {
     if (sending.current || tooLong || uploading) return;
-    if (!postText.trim()) {
+    // Sin texto vale si hay adjuntos (HU20 E2).
+    if (!postText.trim() && attachments.length === 0) {
       toast.error(messageForCode('POST_CONTENT_REQUIRED'));
       return;
     }
     sending.current = true;
     createPost.mutate(
       {
-        content: postText,
+        content: postText.trim() ? postText : undefined,
         location: location ?? undefined,
         mediaKeys:
           attachments.length > 0 ? attachments.map((a) => a.key) : undefined,

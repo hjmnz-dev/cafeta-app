@@ -10,6 +10,7 @@ export type PostView = Schemas['PostViewDto'];
 export type PostPage = Schemas['PostPageDto'];
 export type PostCount = Schemas['PostCountDto'];
 export type CreatePostInput = Schemas['CreatePostDto'];
+export type UpdatePostInput = Schemas['UpdatePostDto'];
 export type CampusLocation = NonNullable<CreatePostInput['location']>;
 
 /** `?a=1&b=2` sin los valores vacíos; cadena vacía si no queda ninguno. */
@@ -33,4 +34,13 @@ export const postsApi = {
     apiRequest<PostPage>(`/users/${userId}/posts${toQueryString({ cursor })}`),
   countByUser: (userId: string) =>
     apiRequest<PostCount>(`/users/${userId}/posts/count`),
+  // Acciones del autor (spec 0008, decisión 17).
+  update: ({ id, ...input }: UpdatePostInput & { id: string }) =>
+    apiRequest<PostView>(`/posts/${id}`, { method: 'PATCH', body: input }),
+  deactivate: (id: string) =>
+    apiRequest<void>(`/posts/${id}/deactivate`, { method: 'POST' }),
+  reactivate: (id: string) =>
+    apiRequest<void>(`/posts/${id}/reactivate`, { method: 'POST' }),
+  remove: (id: string) =>
+    apiRequest<void>(`/posts/${id}`, { method: 'DELETE' }),
 };

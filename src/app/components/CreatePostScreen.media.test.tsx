@@ -15,7 +15,7 @@ const URL_SAS = `https://blob.test/media/${KEY}?sas`;
 
 function fakeApi(uploadStatus = 201) {
   const posts: PostView[] = [];
-  const bodies: { content: string; mediaKeys?: string[] }[] = [];
+  const bodies: { content?: string; mediaKeys?: string[] }[] = [];
   let uploads = 0;
   signIn(async (url, init) => {
     if (url.pathname.endsWith('/uploads') && init?.method === 'POST') {
@@ -41,7 +41,7 @@ function fakeApi(uploadStatus = 201) {
       bodies.push(body);
       const created = postView({
         id: 'con-foto',
-        content: body.content,
+        content: body.content ?? null,
         media: (body.mediaKeys ?? []).map(() => ({
           url: URL_SAS,
           mediaType: 'IMAGE' as const,
@@ -145,5 +145,18 @@ describe('Spec 0008 decisión 13 — Adjuntar archivos al publicar', () => {
 
     await waitFor(() => expect(bodies).toHaveLength(1));
     expect(bodies[0].mediaKeys).toBeUndefined();
+  });
+
+  it('HU20 E2: con una foto se puede publicar sin texto', async () => {
+    const user = userEvent.setup();
+    const { bodies } = fakeApi();
+    renderComposer();
+
+    choose(png());
+    await screen.findByAltText('Archivo adjunto 1');
+    await user.click(screen.getByRole('button', { name: /^publicar$/i }));
+
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toEqual({ mediaKeys: [KEY] });
   });
 });
