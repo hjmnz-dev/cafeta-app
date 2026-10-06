@@ -15,7 +15,12 @@ import {
   type MessagePage,
   type MessageView,
 } from '../lib/conversations-api';
-import { withIncomingMessage, type Pages } from '../lib/messages';
+import {
+  withIncomingMessage,
+  withUpdatedMessage,
+  withoutMessage,
+  type Pages,
+} from '../lib/messages';
 import { conversationKeys } from '../lib/query-keys';
 
 const firstPage = null as string | null;
@@ -78,6 +83,30 @@ export function useMarkRead(conversationId: string) {
   });
 }
 
+export function useEditMessage(conversationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      content,
+    }: {
+      messageId: string;
+      content: string;
+    }) => conversationsApi.edit(conversationId, messageId, content),
+    onSuccess: (message) => applyUpdatedMessage(queryClient, message),
+  });
+}
+
+export function useDeactivateMessage(conversationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (messageId: string) =>
+      conversationsApi.deactivate(conversationId, messageId),
+    onSuccess: (_data, messageId) =>
+      applyDeactivatedMessage(queryClient, conversationId, messageId),
+  });
+}
+
 /**
  * Un mensaje nuevo (el que envié o uno que llegó por el socket): entra al
  * historial abierto sin volver a pedirlo, y la bandeja se refresca para
@@ -90,6 +119,31 @@ export function applyIncomingMessage(
   queryClient.setQueryData<Pages<MessagePage>>(
     conversationKeys.messages(message.conversationId),
     (data) => (data ? withIncomingMessage(data, message) : data),
+  );
+  void queryClient.invalidateQueries({ queryKey: conversationKeys.inbox });
+}
+
+/** Actualiza un mensaje modificado en la caché del historial y de la bandeja. */
+export function applyUpdatedMessage(
+  queryClient: QueryClient,
+  message: MessageView,
+): void {
+  queryClient.setQueryData<Pages<MessagePage>>(
+    conversationKeys.messages(message.conversationId),
+    (data) => (data ? withUpdatedMessage(data, message) : data),
+  );
+  void queryClient.invalidateQueries({ queryKey: conversationKeys.inbox });
+}
+
+/** Remueve un mensaje desactivado de la caché del historial y actualiza la bandeja. */
+export function applyDeactivatedMessage(
+  queryClient: QueryClient,
+  conversationId: string,
+  messageId: string,
+): void {
+  queryClient.setQueryData<Pages<MessagePage>>(
+    conversationKeys.messages(conversationId),
+    (data) => (data ? withoutMessage(data, messageId) : data),
   );
   void queryClient.invalidateQueries({ queryKey: conversationKeys.inbox });
 }

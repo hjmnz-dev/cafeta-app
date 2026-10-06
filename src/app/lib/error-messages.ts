@@ -31,6 +31,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CANNOT_MESSAGE_SELF: 'No puedes escribirte a ti mismo.',
   CONVERSATION_NOT_FOUND: 'Esta conversación ya no está disponible.',
   MESSAGE_CONTENT_REQUIRED: 'Escribe algo antes de enviar.',
+  MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
+  NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
+  ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
 };

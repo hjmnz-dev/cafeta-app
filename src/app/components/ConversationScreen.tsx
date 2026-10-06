@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Loader2, Send } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  Loader2,
+  Pencil,
+  Send,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import { userMessageOf } from '../lib/http';
@@ -13,6 +21,8 @@ import {
 import { countChars } from '../lib/posts';
 import {
   useConversation,
+  useDeactivateMessage,
+  useEditMessage,
   useMarkRead,
   useMessages,
   useSendMessage,
@@ -20,10 +30,10 @@ import {
 import { useSession } from '../store/SessionStore';
 
 /**
- * Una conversación (HU34, HU35 y HU38, spec 0008 decisión 25). El historial
+ * Una conversación (HU34, HU35 y HU38, spec 0008 decisión 25 y 26). El historial
  * sale de la API en orden cronológico; lo que llega por el socket entra a la
  * misma caché, así que aparece aquí sin recargar. Abrirla, o recibir algo con
- * ella abierta, la marca como leída.
+ * ella abierta, la marca como leída. Los mensajes propios se pueden editar y eliminar.
  */
 export function ConversationScreen() {
   const navigate = useNavigate();
@@ -32,8 +42,12 @@ export function ConversationScreen() {
   const conversation = useConversation(conversationId);
   const messages = useMessages(conversationId);
   const send = useSendMessage(conversationId);
+  const edit = useEditMessage(conversationId);
+  const deactivate = useDeactivateMessage(conversationId);
   const markRead = useMarkRead(conversationId);
   const [draft, setDraft] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
   const thread = chronological(messages.data?.pages ?? []);
@@ -55,6 +69,42 @@ export function ConversationScreen() {
     if (!canSend) return;
     send.mutate(text, {
       onSuccess: () => setDraft(''),
+      onError: (error) => toast.error(userMessageOf(error)),
+    });
+  };
+
+  const startEdit = (id: string, currentContent: string) => {
+    setEditingId(id);
+    setEditDraft(currentContent);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft('');
+  };
+
+  const saveEdit = (id: string) => {
+    const trimmed = editDraft.trim();
+    if (!trimmed) {
+      toast.error('El mensaje no puede estar vacío');
+      return;
+    }
+    if (countChars(trimmed) > MESSAGE_CONTENT_MAX) {
+      toast.error(`El mensaje pasa de ${MESSAGE_CONTENT_MAX} caracteres`);
+      return;
+    }
+    edit.mutate(
+      { messageId: id, content: trimmed },
+      {
+        onSuccess: () => cancelEdit(),
+        onError: (error) => toast.error(userMessageOf(error)),
+      },
+    );
+  };
+
+  const removeMessage = (id: string) => {
+    if (!window.confirm('¿Deseas eliminar este mensaje?')) return;
+    deactivate.mutate(id, {
       onError: (error) => toast.error(userMessageOf(error)),
     });
   };
@@ -128,36 +178,105 @@ export function ConversationScreen() {
         <ol className="space-y-4" aria-label="Historial de mensajes">
           {thread.map((msg) => {
             const mine = msg.senderId === user?.id;
+            const isEditing = editingId === msg.id;
+
             return (
               <li
                 key={msg.id}
                 className={clsx(
-                  'flex flex-col',
+                  'flex flex-col group',
                   mine ? 'items-end' : 'items-start',
                 )}
               >
                 <div
                   className={clsx(
-                    'max-w-[75%] rounded-[20px] px-4 py-3 shadow-sm',
+                    'max-w-[85%] rounded-[20px] px-4 py-3 shadow-sm relative',
                     mine
                       ? 'bg-[var(--brand)] text-[var(--on-brand)] rounded-br-sm'
                       : 'bg-[var(--surface)] text-[var(--ink)] rounded-bl-sm',
                   )}
                 >
-                  <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">
-                    {msg.content}
-                  </p>
-                  <span
-                    className={clsx(
-                      'text-[11px] mt-1 block',
-                      mine
-                        ? 'text-[var(--on-brand)]/70'
-                        : 'text-[var(--muted)]',
-                    )}
-                  >
-                    {messageTime(msg.createdAt)}
-                    {msg.editedAt && ' · Editado'}
-                  </span>
+                  {isEditing ? (
+                    <div className="flex flex-col gap-2 min-w-[220px]">
+                      <input
+                        type="text"
+                        aria-label="Editar mensaje"
+                        value={editDraft}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(msg.id);
+                          if (e.key === 'Escape') cancelEdit();
+                        }}
+                        autoFocus
+                        disabled={edit.isPending}
+                        className="w-full bg-[var(--surface)] text-[var(--ink)] px-3 py-1.5 rounded-lg text-[14px] outline-none"
+                      />
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          disabled={edit.isPending}
+                          aria-label="Cancelar edición"
+                          className="px-2 py-1 text-[12px] rounded-md bg-black/10 hover:bg-black/20 font-medium"
+                        >
+                          <X className="w-3.5 h-3.5 inline mr-1" />
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => saveEdit(msg.id)}
+                          disabled={edit.isPending}
+                          aria-label="Guardar mensaje"
+                          className="px-2.5 py-1 text-[12px] rounded-md bg-[var(--surface-3)] text-[var(--ink)] hover:bg-[var(--surface-2)] font-semibold shadow-xs"
+                        >
+                          <Check className="w-3.5 h-3.5 inline mr-1" />
+                          {edit.isPending ? 'Guardando…' : 'Guardar'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words flex-1">
+                          {msg.content}
+                        </p>
+                        {mine && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-2 self-start shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(msg.id, msg.content)}
+                              aria-label="Editar mensaje"
+                              title="Editar mensaje"
+                              className="p-1 rounded hover:bg-black/10 transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5 opacity-80 hover:opacity-100" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeMessage(msg.id)}
+                              disabled={deactivate.isPending}
+                              aria-label="Eliminar mensaje"
+                              title="Eliminar mensaje"
+                              className="p-1 rounded hover:bg-black/10 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 opacity-80 hover:opacity-100" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className={clsx(
+                          'text-[11px] mt-1 block',
+                          mine
+                            ? 'text-[var(--on-brand)]/70'
+                            : 'text-[var(--muted)]',
+                        )}
+                      >
+                        {messageTime(msg.createdAt)}
+                        {msg.editedAt && ' · Editado'}
+                      </span>
+                    </>
+                  )}
                 </div>
               </li>
             );
