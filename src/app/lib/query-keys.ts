@@ -22,6 +22,14 @@ export const conversationKeys = {
   messages: (id: string) => ['conversations', 'messages', id] as const,
 };
 
+/** Notificaciones (decisión 27): todo cuelga de ['notifications']. */
+export const notificationKeys = {
+  all: ['notifications'] as const,
+  list: ['notifications', 'list'] as const,
+  unreadCount: ['notifications', 'unread-count'] as const,
+  preferences: ['notifications', 'preferences'] as const,
+};
+
 /** Perfiles y privacidad (decisión 15): cambiar la privacidad invalida profileKeys.all. */
 export const profileKeys = {
   all: ['profiles'] as const,
