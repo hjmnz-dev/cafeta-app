@@ -21,3 +21,10 @@ export const conversationKeys = {
   detail: (id: string) => ['conversations', 'detail', id] as const,
   messages: (id: string) => ['conversations', 'messages', id] as const,
 };
+
+/** Perfiles y privacidad (decisión 15): cambiar la privacidad invalida profileKeys.all. */
+export const profileKeys = {
+  all: ['profiles'] as const,
+  view: (userId: string) => ['profiles', 'view', userId] as const,
+  privacy: ['profiles', 'privacy'] as const,
+};

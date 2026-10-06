@@ -25,13 +25,14 @@ export function useFeed(careerId: string | null, enabled = true) {
   });
 }
 
-export function useUserPosts(userId: string | undefined) {
+/** enabled en false para un perfil limitado, que la API respondería con 403. */
+export function useUserPosts(userId: string | undefined, enabled = true) {
   return useInfiniteQuery({
     queryKey: postKeys.byAuthor(userId ?? ''),
     queryFn: ({ pageParam }) => postsApi.byUser(userId ?? '', pageParam),
     initialPageParam: firstPage,
     getNextPageParam: (page) => page.nextCursor,
-    enabled: Boolean(userId),
+    enabled: enabled && Boolean(userId),
   });
 }
 

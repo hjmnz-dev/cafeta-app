@@ -17,13 +17,21 @@ import { CreateStoryScreen } from './components/CreateStoryScreen';
 import { StoryViewerScreen } from './components/StoryViewerScreen';
 import { RequireAuth } from './components/RequireAuth';
 import { ConversationScreen } from './components/ConversationScreen';
+import {
+  RootErrorBoundary,
+  ThrowOnRender,
+} from './components/RootErrorBoundary';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     Component: AppLayout,
+    // Pantalla de error en español, también para rutas que no existen (spec 0007).
+    ErrorBoundary: RootErrorBoundary,
     children: [
       { index: true, Component: SplashScreen },
+      // Ruta oculta para probar el monitoreo (spec 0007); no aparece en ningún menú.
+      { path: '__prueba-error', Component: ThrowOnRender },
       { path: 'login', Component: LoginScreen },
       { path: 'register', Component: RegisterScreen },
       { path: 'forgot-password', Component: ForgotPasswordScreen },
