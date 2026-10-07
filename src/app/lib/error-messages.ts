@@ -25,6 +25,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   FILE_REQUIRED: 'Elige un archivo para subir.',
   STORAGE_UNAVAILABLE: 'No pudimos subir el archivo ahora. Intenta más tarde.',
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
+  POST_NOT_FOUND: 'Esa publicación ya no existe.',
+  NOT_POST_AUTHOR: 'Solo quien publicó puede cambiar esta publicación.',
+  POST_INACTIVE: 'Reactiva la publicación antes de editarla.',
+  POST_FIELD_NOT_ALLOWED: 'Ese dato no aplica a este tipo de publicación.',
   MEDIA_COMBINATION_INVALID:
     'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',
   USER_NOT_FOUND: 'Este perfil no existe o ya no está disponible.',
@@ -34,6 +38,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
   ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
+  NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
 };

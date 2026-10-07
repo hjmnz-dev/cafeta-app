@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  '/health': {
+  '/api/v1/health': {
     parameters: {
       query?: never;
       header?: never;
@@ -20,7 +20,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/careers': {
+  '/api/v1/careers': {
     parameters: {
       query?: never;
       header?: never;
@@ -36,7 +36,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/register': {
+  '/api/v1/auth/register': {
     parameters: {
       query?: never;
       header?: never;
@@ -52,7 +52,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/login': {
+  '/api/v1/auth/login': {
     parameters: {
       query?: never;
       header?: never;
@@ -68,7 +68,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/logout': {
+  '/api/v1/auth/logout': {
     parameters: {
       query?: never;
       header?: never;
@@ -84,7 +84,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/me': {
+  '/api/v1/auth/me': {
     parameters: {
       query?: never;
       header?: never;
@@ -100,7 +100,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/posts': {
+  '/api/v1/posts': {
     parameters: {
       query?: never;
       header?: never;
@@ -116,7 +116,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/posts/feed': {
+  '/api/v1/posts/feed': {
     parameters: {
       query?: never;
       header?: never;
@@ -132,7 +132,55 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/posts': {
+  '/api/v1/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['PostsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['PostsController_update'];
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/reactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_reactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/posts': {
     parameters: {
       query?: never;
       header?: never;
@@ -148,7 +196,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/posts/count': {
+  '/api/v1/users/{userId}/posts/count': {
     parameters: {
       query?: never;
       header?: never;
@@ -164,7 +212,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/uploads': {
+  '/api/v1/uploads': {
     parameters: {
       query?: never;
       header?: never;
@@ -180,7 +228,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/monitoring/test-error': {
+  '/api/v1/monitoring/test-error': {
     parameters: {
       query?: never;
       header?: never;
@@ -197,7 +245,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/profile': {
+  '/api/v1/users/{userId}/profile': {
     parameters: {
       query?: never;
       header?: never;
@@ -213,7 +261,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/me/privacy': {
+  '/api/v1/me/privacy': {
     parameters: {
       query?: never;
       header?: never;
@@ -229,7 +277,7 @@ export interface paths {
     patch: operations['PrivacyController_update'];
     trace?: never;
   };
-  '/follows/requests': {
+  '/api/v1/follows/requests': {
     parameters: {
       query?: never;
       header?: never;
@@ -246,7 +294,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/follows/{id}/accept': {
+  '/api/v1/follows/{id}/accept': {
     parameters: {
       query?: never;
       header?: never;
@@ -263,7 +311,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/follows/{id}/reject': {
+  '/api/v1/follows/{id}/reject': {
     parameters: {
       query?: never;
       header?: never;
@@ -280,7 +328,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/follow': {
+  '/api/v1/users/{userId}/follow': {
     parameters: {
       query?: never;
       header?: never;
@@ -298,7 +346,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/followers': {
+  '/api/v1/users/{userId}/followers': {
     parameters: {
       query?: never;
       header?: never;
@@ -315,7 +363,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/users/{userId}/following': {
+  '/api/v1/users/{userId}/following': {
     parameters: {
       query?: never;
       header?: never;
@@ -332,7 +380,88 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/conversations': {
+  '/api/v1/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Mis avisos, del más reciente al más antiguo. */
+    get: operations['NotificationsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/unread-count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_unreadCount'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/read-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markAllRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/preferences': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_getPreferences'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['NotificationsController_updatePreferences'];
+    trace?: never;
+  };
+  '/api/v1/notifications/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/conversations': {
     parameters: {
       query?: never;
       header?: never;
@@ -349,7 +478,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/conversations/{id}': {
+  '/api/v1/conversations/{id}': {
     parameters: {
       query?: never;
       header?: never;
@@ -365,7 +494,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/conversations/{id}/messages': {
+  '/api/v1/conversations/{id}/messages': {
     parameters: {
       query?: never;
       header?: never;
@@ -381,7 +510,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/conversations/{id}/read': {
+  '/api/v1/conversations/{id}/read': {
     parameters: {
       query?: never;
       header?: never;
@@ -397,7 +526,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/conversations/{id}/messages/{messageId}': {
+  '/api/v1/conversations/{id}/messages/{messageId}': {
     parameters: {
       query?: never;
       header?: never;
@@ -414,7 +543,7 @@ export interface paths {
     patch: operations['ConversationsController_edit'];
     trace?: never;
   };
-  '/conversations/{id}/messages/{messageId}/deactivate': {
+  '/api/v1/conversations/{id}/messages/{messageId}/deactivate': {
     parameters: {
       query?: never;
       header?: never;
@@ -431,7 +560,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/search/users': {
+  '/api/v1/blocks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista paginada de usuarios bloqueados por el usuario autenticado. */
+    get: operations['BlocksController_blockedUsers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/block': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Bloquear a un usuario. */
+    post: operations['BlocksController_block'];
+    /** Desbloquear a un usuario. */
+    delete: operations['BlocksController_unblock'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/search/users': {
     parameters: {
       query?: never;
       header?: never;
@@ -448,7 +612,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/search/posts': {
+  '/api/v1/search/posts': {
     parameters: {
       query?: never;
       header?: never;
@@ -465,7 +629,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/explore/posts': {
+  '/api/v1/explore/posts': {
     parameters: {
       query?: never;
       header?: never;
@@ -567,8 +731,8 @@ export interface components {
         | 'Cancha Deportiva'
         | 'Área de Parqueo'
         | 'Centro de Estudiantes';
-      /** @description Texto de la publicación, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
-      content: string;
+      /** @description Texto de hasta 2000 caracteres. Puede faltar solo si hay adjuntos (HU20 E2). */
+      content?: string;
       /** @description Claves que devolvió POST /uploads: hasta 4 imágenes, o 1 video, o 1 PDF. */
       mediaKeys?: string[];
     };
@@ -624,6 +788,31 @@ export interface components {
       items: components['schemas']['PostViewDto'][];
       /** @description id para pedir la página siguiente; null cuando no hay más. */
       nextCursor: string | null;
+    };
+    UpdatePostDto: {
+      /** @enum {string|null} */
+      location?:
+        | 'Campus Principal'
+        | 'Biblioteca'
+        | 'Cafetería INTEC'
+        | 'Laboratorio de Computación'
+        | 'Auditorio'
+        | 'Cancha Deportiva'
+        | 'Área de Parqueo'
+        | 'Centro de Estudiantes'
+        | null;
+      /** @description Texto nuevo, hasta 2000 caracteres. Vacío solo si la publicación tiene adjuntos. */
+      content?: string;
+      /** @description Solo eventos: fecha y hora en ISO 8601. */
+      eventStartsAt?: string;
+      /** @description Solo eventos. */
+      eventLocation?: string;
+      /** @description Solo publicaciones de código. */
+      codeSnippet?: string;
+      /** @description Solo grupos de estudio. */
+      groupName?: string;
+      /** @description Solo grupos de estudio. */
+      groupSpots?: number;
     };
     PostCountDto: {
       /** @example 12 */
@@ -724,6 +913,64 @@ export interface components {
       items: components['schemas']['FollowUserViewDto'][];
       nextCursor: string | null;
     };
+    /** @enum {string} */
+    NotificationType:
+      | 'POST_REACTION'
+      | 'POST_COMMENT'
+      | 'STORY_REACTION'
+      | 'STORY_COMMENT'
+      | 'FOLLOW'
+      | 'FOLLOW_REQUEST'
+      | 'FOLLOW_ACCEPTED'
+      | 'MESSAGE'
+      | 'VERIFICATION_RESULT';
+    NotificationActorDto: {
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+    };
+    NotificationViewDto: {
+      type: components['schemas']['NotificationType'];
+      /** @description Quien hizo la acción; null en los avisos del sistema. */
+      actor: components['schemas']['NotificationActorDto'] | null;
+      postId: string | null;
+      storyId: string | null;
+      conversationId: string | null;
+      id: string;
+      /** @description true si ya se marcó como leída. */
+      read: boolean;
+      /** @description Fecha del aviso en ISO 8601. */
+      createdAt: string;
+    };
+    NotificationPageDto: {
+      /** @description Del más reciente al más antiguo. */
+      items: components['schemas']['NotificationViewDto'][];
+      nextCursor: string | null;
+    };
+    UnreadCountDto: {
+      /** @description Avisos sin leer, para el punto del ícono. */
+      count: number;
+    };
+    NotificationPreferencesDto: {
+      /** @description Reacciones a mis publicaciones. */
+      reactions: boolean;
+      /** @description Comentarios en mis publicaciones. */
+      comments: boolean;
+      /** @description Seguidores nuevos, solicitudes y solicitudes aceptadas. */
+      follows: boolean;
+      /** @description Mensajes directos. */
+      messages: boolean;
+      /** @description Reacciones y comentarios en mis historias. */
+      stories: boolean;
+    };
+    UpdateNotificationPreferencesDto: {
+      reactions?: boolean;
+      comments?: boolean;
+      follows?: boolean;
+      messages?: boolean;
+      stories?: boolean;
+    };
     LastMessageDto: {
       id: string;
       senderId: string;
@@ -786,6 +1033,26 @@ export interface components {
     EditMessageDto: {
       /** @description Texto del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
+    };
+    BlockedUserViewDto: {
+      /** Format: uuid */
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+      /** Format: date-time */
+      blockedAt: string;
+    };
+    BlockedUserPageDto: {
+      items: components['schemas']['BlockedUserViewDto'][];
+      nextCursor: string | null;
+    };
+    BlockStatusViewDto: {
+      blocked: boolean;
+      /** Format: date-time */
+      blockedAt: string;
     };
   };
   responses: never;
@@ -969,6 +1236,88 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PostPageDto'];
         };
+      };
+    };
+  };
+  PostsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdatePostDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostViewDto'];
+        };
+      };
+    };
+  };
+  PostsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_reactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -1297,6 +1646,127 @@ export interface operations {
       };
     };
   };
+  NotificationsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPageDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_unreadCount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UnreadCountDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_markAllRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_getPreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPreferencesDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_updatePreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateNotificationPreferencesDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPreferencesDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_markRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   ConversationsController_inbox: {
     parameters: {
       query: {
@@ -1468,6 +1938,70 @@ export interface operations {
       path: {
         id: string;
         messageId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  BlocksController_blockedUsers: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockedUserPageDto'];
+        };
+      };
+    };
+  };
+  BlocksController_block: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockStatusViewDto'];
+        };
+      };
+    };
+  };
+  BlocksController_unblock: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
       };
       cookie?: never;
     };

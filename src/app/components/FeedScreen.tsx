@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Heart, MessageSquare, Search, X } from 'lucide-react';
+import { Heart, MessageSquare, Search, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -9,6 +9,7 @@ import { StoriesStrip } from './StoriesStrip';
 import { orderCareerTabs } from '../lib/posts';
 import { useCareers, useFeed } from '../store/posts-queries';
 import { useSession } from '../store/SessionStore';
+import { NotificationsBell } from './NotificationsBell';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -43,7 +44,6 @@ export function FeedScreen() {
 
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLAnchorElement>(null);
@@ -57,26 +57,6 @@ export function FeedScreen() {
       inline: 'center',
     });
   }, [selectedId]);
-
-  // Notificaciones de solicitudes de seguimiento
-  const followRequests = [
-    {
-      id: 1,
-      user: 'Ana Martínez',
-      avatar: AVATARS[0],
-      career: 'Medicina',
-      time: '5m',
-      mutualFriends: 3,
-    },
-    {
-      id: 2,
-      user: 'Pedro Sánchez',
-      avatar: AVATARS[1],
-      career: 'Ing. Civil',
-      time: '1h',
-      mutualFriends: 8,
-    },
-  ];
 
   // Sugerencias de publicaciones
   const postSuggestions = [
@@ -124,18 +104,12 @@ export function FeedScreen() {
   }, [lastScrollY]);
 
   /** Abrir un panel devuelve la cabecera a su sitio: cuelga de ella. */
-  const openPanel = (panel: 'notifications' | 'suggestions') => {
+  const openPanel = () => {
     setShowHeader(true);
-    setShowNotifications(
-      panel === 'notifications' ? !showNotifications : false,
-    );
-    setShowSuggestions(panel === 'suggestions' ? !showSuggestions : false);
+    setShowSuggestions(!showSuggestions);
   };
 
-  const closePanels = () => {
-    setShowNotifications(false);
-    setShowSuggestions(false);
-  };
+  const closePanels = () => setShowSuggestions(false);
 
   const panelCard =
     'absolute top-full left-4 right-4 mt-2 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden z-50';
@@ -174,21 +148,8 @@ export function FeedScreen() {
                 strokeWidth={2}
               />
             </Link>
-            <button
-              onClick={() => openPanel('notifications')}
-              aria-label="Solicitudes de seguimiento"
-              className="relative"
-            >
-              <Bell
-                className="w-[22px] h-[22px] text-[var(--ink)]"
-                strokeWidth={2}
-              />
-              <span className="absolute -top-0.5 -right-0.5 w-[9px] h-[9px] bg-[var(--brand)] rounded-full border-2 border-[var(--surface)]" />
-            </button>
-            <button
-              onClick={() => openPanel('suggestions')}
-              aria-label="Sugerencias para ti"
-            >
+            <NotificationsBell />
+            <button onClick={openPanel} aria-label="Sugerencias para ti">
               <Heart
                 className="w-[22px] h-[22px] text-[var(--ink)]"
                 strokeWidth={2}
@@ -226,55 +187,6 @@ export function FeedScreen() {
 
         {/* Paneles: cuelgan de la cabecera visible, no de la parte superior del
             contenido, para que sigan a la vista aunque se haya bajado. */}
-        {showNotifications && (
-          <div className={panelCard} onClick={(e) => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-[var(--line-soft)] flex items-center justify-between">
-              <h3 className="font-['Space_Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)]">
-                Solicitudes de seguimiento
-              </h3>
-              <button onClick={closePanels} aria-label="Cerrar solicitudes">
-                <X className="w-5 h-5 text-[var(--muted)]" />
-              </button>
-            </div>
-            <div className="max-h-[360px] overflow-y-auto">
-              {followRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="px-4 py-3 border-b border-[var(--line-soft)] last:border-0"
-                >
-                  <div className="flex items-start gap-3">
-                    <img
-                      src={request.avatar}
-                      className="w-12 h-12 rounded-full object-cover"
-                      alt={request.user}
-                    />
-                    <div className="flex-1">
-                      <p className="font-semibold text-[14px] text-[var(--ink)]">
-                        {request.user}
-                      </p>
-                      <p className="text-[12px] text-[var(--muted)]">
-                        {request.career} · {request.mutualFriends} amigos en
-                        común
-                      </p>
-                      <p className="text-[11px] text-[var(--muted)] mt-1">
-                        {request.time}
-                      </p>
-                      <div className="flex gap-2 mt-3">
-                        <button className="flex-1 bg-[var(--brand)] text-[var(--on-brand)] py-2 rounded-lg text-[13px] font-semibold hover:bg-[var(--brand-strong)] transition-colors">
-                          Aceptar
-                        </button>
-                        <button className="flex-1 bg-[var(--surface-3)] text-[var(--muted)] py-2 rounded-lg text-[13px] font-semibold transition-colors">
-                          Rechazar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {showSuggestions && (
           <div className={panelCard} onClick={(e) => e.stopPropagation()}>
             <div className="px-4 py-3 border-b border-[var(--line-soft)] flex items-center justify-between">
@@ -337,7 +249,7 @@ export function FeedScreen() {
 
       {/* Velo para cerrar los paneles tocando fuera. Va dentro del marco, así
           que se recorta con él en vez de cubrir toda la ventana. */}
-      {(showNotifications || showSuggestions) && (
+      {showSuggestions && (
         <div
           className="absolute inset-0 bg-black/40 z-30"
           onClick={closePanels}

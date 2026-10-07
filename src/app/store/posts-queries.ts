@@ -58,6 +58,25 @@ export function useCreatePost() {
   });
 }
 
+/**
+ * Acciones del autor (spec 0008, decisión 17). Cada una invalida todo
+ * ['posts'], así feed, perfil y conteo quedan al día.
+ */
+function usePostAction<TInput, TResult>(
+  mutationFn: (input: TInput) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: postKeys.all }),
+  });
+}
+
+export const useUpdatePost = () => usePostAction(postsApi.update);
+export const useDeactivatePost = () => usePostAction(postsApi.deactivate);
+export const useReactivatePost = () => usePostAction(postsApi.reactivate);
+export const useDeletePost = () => usePostAction(postsApi.remove);
+
 /** Sube un archivo; no toca la caché (aún no es parte de ninguna publicación). */
 export function useUploadFile() {
   return useMutation({ mutationFn: uploadsApi.upload });

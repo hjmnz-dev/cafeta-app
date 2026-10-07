@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
+import { countChars, POST_CONTENT_MAX } from '../lib/posts';
 import { ReportDialog } from './ReportDialog';
 
 /**
@@ -40,8 +41,10 @@ import { ReportDialog } from './ReportDialog';
  *
  * Con `live` (spec 0005) la publicación viene de la API: la autoría la decide
  * la pantalla, y se ocultan las acciones que todavía no tienen backend
- * (reaccionar, comentar, guardar, compartir, menú de autor, reportar). Sin
- * `live` sigue igual para las pantallas que aún usan AppState.
+ * (reaccionar, comentar, guardar, compartir, reportar). El menú de autor
+ * (editar, desactivar, eliminar) aparece cuando la pantalla pasa
+ * `live.actions` (spec 0008, decisión 17). Sin `live` sigue igual para las
+ * pantallas que aún usan AppState.
  */
 
 export interface LivePost {
@@ -49,6 +52,16 @@ export interface LivePost {
   /** Para enlazar al perfil del autor (/u/:id), que aplica su privacidad. */
   authorId: string;
   isAnnouncement: boolean;
+  /** Acciones del autor contra la API (spec 0008, decisión 17); solo en las propias. */
+  actions?: LiveAuthorActions;
+}
+
+export interface LiveAuthorActions {
+  /** Resuelve true si la API guardó el cambio. */
+  edit: (content: string) => Promise<boolean>;
+  deactivate: () => void;
+  remove: () => void;
+  busy: boolean;
 }
 
 /** Resalta palabras clave sin permitir HTML del contenido (evita inyección). */
@@ -146,14 +159,28 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     setMenuOpen(false);
   };
 
-  const saveEdit = () => {
+  const images = post.images ?? [];
+  const actions = live?.actions;
+  // Con datos reales, el texto puede quedar vacío si hay adjuntos (HU20 E2).
+  const hasMedia =
+    images.length > 0 || Boolean(post.videoUrl || post.documentUrl);
+  const editMax = live ? POST_CONTENT_MAX : 500;
+  const editUsed = live ? countChars(draft) : draft.length;
+  const canSave =
+    editUsed <= editMax &&
+    (draft.trim().length > 0 || (live !== undefined && hasMedia)) &&
+    !actions?.busy;
+
+  const saveEdit = async () => {
+    if (!canSave) return;
     const content = draft.trim();
-    if (!content) return;
+    if (actions) {
+      if (await actions.edit(content)) setEditing(false);
+      return;
+    }
     editPost(post.id, content);
     setEditing(false);
   };
-
-  const images = post.images ?? [];
 
   return (
     <article
@@ -203,7 +230,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
               </div>
             </div>
 
-            {!live && (
+            {(!live || actions) && (
               <button
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label={`Opciones de la publicación de ${post.authorName}`}
@@ -222,12 +249,12 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 aria-label="Editar contenido de la publicación"
-                maxLength={500}
+                maxLength={live ? undefined : 500}
                 className="w-full min-h-[100px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[16px] p-3 text-[15px] text-[var(--ink)] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand)]"
               />
               <div className="flex items-center justify-end gap-2">
                 <span className="mr-auto text-[12px] text-[var(--muted)]">
-                  {draft.length}/500
+                  {editUsed}/{editMax}
                 </span>
                 <button
                   onClick={() => setEditing(false)}
@@ -236,8 +263,8 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                   Cancelar
                 </button>
                 <button
-                  onClick={saveEdit}
-                  disabled={!draft.trim()}
+                  onClick={() => void saveEdit()}
+                  disabled={!canSave}
                   className="px-5 py-2 rounded-full text-[13px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-strong)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   Guardar
@@ -531,7 +558,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                   <Pencil className="w-4 h-4 text-[var(--muted)]" />
                   Editar
                 </button>
-                {post.active ? (
+                {live || post.active ? (
                   <button
                     onClick={() => {
                       setConfirming('deactivate');
@@ -603,7 +630,9 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             </div>
             <p className="text-[14px] text-[var(--muted)] leading-relaxed mb-5">
               {confirming === 'deactivate'
-                ? 'Dejará de aparecer en el feed y solo tú la verás en tu perfil. No se borra el contenido.'
+                ? live
+                  ? 'Dejará de aparecer para todos, pero no se borra. Podrás reactivarla desde tus publicaciones archivadas.'
+                  : 'Dejará de aparecer en el feed y solo tú la verás en tu perfil. No se borra el contenido.'
                 : 'Se borrará de forma permanente junto con sus interacciones. Esta acción no se puede deshacer.'}
             </p>
             <div className="flex gap-2">
@@ -615,8 +644,14 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
               </button>
               <button
                 onClick={() => {
-                  if (confirming === 'deactivate') deactivatePost(post.id);
-                  else deletePost(post.id);
+                  if (actions) {
+                    if (confirming === 'deactivate') actions.deactivate();
+                    else actions.remove();
+                  } else if (confirming === 'deactivate') {
+                    deactivatePost(post.id);
+                  } else {
+                    deletePost(post.id);
+                  }
                   setConfirming(null);
                 }}
                 className="flex-1 py-2.5 rounded-full text-[14px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-strong)] transition-colors"
