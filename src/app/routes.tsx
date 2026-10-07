@@ -19,6 +19,7 @@ import { RequireAuth } from './components/RequireAuth';
 import { ConversationScreen } from './components/ConversationScreen';
 import { NetworkScreen } from './components/NetworkScreen';
 import { FollowListScreen } from './components/FollowListScreen';
+import { NotificationsScreen } from './components/NotificationsScreen';
 import {
   RootErrorBoundary,
   ThrowOnRender,
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
             path: 'u/:userId/following',
             element: <FollowListScreen kind="following" />,
           },
+          { path: 'notifications', Component: NotificationsScreen },
         ],
       },
     ],

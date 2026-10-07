@@ -132,6 +132,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['PostsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['PostsController_update'];
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/reactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_reactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/users/{userId}/posts': {
     parameters: {
       query?: never;
@@ -158,6 +206,39 @@ export interface paths {
     get: operations['UserPostsController_count'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/uploads': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['UploadsController_upload'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/monitoring/test-error': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Fuerza un error para comprobar el monitoreo (solo admin) */
+    post: operations['MonitoringController_forceTestError'];
     delete?: never;
     options?: never;
     head?: never;
@@ -194,6 +275,190 @@ export interface paths {
     options?: never;
     head?: never;
     patch: operations['PrivacyController_update'];
+    trace?: never;
+  };
+  '/api/v1/follows/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista de solicitudes de seguimiento recibidas y pendientes. */
+    get: operations['FollowsController_pendingRequests'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/follows/{id}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Aceptar una solicitud de seguimiento. */
+    post: operations['FollowsController_accept'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/follows/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Rechazar una solicitud de seguimiento. */
+    post: operations['FollowsController_reject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/follow': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Seguir a un usuario o enviar solicitud si su perfil es limitado. */
+    post: operations['UserFollowsController_follow'];
+    /** Dejar de seguir o cancelar una solicitud pendiente. */
+    delete: operations['UserFollowsController_unfollow'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/followers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista paginada de seguidores de un usuario. */
+    get: operations['UserFollowsController_followers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/following': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista paginada de seguidos de un usuario. */
+    get: operations['UserFollowsController_following'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Mis avisos, del más reciente al más antiguo. */
+    get: operations['NotificationsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/unread-count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_unreadCount'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/read-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markAllRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/notifications/preferences': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_getPreferences'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['NotificationsController_updatePreferences'];
+    trace?: never;
+  };
+  '/api/v1/notifications/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/api/v1/conversations': {
@@ -261,7 +526,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/uploads': {
+  '/api/v1/conversations/{id}/messages/{messageId}': {
     parameters: {
       query?: never;
       header?: never;
@@ -270,37 +535,40 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations['UploadsController_upload'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Corrige un mensaje propio; queda marcado como editado. */
+    patch: operations['ConversationsController_edit'];
+    trace?: never;
+  };
+  '/api/v1/conversations/{id}/messages/{messageId}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Retira un mensaje propio (baja lógica: se conserva para auditoría). */
+    post: operations['ConversationsController_deactivate'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/api/v1/users/{userId}/follow': {
+  '/api/v1/blocks': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['UserFollowsController_follow'];
-    delete: operations['UserFollowsController_unfollow'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/users/{userId}/followers': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations['UserFollowsController_followers'];
+    /** Lista paginada de usuarios bloqueados por el usuario autenticado. */
+    get: operations['BlocksController_blockedUsers'];
     put?: never;
     post?: never;
     delete?: never;
@@ -309,39 +577,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/users/{userId}/following': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations['UserFollowsController_following'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/follows/requests': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations['FollowsController_pendingRequests'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/follows/{id}/accept': {
+  '/api/v1/users/{userId}/block': {
     parameters: {
       query?: never;
       header?: never;
@@ -350,23 +586,60 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations['FollowsController_accept'];
-    delete?: never;
+    /** Bloquear a un usuario. */
+    post: operations['BlocksController_block'];
+    /** Desbloquear a un usuario. */
+    delete: operations['BlocksController_unblock'];
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/api/v1/follows/{id}/reject': {
+  '/api/v1/search/users': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Personas por nombre, usuario o carrera; ignora mayúsculas y acentos. */
+    get: operations['SearchController_users'];
     put?: never;
-    post: operations['FollowsController_reject'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/search/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Publicaciones que contienen el texto y que quien busca puede ver. */
+    get: operations['SearchController_posts'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/explore/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Publicaciones recientes y movidas de otras personas. */
+    get: operations['SearchController_explore'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -458,8 +731,8 @@ export interface components {
         | 'Cancha Deportiva'
         | 'Área de Parqueo'
         | 'Centro de Estudiantes';
-      /** @description Texto de la publicación, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
-      content: string;
+      /** @description Texto de hasta 2000 caracteres. Puede faltar solo si hay adjuntos (HU20 E2). */
+      content?: string;
       /** @description Claves que devolvió POST /uploads: hasta 4 imágenes, o 1 video, o 1 PDF. */
       mediaKeys?: string[];
     };
@@ -515,6 +788,31 @@ export interface components {
       items: components['schemas']['PostViewDto'][];
       /** @description id para pedir la página siguiente; null cuando no hay más. */
       nextCursor: string | null;
+    };
+    UpdatePostDto: {
+      /** @enum {string|null} */
+      location?:
+        | 'Campus Principal'
+        | 'Biblioteca'
+        | 'Cafetería INTEC'
+        | 'Laboratorio de Computación'
+        | 'Auditorio'
+        | 'Cancha Deportiva'
+        | 'Área de Parqueo'
+        | 'Centro de Estudiantes'
+        | null;
+      /** @description Texto nuevo, hasta 2000 caracteres. Vacío solo si la publicación tiene adjuntos. */
+      content?: string;
+      /** @description Solo eventos: fecha y hora en ISO 8601. */
+      eventStartsAt?: string;
+      /** @description Solo eventos. */
+      eventLocation?: string;
+      /** @description Solo publicaciones de código. */
+      codeSnippet?: string;
+      /** @description Solo grupos de estudio. */
+      groupName?: string;
+      /** @description Solo grupos de estudio. */
+      groupSpots?: number;
     };
     PostCountDto: {
       /** @example 12 */
@@ -585,6 +883,94 @@ export interface components {
     UpdatePrivacyDto: {
       visibility: components['schemas']['ProfileVisibility'];
     };
+    FollowUserViewDto: {
+      /** Format: uuid */
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+    };
+    FollowRequestViewDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      follower: components['schemas']['FollowUserViewDto'];
+    };
+    FollowRequestPageDto: {
+      items: components['schemas']['FollowRequestViewDto'][];
+      nextCursor: string | null;
+    };
+    FollowStatusViewDto: {
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      status: 'ACCEPTED' | 'PENDING';
+    };
+    FollowUserPageDto: {
+      items: components['schemas']['FollowUserViewDto'][];
+      nextCursor: string | null;
+    };
+    /** @enum {string} */
+    NotificationType:
+      | 'POST_REACTION'
+      | 'POST_COMMENT'
+      | 'STORY_REACTION'
+      | 'STORY_COMMENT'
+      | 'FOLLOW'
+      | 'FOLLOW_REQUEST'
+      | 'FOLLOW_ACCEPTED'
+      | 'MESSAGE'
+      | 'VERIFICATION_RESULT';
+    NotificationActorDto: {
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+    };
+    NotificationViewDto: {
+      type: components['schemas']['NotificationType'];
+      /** @description Quien hizo la acción; null en los avisos del sistema. */
+      actor: components['schemas']['NotificationActorDto'] | null;
+      postId: string | null;
+      storyId: string | null;
+      conversationId: string | null;
+      id: string;
+      /** @description true si ya se marcó como leída. */
+      read: boolean;
+      /** @description Fecha del aviso en ISO 8601. */
+      createdAt: string;
+    };
+    NotificationPageDto: {
+      /** @description Del más reciente al más antiguo. */
+      items: components['schemas']['NotificationViewDto'][];
+      nextCursor: string | null;
+    };
+    UnreadCountDto: {
+      /** @description Avisos sin leer, para el punto del ícono. */
+      count: number;
+    };
+    NotificationPreferencesDto: {
+      /** @description Reacciones a mis publicaciones. */
+      reactions: boolean;
+      /** @description Comentarios en mis publicaciones. */
+      comments: boolean;
+      /** @description Seguidores nuevos, solicitudes y solicitudes aceptadas. */
+      follows: boolean;
+      /** @description Mensajes directos. */
+      messages: boolean;
+      /** @description Reacciones y comentarios en mis historias. */
+      stories: boolean;
+    };
+    UpdateNotificationPreferencesDto: {
+      reactions?: boolean;
+      comments?: boolean;
+      follows?: boolean;
+      messages?: boolean;
+      stories?: boolean;
+    };
     LastMessageDto: {
       id: string;
       senderId: string;
@@ -645,35 +1031,28 @@ export interface components {
       content: string;
     };
     EditMessageDto: {
-      /** @description Texto corregido del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
+      /** @description Texto del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
     };
-    FollowStatusViewDto: {
-      id: string;
-      /** @enum {string} */
-      status: 'ACCEPTED' | 'PENDING';
-    };
-    FollowUserViewDto: {
+    BlockedUserViewDto: {
+      /** Format: uuid */
       id: string;
       handle: string;
       displayName: string;
       avatarUrl: string | null;
       careerName: string | null;
       verified: boolean;
-    };
-    FollowUserPageDto: {
-      items: components['schemas']['FollowUserViewDto'][];
-      nextCursor: string | null;
-    };
-    FollowRequestViewDto: {
-      id: string;
       /** Format: date-time */
-      createdAt: string;
-      follower: components['schemas']['FollowUserViewDto'];
+      blockedAt: string;
     };
-    FollowRequestPageDto: {
-      items: components['schemas']['FollowRequestViewDto'][];
+    BlockedUserPageDto: {
+      items: components['schemas']['BlockedUserViewDto'][];
       nextCursor: string | null;
+    };
+    BlockStatusViewDto: {
+      blocked: boolean;
+      /** Format: date-time */
+      blockedAt: string;
     };
   };
   responses: never;
@@ -860,6 +1239,88 @@ export interface operations {
       };
     };
   };
+  PostsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdatePostDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostViewDto'];
+        };
+      };
+    };
+  };
+  PostsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_reactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   UserPostsController_list: {
     parameters: {
       query: {
@@ -904,6 +1365,67 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PostCountDto'];
         };
+      };
+    };
+  };
+  UploadsController_upload: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['UploadFileDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UploadViewDto'];
+        };
+      };
+    };
+  };
+  MonitoringController_forceTestError: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Sin sesión */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description La cuenta no es admin */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Siempre: { statusCode: 500, code: INTERNAL_SERVER_ERROR } */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -967,6 +1489,281 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PrivacyDto'];
         };
+      };
+    };
+  };
+  FollowsController_pendingRequests: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowRequestPageDto'];
+        };
+      };
+    };
+  };
+  FollowsController_accept: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FollowsController_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  UserFollowsController_follow: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowStatusViewDto'];
+        };
+      };
+    };
+  };
+  UserFollowsController_unfollow: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  UserFollowsController_followers: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowUserPageDto'];
+        };
+      };
+    };
+  };
+  UserFollowsController_following: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowUserPageDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPageDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_unreadCount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UnreadCountDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_markAllRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_getPreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPreferencesDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_updatePreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateNotificationPreferencesDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationPreferencesDto'];
+        };
+      };
+    };
+  };
+  NotificationsController_markRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -1154,30 +1951,31 @@ export interface operations {
       };
     };
   };
-  UploadsController_upload: {
+  BlocksController_blockedUsers: {
     parameters: {
-      query?: never;
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        'multipart/form-data': components['schemas']['UploadFileDto'];
-      };
-    };
+    requestBody?: never;
     responses: {
-      201: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['UploadViewDto'];
+          'application/json': components['schemas']['BlockedUserPageDto'];
         };
       };
     };
   };
-  UserFollowsController_follow: {
+  BlocksController_block: {
     parameters: {
       query?: never;
       header?: never;
@@ -1193,12 +1991,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['FollowStatusViewDto'];
+          'application/json': components['schemas']['BlockStatusViewDto'];
         };
       };
     };
   };
-  UserFollowsController_unfollow: {
+  BlocksController_unblock: {
     parameters: {
       query?: never;
       header?: never;
@@ -1217,16 +2015,18 @@ export interface operations {
       };
     };
   };
-  UserFollowsController_followers: {
+  SearchController_users: {
     parameters: {
-      query?: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
         cursor?: string;
-        limit?: number;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto a buscar, de 2 a 100 caracteres. */
+        q: string;
       };
       header?: never;
-      path: {
-        userId: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
@@ -1241,35 +2041,15 @@ export interface operations {
       };
     };
   };
-  UserFollowsController_following: {
+  SearchController_posts: {
     parameters: {
-      query?: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
         cursor?: string;
-        limit?: number;
-      };
-      header?: never;
-      path: {
-        userId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['FollowUserPageDto'];
-        };
-      };
-    };
-  };
-  FollowsController_pendingRequests: {
-    parameters: {
-      query?: {
-        cursor?: string;
-        limit?: number;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto a buscar, de 2 a 100 caracteres. */
+        q: string;
       };
       header?: never;
       path?: never;
@@ -1282,46 +2062,32 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['FollowRequestPageDto'];
+          'application/json': components['schemas']['PostPageDto'];
         };
       };
     };
   };
-  FollowsController_accept: {
+  SearchController_explore: {
     parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
       };
+      header?: never;
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      204: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
-      };
-    };
-  };
-  FollowsController_reject: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
         };
-        content?: never;
       };
     };
   };

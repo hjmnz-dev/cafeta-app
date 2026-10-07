@@ -22,6 +22,14 @@ export const conversationKeys = {
   messages: (id: string) => ['conversations', 'messages', id] as const,
 };
 
+/** Notificaciones (decisión 27): todo cuelga de ['notifications']. */
+export const notificationKeys = {
+  all: ['notifications'] as const,
+  list: ['notifications', 'list'] as const,
+  unreadCount: ['notifications', 'unread-count'] as const,
+  preferences: ['notifications', 'preferences'] as const,
+};
+
 /** Perfiles y privacidad (decisión 15): cambiar la privacidad invalida profileKeys.all. */
 export const profileKeys = {
   all: ['profiles'] as const,
@@ -35,4 +43,18 @@ export const followKeys = {
   followers: (userId: string) => ['follows', 'followers', userId] as const,
   following: (userId: string) => ['follows', 'following', userId] as const,
   requests: ['follows', 'requests'] as const,
+};
+
+/** Bloqueos (decisión 29): lista de usuarios bloqueados. */
+export const blockKeys = {
+  all: ['blocks'] as const,
+  list: ['blocks', 'list'] as const,
+};
+
+/** Búsqueda y descubrimiento (spec 0008, decisión 28). */
+export const searchKeys = {
+  all: ['search'] as const,
+  users: (q: string) => ['search', 'users', q] as const,
+  posts: (q: string) => ['search', 'posts', q] as const,
+  explore: () => ['explore', 'posts'] as const,
 };

@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   User,
-  Bell,
   ChevronRight,
   LogOut,
   Ban,
   Moon,
   Sun,
 } from 'lucide-react';
-import { useAppState, NotificationPrefs, Theme } from '../store/AppState';
+import { useAppState, Theme } from '../store/AppState';
 import { useSession } from '../store/SessionStore';
+import { useBlockedUsers, useUnblockUser } from '../store/blocks-queries';
+import { NotificationSettings } from './NotificationSettings';
 import { PrivacySettings } from './PrivacySettings';
 
 /**
@@ -44,72 +45,35 @@ const THEME_OPTIONS: {
   },
 ];
 
-const NOTIFICATION_OPTIONS: {
-  key: keyof NotificationPrefs;
-  label: string;
-  desc: string;
-}[] = [
-  {
-    key: 'likes',
-    label: 'Reacciones',
-    desc: 'Cuando reaccionan a tus publicaciones o historias.',
-  },
-  {
-    key: 'comments',
-    label: 'Comentarios',
-    desc: 'Cuando comentan tu contenido.',
-  },
-  {
-    key: 'follows',
-    label: 'Nuevos seguidores',
-    desc: 'Cuando alguien te sigue o solicita seguirte.',
-  },
-  {
-    key: 'messages',
-    label: 'Mensajes',
-    desc: 'Cuando recibes un mensaje directo.',
-  },
-  {
-    key: 'stories',
-    label: 'Historias',
-    desc: 'Cuando alguien que sigues publica una historia.',
-  },
-];
-
-function Toggle({
-  on,
-  onChange,
-}: {
-  on: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      onClick={() => onChange(!on)}
-      role="switch"
-      aria-checked={on}
-      className={`relative w-[46px] h-[27px] rounded-full transition-colors flex-none ${on ? 'bg-[var(--brand)]' : 'bg-[var(--line)]'}`}
-    >
-      <span
-        className={`absolute top-[3px] left-[3px] w-[21px] h-[21px] rounded-full bg-[var(--surface)] shadow-sm transition-transform ${on ? 'translate-x-[19px]' : ''}`}
-      />
-    </button>
-  );
-}
-
 export function SettingsScreen() {
   const navigate = useNavigate();
-  const { logout } = useSession();
+  const { user: sessionUser, logout } = useSession();
   const { profile, settings, updateSettings, users, blockedIds, unblockUser } =
     useAppState();
 
-  const blockedUsers = users.filter((u) => blockedIds.includes(u.id));
+  const apiBlocked = useBlockedUsers();
+  const unblockMutation = useUnblockUser();
+
+  const isLive = Boolean(sessionUser);
+  const blockedUsers =
+    isLive && apiBlocked.data
+      ? apiBlocked.data.items.map((b) => ({
+          id: b.id,
+          name: b.displayName,
+          handle: `@${b.handle.replace(/^@/, '')}`,
+        }))
+      : users
+          .filter((u) => blockedIds.includes(u.id))
+          .map((u) => ({ id: u.id, name: u.name, handle: u.handle }));
+
+  const handleUnblock = (userId: string) => {
+    if (isLive) {
+      unblockMutation.mutate(userId);
+    }
+    unblockUser(userId);
+  };
 
   const setTheme = (theme: Theme) => updateSettings({ theme });
-  const setNotif = (key: keyof NotificationPrefs, value: boolean) =>
-    updateSettings({
-      notifications: { ...settings.notifications, [key]: value },
-    });
 
   const sectionTitle =
     "text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider font-['IBM_Plex_Mono',monospace] mb-3 px-1";
@@ -208,30 +172,8 @@ export function SettingsScreen() {
           </div>
         </section>
 
-        {/* HU08 — Notificaciones */}
-        <section>
-          <h2 className={sectionTitle}>Notificaciones</h2>
-          <div className={card}>
-            {NOTIFICATION_OPTIONS.map((opt, i) => (
-              <div
-                key={opt.key}
-                className={`flex items-center gap-3 px-4 py-4 ${i > 0 ? 'border-t border-[var(--line-soft)]' : ''}`}
-              >
-                <Bell className="w-5 h-5 text-[var(--muted)] flex-none" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[15px] text-[var(--ink)]">{opt.label}</p>
-                  <p className="text-[12px] text-[var(--muted)] leading-snug">
-                    {opt.desc}
-                  </p>
-                </div>
-                <Toggle
-                  on={settings.notifications[opt.key]}
-                  onChange={(v) => setNotif(opt.key, v)}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* HU08 — Notificaciones, contra la API (decisión 27) */}
+        <NotificationSettings sectionTitle={sectionTitle} card={card} />
 
         {/* HU54 — Cuentas bloqueadas */}
         <section>
@@ -258,7 +200,7 @@ export function SettingsScreen() {
                     </p>
                   </div>
                   <button
-                    onClick={() => unblockUser(u.id)}
+                    onClick={() => handleUnblock(u.id)}
                     aria-label={`Desbloquear a ${u.name}`}
                     className="h-[32px] px-4 rounded-full text-[13px] font-semibold text-[var(--brand)] border-2 border-[var(--line)] hover:bg-[var(--tint)] transition-colors flex-none"
                   >
