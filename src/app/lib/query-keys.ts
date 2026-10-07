@@ -10,6 +10,20 @@ export const postKeys = {
   count: (userId: string) => ['posts', 'count', userId] as const,
 };
 
+/**
+ * ¿La clave es una lista paginada de publicaciones (feed, perfil, búsqueda o
+ * explorar)? Las reacciones se ajustan en todas a la vez; el conteo de un
+ * perfil (['posts', 'count', …]) no es una lista.
+ */
+export function isPostListKey(key: readonly unknown[]): boolean {
+  const [root, kind] = key;
+  return (
+    (root === 'posts' && (kind === 'feed' || kind === 'author')) ||
+    (root === 'search' && kind === 'posts') ||
+    (root === 'explore' && kind === 'posts')
+  );
+}
+
 export const careerKeys = {
   all: ['careers'] as const,
 };
