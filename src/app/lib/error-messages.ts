@@ -39,6 +39,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CANNOT_FOLLOW_SELF: 'No puedes seguirte a ti mismo.',
   FOLLOW_NOT_FOUND: 'No sigues a este usuario.',
   FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
+  TAG_DUPLICATED: 'Hay etiquetas repetidas. Quita una.',
   PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
 };
 

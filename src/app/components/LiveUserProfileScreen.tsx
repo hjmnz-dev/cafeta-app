@@ -15,6 +15,7 @@ import { useUserPosts } from '../store/posts-queries';
 import { useSession } from '../store/SessionStore';
 import { FollowButton } from './FollowButton';
 import { LivePostList } from './LivePostList';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * Perfil de otro usuario desde la API (decisión 15, HU07 E2 y HU09). La API
@@ -144,7 +145,6 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const posts = useUserPosts(profile.id, profile.canSeeContent);
   const notice = restrictedNotice(profile);
-  const initial = (profile.displayName.trim()[0] ?? 'C').toUpperCase();
 
   return (
     <div
@@ -159,18 +159,16 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
 
       <div className="px-5 pb-4">
         <div className="flex justify-between items-end -mt-9 mb-4 relative z-10">
-          {/* TODO(14): la foto de perfil llega con la subida de archivos. */}
-          <div
-            className="w-[78px] h-[78px] rounded-[24px] border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)] bg-[var(--brand)] flex items-center justify-center"
-            aria-hidden="true"
-          >
-            <span className="text-white font-['Space_Grotesk',sans-serif] font-bold text-[30px]">
-              {initial}
-            </span>
-          </div>
+          <ProfileAvatar
+            url={profile.avatarUrl}
+            name={profile.displayName}
+            size={78}
+            radius={24}
+            className="border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)]"
+          />
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate('/messages')}
+              onClick={() => navigate(`/messages?to=${profile.id}`)}
               className="w-[40px] h-[40px] rounded-full border-2 border-[var(--line)] bg-[var(--surface)] flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
               aria-label="Enviar mensaje"
             >

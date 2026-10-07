@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { SESSION_KEY } from '../app/lib/http';
 import type { PostView } from '../app/lib/posts-api';
+import type { ProfileView } from '../app/lib/profiles-api';
 import { defaultFetch, json, TEST_CAREERS } from './setup';
 
 /** Estudiante con sesión en las pruebas; su carrera es la primera de TEST_CAREERS. */
@@ -81,3 +82,28 @@ export function postView(
 
 export const page = (items: PostView[], nextCursor: string | null = null) =>
   json(200, { items, nextCursor });
+
+/** Mi perfil tal como lo devuelve GET /users/:id/profile (decisión 14). */
+export function myProfileView(
+  overrides: Partial<ProfileView> = {},
+): ProfileView {
+  return {
+    id: TEST_USER.id,
+    handle: 'cgomez_intec',
+    displayName: 'Carlos Gómez',
+    careerName: TEST_CAREERS[0].name,
+    careerId: TEST_CAREERS[0].id,
+    avatarUrl: null,
+    verified: false,
+    visibility: 'PUBLIC',
+    isSelf: true,
+    canSeeContent: true,
+    followStatus: 'NONE',
+    canFollow: false,
+    bio: 'Desarrollo web y diseño de software',
+    location: 'Santo Domingo',
+    tags: [{ label: 'React', category: 'SKILL' }],
+    counts: { posts: 0, followers: 0, following: 0 },
+    ...overrides,
+  };
+}
