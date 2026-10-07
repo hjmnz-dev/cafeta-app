@@ -35,6 +35,16 @@ describe('messageForCode', () => {
     },
   );
 
+  it.each([
+    ['INVALID_PASSWORD', 'La contraseña no es correcta.'],
+    [
+      'ADMIN_CANNOT_SELF_DEACTIVATE',
+      'Un administrador no puede desactivar su propia cuenta.',
+    ],
+  ])('spec 0009 · decisión 11: %s se traduce a su mensaje', (code, message) => {
+    expect(messageForCode(code)).toBe(message);
+  });
+
   it('el mensaje genérico es el de la spec', () => {
     expect(GENERIC_ERROR_MESSAGE).toBe('Algo salió mal. Intenta de nuevo.');
   });

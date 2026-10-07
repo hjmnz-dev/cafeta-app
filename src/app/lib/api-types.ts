@@ -646,6 +646,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/me/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AccountController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -704,6 +720,11 @@ export interface components {
       id: string;
       /** @example 1113672@est.intec.edu.do */
       email: string;
+      /**
+       * @description Fecha de registro.
+       * @example 2026-10-02T14:00:00.000Z
+       */
+      createdAt: string;
       profile: components['schemas']['ProfileSummaryDto'];
     };
     AuthResponseDto: {
@@ -1053,6 +1074,10 @@ export interface components {
       blocked: boolean;
       /** Format: date-time */
       blockedAt: string;
+    };
+    DeactivateAccountDto: {
+      /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
+      password: string;
     };
   };
   responses: never;
@@ -2088,6 +2113,27 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PostPageDto'];
         };
+      };
+    };
+  };
+  AccountController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeactivateAccountDto'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
