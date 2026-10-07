@@ -24,7 +24,8 @@ import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
 import { useBlockUser } from '../store/blocks-queries';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
-import { ReportDialog } from './ReportDialog';
+import { useHasReported } from '../store/reports-queries';
+import { ReportTargetDialog } from './ReportTargetDialog';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -140,8 +141,6 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     deletePost,
     togglePostReaction,
     blockUser,
-    reportPost,
-    hasReported,
   } = useAppState();
   const own = live ? live.isMine : isOwnPost(post.id);
   const blockMutation = useBlockUser();
@@ -153,7 +152,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     null,
   );
   const [reporting, setReporting] = useState(false);
-  const reported = hasReported('post', post.id);
+  const reported = useHasReported('POST', post.id);
 
   const startEdit = () => {
     setDraft(post.content);
@@ -232,16 +231,14 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
               </div>
             </div>
 
-            {(!live || actions) && (
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label={`Opciones de la publicación de ${post.authorName}`}
-                aria-expanded={menuOpen}
-                className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
-              >
-                <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
-              </button>
-            )}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={`Opciones de la publicación de ${post.authorName}`}
+              aria-expanded={menuOpen}
+              className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
+            </button>
           </div>
 
           {/* Contenido */}
@@ -524,21 +521,26 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
           <div className="absolute top-12 right-4 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden w-[210px]">
             {!own && (
               <>
-                <button
-                  onClick={() => {
-                    setReporting(true);
-                    setMenuOpen(false);
-                  }}
-                  disabled={reported}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
-                >
-                  {reported ? (
-                    <Check className="w-4 h-4 text-[var(--muted)]" />
-                  ) : (
-                    <Flag className="w-4 h-4 text-[var(--muted)]" />
-                  )}
-                  {reported ? 'Publicación reportada' : 'Reportar publicación'}
-                </button>
+                {/* Solo las publicaciones reales se pueden reportar (HU56). */}
+                {live && (
+                  <button
+                    onClick={() => {
+                      setReporting(true);
+                      setMenuOpen(false);
+                    }}
+                    disabled={reported}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
+                  >
+                    {reported ? (
+                      <Check className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Flag className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {reported
+                      ? 'Publicación reportada'
+                      : 'Reportar publicación'}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (live || post.authorId.includes('-')) {
@@ -603,15 +605,13 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
       )}
 
       {/* HU56 — Reportar publicación */}
-      {reporting && (
-        <ReportDialog
+      {reporting && live && (
+        <ReportTargetDialog
+          targetType="POST"
+          targetId={post.id}
           title="Reportar publicación"
           subject={`Publicación de ${post.authorName}`}
           onClose={() => setReporting(false)}
-          onConfirm={(reason) => {
-            reportPost(post.id, reason);
-            setReporting(false);
-          }}
         />
       )}
 

@@ -48,6 +48,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   FOLLOW_NOT_FOUND: 'No sigues a este usuario.',
   FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
   PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
+  CANNOT_REPORT_SELF: 'No puedes reportarte a ti mismo ni a tu publicación.',
+  DETAILS_REQUIRED: 'Cuéntanos qué pasó para poder enviar el reporte.',
+  REPORT_ALREADY_PENDING:
+    'Ya reportaste esto, un administrador lo está revisando.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';

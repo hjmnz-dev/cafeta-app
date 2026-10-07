@@ -662,6 +662,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/reports': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reportar a un usuario o una publicación (HU55, HU56). */
+    post: operations['ReportsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1078,6 +1095,35 @@ export interface components {
     DeactivateAccountDto: {
       /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
       password: string;
+    };
+    CreateReportDto: {
+      /** @enum {string} */
+      targetType: 'USER' | 'POST';
+      /**
+       * Format: uuid
+       * @description id del usuario o de la publicación, según targetType.
+       */
+      targetId: string;
+      /** @enum {string} */
+      reason:
+        'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE' | 'IMPERSONATION' | 'OTHER';
+      /** @description Hasta 500 caracteres. Obligatorio cuando el motivo es OTHER. */
+      details?: string;
+    };
+    ReportViewDto: {
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      targetType: 'USER' | 'POST';
+      /** Format: uuid */
+      targetId: string;
+      /** @enum {string} */
+      reason:
+        'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE' | 'IMPERSONATION' | 'OTHER';
+      /** @enum {string} */
+      status: 'PENDING' | 'SANCTIONED' | 'DISMISSED';
+      /** Format: date-time */
+      createdAt: string;
     };
   };
   responses: never;
@@ -2134,6 +2180,29 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  ReportsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateReportDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReportViewDto'];
+        };
       };
     };
   };
