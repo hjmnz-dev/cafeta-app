@@ -132,6 +132,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['PostsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['PostsController_update'];
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/reactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_reactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/users/{userId}/posts': {
     parameters: {
       query?: never;
@@ -512,6 +560,92 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/blocks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista paginada de usuarios bloqueados por el usuario autenticado. */
+    get: operations['BlocksController_blockedUsers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/users/{userId}/block': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Bloquear a un usuario. */
+    post: operations['BlocksController_block'];
+    /** Desbloquear a un usuario. */
+    delete: operations['BlocksController_unblock'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/search/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Personas por nombre, usuario o carrera; ignora mayúsculas y acentos. */
+    get: operations['SearchController_users'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/search/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Publicaciones que contienen el texto y que quien busca puede ver. */
+    get: operations['SearchController_posts'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/explore/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Publicaciones recientes y movidas de otras personas. */
+    get: operations['SearchController_explore'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -597,8 +731,8 @@ export interface components {
         | 'Cancha Deportiva'
         | 'Área de Parqueo'
         | 'Centro de Estudiantes';
-      /** @description Texto de la publicación, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
-      content: string;
+      /** @description Texto de hasta 2000 caracteres. Puede faltar solo si hay adjuntos (HU20 E2). */
+      content?: string;
       /** @description Claves que devolvió POST /uploads: hasta 4 imágenes, o 1 video, o 1 PDF. */
       mediaKeys?: string[];
     };
@@ -654,6 +788,31 @@ export interface components {
       items: components['schemas']['PostViewDto'][];
       /** @description id para pedir la página siguiente; null cuando no hay más. */
       nextCursor: string | null;
+    };
+    UpdatePostDto: {
+      /** @enum {string|null} */
+      location?:
+        | 'Campus Principal'
+        | 'Biblioteca'
+        | 'Cafetería INTEC'
+        | 'Laboratorio de Computación'
+        | 'Auditorio'
+        | 'Cancha Deportiva'
+        | 'Área de Parqueo'
+        | 'Centro de Estudiantes'
+        | null;
+      /** @description Texto nuevo, hasta 2000 caracteres. Vacío solo si la publicación tiene adjuntos. */
+      content?: string;
+      /** @description Solo eventos: fecha y hora en ISO 8601. */
+      eventStartsAt?: string;
+      /** @description Solo eventos. */
+      eventLocation?: string;
+      /** @description Solo publicaciones de código. */
+      codeSnippet?: string;
+      /** @description Solo grupos de estudio. */
+      groupName?: string;
+      /** @description Solo grupos de estudio. */
+      groupSpots?: number;
     };
     PostCountDto: {
       /** @example 12 */
@@ -875,6 +1034,26 @@ export interface components {
       /** @description Texto del mensaje, de 1 a 2000 caracteres sin contar los espacios de los bordes. */
       content: string;
     };
+    BlockedUserViewDto: {
+      /** Format: uuid */
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+      /** Format: date-time */
+      blockedAt: string;
+    };
+    BlockedUserPageDto: {
+      items: components['schemas']['BlockedUserViewDto'][];
+      nextCursor: string | null;
+    };
+    BlockStatusViewDto: {
+      blocked: boolean;
+      /** Format: date-time */
+      blockedAt: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -1057,6 +1236,88 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PostPageDto'];
         };
+      };
+    };
+  };
+  PostsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdatePostDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostViewDto'];
+        };
+      };
+    };
+  };
+  PostsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_reactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -1687,6 +1948,146 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  BlocksController_blockedUsers: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockedUserPageDto'];
+        };
+      };
+    };
+  };
+  BlocksController_block: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BlockStatusViewDto'];
+        };
+      };
+    };
+  };
+  BlocksController_unblock: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SearchController_users: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto a buscar, de 2 a 100 caracteres. */
+        q: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FollowUserPageDto'];
+        };
+      };
+    };
+  };
+  SearchController_posts: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto a buscar, de 2 a 100 caracteres. */
+        q: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
+      };
+    };
+  };
+  SearchController_explore: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
       };
     };
   };
