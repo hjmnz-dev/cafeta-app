@@ -71,7 +71,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       within(screen.getByTestId('follower-count')).getByText('12'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^seguir$/i }),
+      screen.getByRole('button', { name: /^seguir a maría$/i }),
     ).toBeInTheDocument();
     expect(
       await screen.findByText('Repaso de anatomía hoy'),
@@ -102,7 +102,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       within(screen.getByTestId('follower-count')).getByText('12'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^seguir$/i }),
+      screen.getByRole('button', { name: /^seguir a maría$/i }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Repaso de anatomía hoy')).toBeNull();
     expect(postsCalls).toEqual([]);
@@ -118,7 +118,9 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
     );
 
     expect(
-      await screen.findByRole('button', { name: /solicitado/i }),
+      await screen.findByRole('button', {
+        name: /cancelar la solicitud a maría/i,
+      }),
     ).toBeInTheDocument();
   });
 

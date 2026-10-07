@@ -1,15 +1,12 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate } from 'react-router';
 import {
   ArrowLeft,
   Ban,
-  Clock,
   Lock,
   MapPin,
   MessageCircle,
   MoreHorizontal,
-  UserCheck,
-  UserPlus,
   Users,
 } from 'lucide-react';
 import { ApiError, userMessageOf } from '../lib/http';
@@ -25,6 +22,7 @@ import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
 import { useBlockUser } from '../store/blocks-queries';
 import { useSession } from '../store/SessionStore';
+import { FollowButton } from './FollowButton';
 import { LivePostList } from './LivePostList';
 
 /**
@@ -112,60 +110,40 @@ function ProfileShell({
   );
 }
 
-function FollowButton({ profile }: { profile: ProfileView }) {
-  const state = profile.followStatus;
-  // Un PRIVATE sin seguimiento previo no muestra el botón (decisión 15).
-  if (!profile.canFollow && state === 'NONE') return null;
-  // TODO(16): seguir, cancelar la solicitud y dejar de seguir.
-  return (
-    <button
-      disabled
-      aria-pressed={state !== 'NONE'}
-      className={
-        'h-[40px] px-5 rounded-full font-semibold text-[14px] flex items-center gap-1.5 shadow-sm disabled:cursor-default ' +
-        (state === 'NONE'
-          ? 'bg-[var(--brand)] text-[var(--on-brand)]'
-          : 'bg-[var(--surface)] border-2 border-[var(--line)] ' +
-            (state === 'PENDING' ? 'text-[var(--muted)]' : 'text-[var(--ink)]'))
-      }
-    >
-      {state === 'ACCEPTED' ? (
-        <>
-          <UserCheck className="w-[16px] h-[16px]" /> Siguiendo
-        </>
-      ) : state === 'PENDING' ? (
-        <>
-          <Clock className="w-[16px] h-[16px]" /> Solicitado
-        </>
-      ) : (
-        <>
-          <UserPlus className="w-[16px] h-[16px]" /> Seguir
-        </>
-      )}
-    </button>
-  );
-}
-
+/** Un conteo; con `to` lleva a su lista (HU32). */
 function Stat({
   value,
   label,
   testId,
+  to,
 }: {
   value: number;
   label: string;
   testId?: string;
+  to?: string;
 }) {
-  return (
-    <div
-      className="flex flex-col items-center gap-1 flex-1"
-      data-testid={testId}
-    >
+  const body = (
+    <>
       <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">
         {value.toLocaleString('es')}
       </span>
       <span className="text-[var(--muted)] text-[12px] font-medium">
         {label}
       </span>
+    </>
+  );
+  const className = 'flex flex-col items-center gap-1 flex-1';
+  return to ? (
+    <Link
+      to={to}
+      className={`${className} rounded-[12px] hover:bg-[var(--surface-2)]`}
+      data-testid={testId}
+    >
+      {body}
+    </Link>
+  ) : (
+    <div className={className} data-testid={testId}>
+      {body}
     </div>
   );
 }
@@ -306,9 +284,18 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             value={profile.counts.followers}
             label="Seguidores"
             testId="follower-count"
+            to={
+              profile.canSeeContent ? `/u/${profile.id}/followers` : undefined
+            }
           />
           <div className="w-[1px] h-[30px] bg-[var(--line-soft)]" />
-          <Stat value={profile.counts.following} label="Siguiendo" />
+          <Stat
+            value={profile.counts.following}
+            label="Siguiendo"
+            to={
+              profile.canSeeContent ? `/u/${profile.id}/following` : undefined
+            }
+          />
         </div>
       </div>
 

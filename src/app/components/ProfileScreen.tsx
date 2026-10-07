@@ -15,11 +15,11 @@ import {
   useAppState,
   TAG_CATEGORIES,
   CURRENT_USER_ID,
-  MY_FOLLOWERS,
 } from '../store/AppState';
 import { PostCard } from './PostCard';
 import { LivePostList } from './LivePostList';
 import { useUserPostCount, useUserPosts } from '../store/posts-queries';
+import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
 import { MyStoryAvatar } from './MyStoryAvatar';
 
@@ -62,7 +62,7 @@ export function ProfileScreen() {
     'posts',
   );
   const navigate = useNavigate();
-  const { profile, posts, followingIds } = useAppState();
+  const { profile, posts } = useAppState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Mis publicaciones y su conteo vienen de la API (spec 0005); cabecera,
@@ -70,6 +70,9 @@ export function ProfileScreen() {
   const { user } = useSession();
   const myLivePosts = useUserPosts(user?.id);
   const postCount = useUserPostCount(user?.id);
+  // Seguidores y seguidos reales (decisión 16); tocarlos abre Mi red.
+  const myProfile = useProfile(user?.id ?? '', Boolean(user));
+  const counts = myProfile.data?.counts;
   const myPosts = posts.filter((p) => p.authorId === CURRENT_USER_ID);
 
   // Recursos: publicaciones propias que aportan material de estudio.
@@ -111,21 +114,27 @@ export function ProfileScreen() {
                 testid: 'stat-posts',
                 value: postCount.data?.count ?? '–',
                 label: 'Publicaciones',
+                to: undefined as string | undefined,
               },
               {
                 testid: 'stat-followers',
-                value: MY_FOLLOWERS.toLocaleString('es'),
+                value: counts?.followers.toLocaleString('es') ?? '–',
                 label: 'Seguidores',
+                to: '/network?tab=followers',
               },
               {
                 testid: 'stat-following',
-                value: followingIds.length,
+                value: counts?.following.toLocaleString('es') ?? '–',
                 label: 'Siguiendo',
+                to: '/network?tab=following',
               },
             ].map((stat) => (
-              <div
+              <button
                 key={stat.label}
-                className="flex-1 flex flex-col items-center gap-0.5 min-w-0"
+                type="button"
+                onClick={() => stat.to && navigate(stat.to)}
+                disabled={!stat.to}
+                className="flex-1 flex flex-col items-center gap-0.5 min-w-0 rounded-[10px] enabled:hover:bg-[var(--surface-3)] disabled:cursor-default"
               >
                 <span
                   data-testid={stat.testid}
@@ -136,7 +145,7 @@ export function ProfileScreen() {
                 <span className="text-[var(--muted)] text-[10px] font-medium whitespace-nowrap">
                   {stat.label}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
