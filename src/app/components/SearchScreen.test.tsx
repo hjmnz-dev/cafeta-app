@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { SearchScreen } from './SearchScreen';
 import { FeedScreen } from './FeedScreen';
 import { renderWithProviders } from '../../test/utils';
+import { postView, signIn } from '../../test/api';
+import { json } from '../../test/setup';
 
 const type = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
   await user.clear(screen.getByRole('textbox', { name: /buscar/i }));
@@ -112,5 +114,85 @@ describe('DEF-07 — Comportamiento de la pantalla de búsqueda', () => {
       'href',
       '/search',
     );
+  });
+});
+
+describe('DEF-07 · Búsqueda contra la API (live)', () => {
+  it('AC-1 (HU41): con sesión activa busca usuarios en la API /search/users', async () => {
+    signIn((url) => {
+      if (url.pathname.endsWith('/search/users')) {
+        return json(200, {
+          items: [
+            {
+              id: '01926f00-0000-7000-8000-000000000099',
+              handle: 'josep',
+              displayName: 'José Pérez',
+              avatarUrl: null,
+              careerName: 'Ingeniería de Software',
+              verified: true,
+            },
+          ],
+          nextCursor: null,
+        });
+      }
+      return undefined;
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+
+    await type(user, 'jose');
+
+    expect(await screen.findByText('José Pérez')).toBeInTheDocument();
+  });
+
+  it('AC-6 (HU42): con sesión activa busca publicaciones en la API /search/posts', async () => {
+    signIn((url) => {
+      if (url.pathname.endsWith('/search/posts')) {
+        return json(200, {
+          items: [
+            postView({
+              id: 'p-search-1',
+              content: 'Apuntes de cálculo integral',
+            }),
+          ],
+          nextCursor: null,
+        });
+      }
+      return undefined;
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+
+    await user.click(screen.getByRole('tab', { name: /publicaciones/i }));
+    await type(user, 'calculo');
+
+    expect(
+      await screen.findByText('Apuntes de cálculo integral'),
+    ).toBeInTheDocument();
+  });
+
+  it('AC-9 (HU40): con sesión activa y sin texto muestra explorar desde /explore/posts', async () => {
+    signIn((url) => {
+      if (url.pathname.endsWith('/explore/posts')) {
+        return json(200, {
+          items: [
+            postView({
+              id: 'p-explore-1',
+              content: 'Publicación popular destacada',
+            }),
+          ],
+          nextCursor: null,
+        });
+      }
+      return undefined;
+    });
+
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+
+    expect(
+      await screen.findByText('Publicación popular destacada'),
+    ).toBeInTheDocument();
   });
 });

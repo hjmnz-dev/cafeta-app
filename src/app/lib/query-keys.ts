@@ -36,3 +36,11 @@ export const profileKeys = {
   view: (userId: string) => ['profiles', 'view', userId] as const,
   privacy: ['profiles', 'privacy'] as const,
 };
+
+/** Búsqueda y descubrimiento (spec 0008, decisión 28). */
+export const searchKeys = {
+  all: ['search'] as const,
+  users: (q: string) => ['search', 'users', q] as const,
+  posts: (q: string) => ['search', 'posts', q] as const,
+  explore: () => ['explore', 'posts'] as const,
+};
