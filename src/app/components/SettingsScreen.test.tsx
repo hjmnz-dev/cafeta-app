@@ -177,18 +177,55 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     );
   });
 
-  it('HU08 — alternar una preferencia de notificación cambia y persiste su estado', async () => {
+  it('HU08 E1 — apagar "Comentarios" lo guarda en la API y deja los demás encendidos', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<SettingsScreen />, { route: '/settings' });
+    let saved = {
+      reactions: true,
+      comments: true,
+      follows: true,
+      messages: true,
+      stories: true,
+    };
+    const fetchMock = signIn((url, init) => {
+      if (!url.pathname.endsWith('/notifications/preferences')) {
+        return undefined;
+      }
+      if (init?.method === 'PATCH') {
+        saved = { ...saved, ...JSON.parse(String(init.body)) };
+      }
+      return json(200, saved);
+    });
+    renderSettingsWithToasts();
 
-    const switches = screen.getAllByRole('switch');
-    // Primera preferencia = "Reacciones", activa por defecto
-    expect(switches[0]).toHaveAttribute('aria-checked', 'true');
+    const comments = await screen.findByRole('switch', {
+      name: /notificaciones de comentarios/i,
+    });
+    await waitFor(() => expect(comments).toBeEnabled());
+    expect(comments).toHaveAttribute('aria-checked', 'true');
 
-    await user.click(switches[0]);
+    await user.click(comments);
 
-    expect(switches[0]).toHaveAttribute('aria-checked', 'false');
-    expect(readState().settings.notifications.likes).toBe(false);
+    await waitFor(() =>
+      expect(
+        screen.getByRole('switch', { name: /notificaciones de comentarios/i }),
+      ).toHaveAttribute('aria-checked', 'false'),
+    );
+    const patch = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'PATCH',
+    );
+    expect(JSON.parse(String(patch?.[1]?.body))).toEqual({ comments: false });
+    for (const other of ['reacciones', 'seguidores', 'mensajes', 'historias']) {
+      expect(
+        screen.getByRole('switch', {
+          name: new RegExp(`notificaciones de ${other}`, 'i'),
+        }),
+      ).toHaveAttribute('aria-checked', 'true');
+    }
+    expect(
+      await screen.findByText('Preferencias guardadas'),
+    ).toBeInTheDocument();
+    // Ya no se guardan en localStorage (AppState).
+    expect(readState().settings?.notifications).toBeUndefined();
   });
 });
 
