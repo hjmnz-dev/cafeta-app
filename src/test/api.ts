@@ -57,6 +57,7 @@ export function postView(
     type: 'TEXT',
     content: 'Hola INTEC',
     location: null,
+    state: 'ACTIVE',
     createdAt: new Date().toISOString(),
     editedAt: null,
     eventStartsAt: null,

@@ -27,7 +27,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
   POST_NOT_FOUND: 'Esa publicación ya no existe.',
   NOT_POST_AUTHOR: 'Solo quien publicó puede cambiar esta publicación.',
-  POST_INACTIVE: 'Reactiva la publicación antes de editarla.',
+  POST_INACTIVE:
+    'Reactiva la publicación antes de editarla, archivarla o restaurarla.',
+  ALREADY_ARCHIVED: 'Esa publicación ya estaba archivada.',
+  NOT_ARCHIVED: 'Esa publicación no estaba archivada.',
   POST_FIELD_NOT_ALLOWED: 'Ese dato no aplica a este tipo de publicación.',
   MEDIA_COMBINATION_INVALID:
     'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',

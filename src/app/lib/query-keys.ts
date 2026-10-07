@@ -8,6 +8,8 @@ export const postKeys = {
   feed: (careerId: string | null) => ['posts', 'feed', careerId] as const,
   byAuthor: (userId: string) => ['posts', 'author', userId] as const,
   count: (userId: string) => ['posts', 'count', userId] as const,
+  /** Mis archivadas y desactivadas (solo las veo yo). */
+  archived: ['posts', 'archived'] as const,
 };
 
 export const careerKeys = {

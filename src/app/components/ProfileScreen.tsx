@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import {
   Settings,
+  Archive,
   Edit2,
   MapPin,
   Calendar,
@@ -89,13 +90,22 @@ export function ProfileScreen() {
         <p className="text-[var(--brand)] text-[13px] font-semibold truncate">
           {profile.career} · INTEC
         </p>
-        <button
-          onClick={() => navigate('/settings')}
-          className="w-10 h-10 flex-none rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
-          aria-label="Configuración"
-        >
-          <Settings className="w-[20px] h-[20px]" />
-        </button>
+        <div className="flex items-center flex-none">
+          <button
+            onClick={() => navigate('/profile/archived')}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+            aria-label="Publicaciones archivadas"
+          >
+            <Archive className="w-[20px] h-[20px]" />
+          </button>
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+            aria-label="Configuración"
+          >
+            <Settings className="w-[20px] h-[20px]" />
+          </button>
+        </div>
       </div>
 
       <div className="px-5 pb-6">

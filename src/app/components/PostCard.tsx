@@ -19,10 +19,13 @@ import {
   Ban,
   Check,
   Megaphone,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
+import type { PostView } from '../lib/posts-api';
 import { ReportDialog } from './ReportDialog';
 
 /**
@@ -52,6 +55,8 @@ export interface LivePost {
   /** Para enlazar al perfil del autor (/u/:id), que aplica su privacidad. */
   authorId: string;
   isAnnouncement: boolean;
+  /** Estado de la publicación; solo las propias llegan archivadas o desactivadas. */
+  state?: PostView['state'];
   /** Acciones del autor contra la API (spec 0008, decisión 17); solo en las propias. */
   actions?: LiveAuthorActions;
 }
@@ -60,6 +65,9 @@ export interface LiveAuthorActions {
   /** Resuelve true si la API guardó el cambio. */
   edit: (content: string) => Promise<boolean>;
   deactivate: () => void;
+  reactivate: () => void;
+  archive: () => void;
+  restore: () => void;
   remove: () => void;
   busy: boolean;
 }
@@ -225,6 +233,11 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 {!post.active && (
                   <span className="text-[var(--muted)] font-semibold text-[11px] bg-[var(--surface-3)] px-2 py-0.5 rounded-md">
                     Desactivada
+                  </span>
+                )}
+                {live?.state === 'ARCHIVED' && (
+                  <span className="text-[var(--muted)] font-semibold text-[11px] bg-[var(--surface-3)] px-2 py-0.5 rounded-md">
+                    Archivada
                   </span>
                 )}
               </div>
@@ -551,14 +564,33 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             )}
             {own && (
               <>
-                <button
-                  onClick={startEdit}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
-                >
-                  <Pencil className="w-4 h-4 text-[var(--muted)]" />
-                  Editar
-                </button>
-                {live || post.active ? (
+                {!(live && !post.active) && (
+                  <button
+                    onClick={startEdit}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                  >
+                    <Pencil className="w-4 h-4 text-[var(--muted)]" />
+                    Editar
+                  </button>
+                )}
+                {actions && post.active && (
+                  <button
+                    onClick={() => {
+                      if (live?.state === 'ARCHIVED') actions.restore();
+                      else actions.archive();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
+                  >
+                    {live?.state === 'ARCHIVED' ? (
+                      <ArchiveRestore className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Archive className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {live?.state === 'ARCHIVED' ? 'Restaurar' : 'Archivar'}
+                  </button>
+                )}
+                {post.active ? (
                   <button
                     onClick={() => {
                       setConfirming('deactivate');
@@ -572,7 +604,8 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 ) : (
                   <button
                     onClick={() => {
-                      reactivatePost(post.id);
+                      if (actions) actions.reactivate();
+                      else reactivatePost(post.id);
                       setMenuOpen(false);
                     }}
                     className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
