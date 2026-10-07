@@ -27,6 +27,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   FILE_TOO_LARGE: `El archivo es muy grande. ${ALLOWED_FORMATS_TEXT}`,
   FILE_REQUIRED: 'Elige un archivo para subir.',
   STORAGE_UNAVAILABLE: 'No pudimos subir el archivo ahora. Intenta más tarde.',
+  STORY_MEDIA_INVALID: 'Una historia lleva una imagen o un video.',
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
   POST_NOT_FOUND: 'Esa publicación ya no existe.',
   NOT_POST_AUTHOR: 'Solo quien publicó puede cambiar esta publicación.',

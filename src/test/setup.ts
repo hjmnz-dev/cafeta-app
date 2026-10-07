@@ -20,11 +20,18 @@ const EMPTY_PAGE = { items: [], nextCursor: null };
 
 // La API no existe en las pruebas (spec 0004): fetch simulado por defecto.
 // /auth/me responde 401 (sin sesión), /careers una lista fija y las listas de
-// publicaciones vacías (spec 0005); cada prueba puede sobreescribirlo con
+// publicaciones y la bandeja de historias vacías (spec 0005); cada prueba puede sobreescribirlo con
 // vi.mocked(fetch).
-export const defaultFetch = (input: RequestInfo | URL): Promise<Response> => {
+export const defaultFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> => {
   const url = String(input);
   const path = new URL(url).pathname;
+  // La tira de historias del feed pide la bandeja: vacía salvo que la prueba diga otra cosa.
+  if (path.endsWith('/stories') && (init?.method ?? 'GET') === 'GET') {
+    return Promise.resolve(json(200, { groups: [] }));
+  }
   if (url.endsWith('/auth/me')) {
     return Promise.resolve(
       json(401, { statusCode: 401, code: 'UNAUTHORIZED' }),

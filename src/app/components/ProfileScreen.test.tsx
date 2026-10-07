@@ -3,7 +3,6 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfileScreen } from './ProfileScreen';
 import { EditProfileScreen } from './EditProfileScreen';
-import { CreateStoryScreen } from './CreateStoryScreen';
 import { renderWithProviders, renderRoutes } from '../../test/utils';
 import { page, postView, signIn, TEST_USER } from '../../test/api';
 import { json } from '../../test/setup';
@@ -88,34 +87,59 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
   });
 
   it('la foto del perfil abre las historias propias y ofrece publicar otra', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(
-      <>
-        <CreateStoryScreen />
-        <ProfileScreen />
-      </>,
-      { route: '/create-story' },
+    // La bandeja de la API decide si hay historia propia vigente.
+    let groups: unknown[] = [];
+    signIn((url, init) =>
+      url.pathname.endsWith('/stories') && (init?.method ?? 'GET') === 'GET'
+        ? json(200, { groups })
+        : undefined,
     );
+    const { unmount } = renderWithProviders(<ProfileScreen />, {
+      route: '/profile',
+    });
 
     // Sin historia propia, la foto lleva a crearla y no hay contador aparte.
     expect(
-      screen.getByRole('link', { name: /crear historia/i }),
-    ).toBeInTheDocument();
+      await screen.findByRole('link', { name: /crear historia/i }),
+    ).toHaveAttribute('href', '/create-story');
     expect(screen.queryByTestId('stat-stories')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: /ver historia de/i }),
     ).not.toBeInTheDocument();
+    unmount();
 
-    await user.type(
-      screen.getByRole('textbox', { name: /texto de la historia/i }),
-      'Publicando una historia',
-    );
-    await user.click(screen.getByRole('button', { name: /^publicar$/i }));
+    // Con una historia vigente, la misma foto la abre y el "+" sigue llevando a publicar.
+    groups = [
+      {
+        author: {
+          id: TEST_USER.id,
+          handle: TEST_USER.profile.handle,
+          displayName: TEST_USER.profile.displayName,
+          avatarUrl: null,
+        },
+        stories: [
+          {
+            id: 'm1',
+            text: null,
+            editedAt: null,
+            createdAt: new Date(Date.now() - 60_000).toISOString(),
+            expiresAt: new Date(Date.now() + 60 * 60_000).toISOString(),
+            media: {
+              mediaType: 'IMAGE',
+              url: 'https://blob.test/m1.jpg',
+              mimeType: 'image/jpeg',
+            },
+          },
+        ],
+      },
+    ];
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
-    // Ahora la misma foto abre la historia, y el "+" sigue llevando a publicar.
     expect(
-      screen.getByRole('link', { name: /ver historia de carlos gómez/i }),
-    ).toBeInTheDocument();
+      await screen.findByRole('link', {
+        name: /ver historia de carlos gómez/i,
+      }),
+    ).toHaveAttribute('href', '/stories/m1');
     expect(
       screen.getByRole('link', { name: /crear historia/i }),
     ).toHaveAttribute('href', '/create-story');

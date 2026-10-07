@@ -58,3 +58,9 @@ export const searchKeys = {
   posts: (q: string) => ['search', 'posts', q] as const,
   explore: () => ['explore', 'posts'] as const,
 };
+
+/** Historias (decisión 22): todo cuelga de ['stories']. */
+export const storyKeys = {
+  all: ['stories'] as const,
+  tray: ['stories', 'tray'] as const,
+};

@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router';
-import { useAppState, CURRENT_USER_ID, MY_AVATAR } from '../store/AppState';
-import { visibleStories, playbackQueue } from '../lib/stories';
+import { groupOf } from '../lib/stories';
+import { useSession } from '../store/SessionStore';
+import { useStoryTray } from '../store/stories-queries';
+import { StoryAvatar } from './StoryAvatar';
 
 /**
- * DEF-04 · HU12/HU13 — El avatar propio como acceso a las historias.
+ * HU12/HU13 · El avatar propio como acceso a las historias.
  *
  * Un solo círculo con dos zonas de toque: el avatar abre las historias propias
  * vigentes (con anillo cuando las hay) y el "+" lleva a publicar otra. Lo usan
@@ -15,18 +17,15 @@ import { visibleStories, playbackQueue } from '../lib/stories';
  * de pantalla oiría dos veces la misma acción.
  */
 export function MyStoryAvatar({ size = 62 }: { size?: number }) {
-  const { stories, followingIds } = useAppState();
+  const { user } = useSession();
+  const tray = useStoryTray();
   // De dónde se sale, para poder volver aquí al cerrar (feed o perfil).
   const { pathname: from } = useLocation();
 
-  const visibles = visibleStories(stories, {
-    currentUserId: CURRENT_USER_ID,
-    followingIds,
-  });
-  const mine = playbackQueue(visibles).filter(
-    (s) => s.authorId === CURRENT_USER_ID,
-  );
-  const hasMine = mine.length > 0;
+  const mine = groupOf(tray.data?.groups ?? [], user?.id);
+  const firstStory = mine?.stories[0];
+  const name = user?.profile.displayName ?? '';
+  const avatarUrl = mine?.author.avatarUrl ?? null;
 
   const badgeSize = Math.round(size * 0.35);
   const badge =
@@ -39,11 +38,11 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   };
 
   const avatar = (ring: boolean) => (
-    <img
-      src={MY_AVATAR}
-      alt=""
+    <StoryAvatar
+      url={avatarUrl}
+      name={name}
       className={
-        'w-full h-full rounded-full object-cover bg-[var(--surface-3)] border-2 ' +
+        'w-full h-full border-2 text-[22px] ' +
         (ring ? 'border-[var(--surface)]' : 'border-[var(--line)]')
       }
     />
@@ -51,11 +50,11 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
 
   return (
     <div className="relative flex-none" style={{ width: size, height: size }}>
-      {hasMine ? (
+      {firstStory ? (
         <Link
-          to={`/stories/${mine[0].id}`}
+          to={`/stories/${firstStory.id}`}
           state={{ from }}
-          aria-label={`Ver historia de ${mine[0].authorName}`}
+          aria-label={`Ver historia de ${name}`}
           className="block w-full h-full rounded-full p-[2.5px]"
           style={{ background: 'var(--story-ring)' }}
         >
@@ -72,7 +71,7 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
         </Link>
       )}
 
-      {hasMine ? (
+      {firstStory ? (
         <Link
           to="/create-story"
           state={{ from }}

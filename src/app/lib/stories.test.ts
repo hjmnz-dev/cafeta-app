@@ -1,164 +1,116 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { StoryGroup, StoryView } from './stories-api';
 import {
-  STORY_TTL_MS,
-  isVigente,
-  remainingLabel,
-  visibleStories,
-  visibleComments,
-  reactionCounts,
-  playbackQueue,
   authorSegment,
+  groupOf,
+  playbackQueue,
+  remainingLabel,
+  STORY_DURATION_MS,
+  STORY_TEXT_MAX,
 } from './stories';
-import type { Story } from '../store/AppState';
 
-const NOW = 1_800_000_000_000;
+// Reglas puras de las historias de la API (decisión 22): cola de reproducción,
+// tramo de un autor y tiempo restante. Sin reloj ni red.
+const NOW = Date.parse('2026-10-07T12:00:00.000Z');
 const HOUR = 60 * 60 * 1000;
 
-const story = (patch: Partial<Story>): Story => ({
-  id: 's1',
-  authorId: 'maria',
-  authorName: 'María Rodríguez',
-  authorAvatar: '',
-  text: 'Maratón de estudio.',
-  createdAt: NOW - HOUR,
-  active: true,
-  edited: false,
-  reactions: {},
-  comments: [],
-  ...patch,
+const story = (id: string): StoryView => ({
+  id,
+  text: null,
+  editedAt: null,
+  createdAt: '2026-10-07T10:00:00.000Z',
+  expiresAt: '2026-10-08T10:00:00.000Z',
+  media: {
+    mediaType: 'IMAGE',
+    url: `https://blob.test/${id}.jpg`,
+    mimeType: 'image/jpeg',
+  },
 });
 
-describe('DEF-04 · lib/stories — vigencia y visibilidad de historias', () => {
-  it('HU13 — una historia está vigente dentro de su ventana de 24 h', () => {
-    expect(isVigente(story({ createdAt: NOW - 23 * HOUR }), NOW)).toBe(true);
-    expect(isVigente(story({ createdAt: NOW - STORY_TTL_MS }), NOW)).toBe(
-      false,
+const group = (authorId: string, ids: string[]): StoryGroup => ({
+  author: {
+    id: authorId,
+    handle: authorId,
+    displayName: authorId,
+    avatarUrl: null,
+  },
+  stories: ids.map(story),
+});
+
+describe('lib/stories', () => {
+  it('cada historia dura 10 s en pantalla y el texto admite 280 caracteres', () => {
+    expect(STORY_DURATION_MS).toBe(10_000);
+    expect(STORY_TEXT_MAX).toBe(280);
+  });
+
+  describe('playbackQueue', () => {
+    it('va autor por autor, en el orden de la bandeja, y conserva el orden de cada autor', () => {
+      const queue = playbackQueue([
+        group('ana', ['a1', 'a2']),
+        group('beto', ['b1']),
+      ]);
+
+      expect(queue.map((entry) => entry.story.id)).toEqual(['a1', 'a2', 'b1']);
+      expect(queue.map((entry) => entry.author.id)).toEqual([
+        'ana',
+        'ana',
+        'beto',
+      ]);
+    });
+
+    it('una bandeja vacía da una cola vacía', () => {
+      expect(playbackQueue([])).toEqual([]);
+    });
+  });
+
+  describe('authorSegment', () => {
+    it('devuelve solo las historias del autor que se está viendo', () => {
+      const queue = playbackQueue([
+        group('ana', ['a1', 'a2']),
+        group('beto', ['b1']),
+      ]);
+
+      expect(
+        authorSegment(queue, 'ana').map((entry) => entry.story.id),
+      ).toEqual(['a1', 'a2']);
+      expect(
+        authorSegment(queue, 'beto').map((entry) => entry.story.id),
+      ).toEqual(['b1']);
+      expect(authorSegment(queue, 'nadie')).toEqual([]);
+    });
+  });
+
+  describe('groupOf', () => {
+    const groups = [group('ana', ['a1']), group('beto', ['b1'])];
+
+    it('encuentra el grupo de un autor', () => {
+      expect(groupOf(groups, 'beto')?.stories[0]?.id).toBe('b1');
+    });
+
+    it.each([['nadie'], [undefined]])(
+      'sin historias vigentes (%s) no hay grupo',
+      (authorId) => {
+        expect(groupOf(groups, authorId)).toBeUndefined();
+      },
     );
   });
 
-  it('HU15 — una historia desactivada deja de estar vigente aunque no haya vencido', () => {
-    expect(isVigente(story({ active: false, createdAt: NOW }), NOW)).toBe(
-      false,
-    );
-  });
-
-  it('el tiempo restante se dice en horas, y en minutos cuando queda menos de una', () => {
-    expect(remainingLabel(story({ createdAt: NOW - 3 * HOUR }), NOW)).toBe(
-      'Quedan 21 h',
-    );
-    expect(remainingLabel(story({ createdAt: NOW - 23.5 * HOUR }), NOW)).toBe(
-      'Quedan 30 min',
-    );
-    expect(remainingLabel(story({ createdAt: NOW - 25 * HOUR }), NOW)).toBe(
-      'Vencida',
-    );
-    expect(remainingLabel(story({ active: false }), NOW)).toBe('Desactivada');
-  });
-
-  it('HU13 — solo se ven las historias propias y las de quienes se sigue', () => {
-    const mia = story({
-      id: 'mine',
-      authorId: 'me',
-      createdAt: NOW - 10 * HOUR,
-    });
-    const seguida = story({
-      id: 'sig',
-      authorId: 'maria',
-      createdAt: NOW - 2 * HOUR,
-    });
-    const ajena = story({
-      id: 'aje',
-      authorId: 'pedro',
-      createdAt: NOW - HOUR,
-    });
-    const vencida = story({
-      id: 'old',
-      authorId: 'maria',
-      createdAt: NOW - 30 * HOUR,
+  describe('remainingLabel', () => {
+    it.each([
+      [3 * HOUR + 10 * 60 * 1000, 'Quedan 3 h'],
+      [1 * HOUR, 'Quedan 1 h'],
+      [45 * 60 * 1000, 'Quedan 45 min'],
+      [20 * 1000, 'Quedan 1 min'],
+    ])('con %i ms por delante dice "%s"', (left, label) => {
+      expect(remainingLabel(new Date(NOW + left).toISOString(), NOW)).toBe(
+        label,
+      );
     });
 
-    const visibles = visibleStories([ajena, vencida, seguida, mia], {
-      currentUserId: 'me',
-      followingIds: ['maria'],
-      now: NOW,
+    it('una historia que ya venció dice "Vencida"', () => {
+      expect(remainingLabel(new Date(NOW - 1).toISOString(), NOW)).toBe(
+        'Vencida',
+      );
     });
-
-    // La propia primero; después las seguidas, de más reciente a más antigua.
-    expect(visibles.map((s) => s.id)).toEqual(['mine', 'sig']);
-  });
-
-  it('la reproducción va autor por autor, y dentro de cada autor de la más antigua a la más nueva', () => {
-    const mia = story({ id: 'mia', authorId: 'me', createdAt: NOW - 3 * HOUR });
-    const maria1 = story({
-      id: 'maria1',
-      authorId: 'maria',
-      createdAt: NOW - 6 * HOUR,
-    });
-    const maria2 = story({
-      id: 'maria2',
-      authorId: 'maria',
-      createdAt: NOW - 2 * HOUR,
-    });
-
-    // visibleStories entrega lo propio primero y luego lo más reciente.
-    const visibles = visibleStories([maria1, maria2, mia], {
-      currentUserId: 'me',
-      followingIds: ['maria'],
-      now: NOW,
-    });
-
-    expect(playbackQueue(visibles).map((s) => s.id)).toEqual([
-      'mia',
-      'maria1',
-      'maria2',
-    ]);
-  });
-
-  it('la barra de progreso mide solo las historias del autor que se está viendo', () => {
-    const queue = [
-      story({ id: 'mia', authorId: 'me' }),
-      story({ id: 'maria1', authorId: 'maria' }),
-      story({ id: 'maria2', authorId: 'maria' }),
-    ];
-
-    expect(authorSegment(queue, 'me').map((s) => s.id)).toEqual(['mia']);
-    expect(authorSegment(queue, 'maria').map((s) => s.id)).toEqual([
-      'maria1',
-      'maria2',
-    ]);
-  });
-
-  it('HU19 — los comentarios desactivados no se muestran', () => {
-    const con = story({
-      comments: [
-        {
-          id: 'c1',
-          authorId: 'me',
-          authorName: 'Yo',
-          text: 'Visible',
-          edited: false,
-          active: true,
-        },
-        {
-          id: 'c2',
-          authorId: 'me',
-          authorName: 'Yo',
-          text: 'Retirado',
-          edited: false,
-          active: false,
-        },
-      ],
-    });
-
-    expect(visibleComments(con).map((c) => c.id)).toEqual(['c1']);
-  });
-
-  it('HU16 — las reacciones se resumen contando cada emoji', () => {
-    const con = story({ reactions: { me: '❤️', maria: '❤️', juan: '🔥' } });
-
-    expect(reactionCounts(con)).toEqual([
-      { emoji: '❤️', count: 2 },
-      { emoji: '🔥', count: 1 },
-    ]);
   });
 });
