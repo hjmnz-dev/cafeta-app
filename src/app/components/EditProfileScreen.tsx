@@ -168,7 +168,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
   const label =
     'block text-[13px] font-semibold text-[var(--ink)] mb-2 font-["DM_Sans",sans-serif]';
   const field =
-    'w-full px-4 py-3 rounded-[12px] text-[15px] text-[var(--ink)] outline-none transition-all duration-200 ' +
+    'px-4 py-3 rounded-[12px] text-[15px] text-[var(--ink)] outline-none transition-all duration-200 ' +
     "placeholder:text-[var(--muted)] font-['DM_Sans',sans-serif] bg-[var(--surface-3)] border-2 border-transparent focus:bg-[var(--surface)] focus:border-[var(--brand)]";
 
   return (
@@ -251,7 +251,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
               if (nameError) setNameError(null);
             }}
             placeholder="Tu nombre"
-            className={field}
+            className={field + ' w-full'}
           />
           {nameError && (
             <p
@@ -272,7 +272,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
             value={`@${profile.handle}`}
             readOnly
             disabled
-            className={field + ' opacity-70'}
+            className={field + ' w-full opacity-70'}
           />
         </div>
 
@@ -284,7 +284,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
             id="profile-career"
             value={careerId}
             onChange={(e) => setCareerId(e.target.value)}
-            className={field}
+            className={field + ' w-full'}
           >
             {!careerId && <option value="">Sin carrera</option>}
             {careerOptions.map((c) => (
@@ -305,7 +305,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
             maxLength={120}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Ciudad, País"
-            className={field}
+            className={field + ' w-full'}
           />
         </div>
 
@@ -319,7 +319,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
             onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
             placeholder="Cuéntale a la comunidad sobre ti"
             rows={4}
-            className={field + ' resize-none leading-relaxed'}
+            className={field + ' w-full resize-none leading-relaxed'}
           />
           <p className="mt-1 text-right text-[11px] text-[var(--muted)] font-['DM_Sans',sans-serif]">
             {bio.length}/{BIO_MAX}
@@ -387,11 +387,11 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
                 }
               }}
               placeholder="Agregar etiqueta"
-              className={field + ' flex-1 py-2.5'}
+              className={field + ' flex-1 min-w-0 py-2.5'}
             />
             <button
               onClick={addTag}
-              className="flex-none w-11 rounded-[12px] bg-[var(--ink)] text-white flex items-center justify-center hover:bg-[#2C2523] transition-colors"
+              className="flex-none w-11 rounded-[12px] bg-[var(--brand)] text-[var(--on-brand)] flex items-center justify-center hover:bg-[var(--brand-strong)] transition-colors"
               aria-label="Agregar etiqueta"
             >
               <Plus className="w-5 h-5" />

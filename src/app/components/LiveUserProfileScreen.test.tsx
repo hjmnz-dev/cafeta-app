@@ -121,12 +121,19 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
 
   it('decisión 14 — muestra su foto y "Enviar mensaje" abre la conversación con ella', async () => {
     const user = userEvent.setup();
-    renderProfile(profileView({ avatarUrl: 'https://blob.test/maria.png' }));
+    renderProfile(
+      profileView({
+        avatarUrl: 'https://blob.test/maria.png',
+        location: 'Santiago',
+      }),
+    );
 
     await screen.findByRole('heading', { name: 'María Rodríguez' });
     expect(
       document.querySelector('img[src="https://blob.test/maria.png"]'),
     ).not.toBeNull();
+
+    expect(screen.getByText('Santiago')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /enviar mensaje/i }));
     expect(screen.getByTestId('messages-search')).toHaveTextContent(

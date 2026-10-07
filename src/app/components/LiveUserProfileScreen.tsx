@@ -1,6 +1,13 @@
 import { useRef, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
-import { ArrowLeft, Lock, MapPin, MessageCircle, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  GraduationCap,
+  Lock,
+  MapPin,
+  MessageCircle,
+  Users,
+} from 'lucide-react';
 import { ApiError, userMessageOf } from '../lib/http';
 import type { ProfileView } from '../lib/profiles-api';
 import {
@@ -227,12 +234,20 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             })}
           </div>
         )}
-        {profile.careerName && (
-          <div className="flex items-center gap-1.5 text-[var(--muted)] text-[13px] font-medium mb-5">
-            <MapPin className="w-4 h-4" aria-hidden="true" />
-            <span>{profile.careerName} · INTEC</span>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[var(--muted)] text-[13px] font-medium mb-5">
+          {profile.careerName && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <GraduationCap className="w-4 h-4 flex-none" aria-hidden="true" />
+              <span>{profile.careerName} · INTEC</span>
+            </div>
+          )}
+          {profile.location && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <MapPin className="w-4 h-4 flex-none" aria-hidden="true" />
+              <span className="truncate">{profile.location}</span>
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-between items-center bg-[var(--surface)] rounded-[20px] p-5 shadow-[0_2px_12px_rgba(23,19,19,0.06)] border border-[var(--line)]">
           <Stat value={profile.counts.posts} label="Posts" />
