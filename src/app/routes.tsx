@@ -17,6 +17,7 @@ import { CreateStoryScreen } from './components/CreateStoryScreen';
 import { StoryViewerScreen } from './components/StoryViewerScreen';
 import { RequireAuth } from './components/RequireAuth';
 import { ConversationScreen } from './components/ConversationScreen';
+import { NotificationsScreen } from './components/NotificationsScreen';
 import {
   RootErrorBoundary,
   ThrowOnRender,
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
           { path: 'discover', Component: PeopleScreen },
           { path: 'network', Component: PeopleScreen },
           { path: 'messages/:conversationId', Component: ConversationScreen },
+          { path: 'notifications', Component: NotificationsScreen },
         ],
       },
     ],
