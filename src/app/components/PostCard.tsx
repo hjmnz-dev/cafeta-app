@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
+import { useBlockUser } from '../store/blocks-queries';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
 import { ReportDialog } from './ReportDialog';
 
@@ -143,6 +144,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     hasReported,
   } = useAppState();
   const own = live ? live.isMine : isOwnPost(post.id);
+  const blockMutation = useBlockUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -539,6 +541,9 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 </button>
                 <button
                   onClick={() => {
+                    if (live || post.authorId.includes('-')) {
+                      blockMutation.mutate(post.authorId);
+                    }
                     blockUser(post.authorId);
                     setMenuOpen(false);
                   }}

@@ -37,6 +37,12 @@ export const profileKeys = {
   privacy: ['profiles', 'privacy'] as const,
 };
 
+/** Bloqueos (decisión 29): lista de usuarios bloqueados. */
+export const blockKeys = {
+  all: ['blocks'] as const,
+  list: ['blocks', 'list'] as const,
+};
+
 /** Búsqueda y descubrimiento (spec 0008, decisión 28). */
 export const searchKeys = {
   all: ['search'] as const,

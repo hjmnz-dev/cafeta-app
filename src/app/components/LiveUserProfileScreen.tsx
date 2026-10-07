@@ -1,11 +1,13 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import {
   ArrowLeft,
+  Ban,
   Clock,
   Lock,
   MapPin,
   MessageCircle,
+  MoreHorizontal,
   UserCheck,
   UserPlus,
   Users,
@@ -18,9 +20,10 @@ import {
   tagCategoryOf,
   VISIBILITY_LABEL,
 } from '../lib/profiles';
-import { TAG_CATEGORIES } from '../store/AppState';
+import { TAG_CATEGORIES, useAppState } from '../store/AppState';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
+import { useBlockUser } from '../store/blocks-queries';
 import { useSession } from '../store/SessionStore';
 import { LivePostList } from './LivePostList';
 
@@ -173,6 +176,9 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const posts = useUserPosts(profile.id, profile.canSeeContent);
   const notice = restrictedNotice(profile);
   const initial = (profile.displayName.trim()[0] ?? 'C').toUpperCase();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const blockMutation = useBlockUser();
+  const { blockUser } = useAppState();
 
   return (
     <div
@@ -196,7 +202,7 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
               {initial}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             <button
               onClick={() => navigate('/messages')}
               className="w-[40px] h-[40px] rounded-full border-2 border-[var(--line)] bg-[var(--surface)] flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
@@ -204,7 +210,36 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             >
               <MessageCircle className="w-[18px] h-[18px]" />
             </button>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={`Opciones sobre ${profile.displayName}`}
+              aria-expanded={menuOpen}
+              className="w-[40px] h-[40px] rounded-full border-2 border-[var(--line)] bg-[var(--surface)] flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <MoreHorizontal className="w-[18px] h-[18px]" />
+            </button>
             <FollowButton profile={profile} />
+
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-12 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden w-[210px]">
+                  <button
+                    onClick={() => {
+                      blockMutation.mutate(profile.id);
+                      blockUser(profile.id);
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--negative)] hover:bg-[var(--surface-2)] transition-colors"
+                  >
+                    <Ban className="w-4 h-4" /> Bloquear usuario
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
