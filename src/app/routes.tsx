@@ -20,6 +20,7 @@ import { ConversationScreen } from './components/ConversationScreen';
 import { NetworkScreen } from './components/NetworkScreen';
 import { FollowListScreen } from './components/FollowListScreen';
 import { NotificationsScreen } from './components/NotificationsScreen';
+import { PrivacyScreen, TermsScreen } from './components/LegalScreens';
 import {
   RootErrorBoundary,
   ThrowOnRender,
@@ -38,6 +39,9 @@ export const router = createBrowserRouter([
       { path: 'login', Component: LoginScreen },
       { path: 'register', Component: RegisterScreen },
       { path: 'forgot-password', Component: ForgotPasswordScreen },
+      // Textos legales: se leen sin iniciar sesión (spec 0009, decisión 12).
+      { path: 'terms', Component: TermsScreen },
+      { path: 'privacy', Component: PrivacyScreen },
       // Todo lo demás exige sesión (spec 0004).
       {
         Component: RequireAuth,
