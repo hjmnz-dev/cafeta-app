@@ -26,20 +26,11 @@ export type TagCategory = 'carrera' | 'habilidad' | 'interes';
 
 export type ProfileVisibility = 'public' | 'followers' | 'private';
 
-export interface NotificationPrefs {
-  likes: boolean;
-  comments: boolean;
-  follows: boolean;
-  messages: boolean;
-  stories: boolean;
-}
-
 /** Apariencia de la app. El oscuro es el predeterminado del producto. */
 export type Theme = 'dark' | 'light';
 
 export interface Settings {
   visibility: ProfileVisibility;
-  notifications: NotificationPrefs;
   theme: Theme;
 }
 
@@ -262,13 +253,6 @@ const DEFAULT_PROFILE: Profile = {
 
 const DEFAULT_SETTINGS: Settings = {
   visibility: 'public',
-  notifications: {
-    likes: true,
-    comments: true,
-    follows: true,
-    messages: true,
-    stories: false,
-  },
   theme: 'dark',
 };
 
@@ -643,10 +627,6 @@ function load(): PersistedState {
         settings: {
           ...DEFAULT_SETTINGS,
           ...parsed.settings,
-          notifications: {
-            ...DEFAULT_SETTINGS.notifications,
-            ...parsed.settings?.notifications,
-          },
         },
         following: Array.isArray(parsed.following) ? parsed.following : [],
         pending: Array.isArray(parsed.pending) ? parsed.pending : [],

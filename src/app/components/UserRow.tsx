@@ -8,7 +8,18 @@ import { useAppState, DirectoryUser } from '../store/AppState';
  * La comparten "Descubrir" y la búsqueda global (DEF-07) para que seguir a
  * alguien se vea y se comporte igual desde ambas pantallas.
  */
-export function UserRow({ user }: { user: DirectoryUser }) {
+export interface UserRowData {
+  id: string;
+  name: string;
+  handle?: string;
+  career?: string | null;
+  avatar?: string | null;
+  visibility?:
+    'public' | 'followers' | 'private' | 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
+  followers?: number;
+}
+
+export function UserRow({ user }: { user: UserRowData | DirectoryUser }) {
   const navigate = useNavigate();
   const { followState, followUser, unfollowUser } = useAppState();
 
@@ -22,22 +33,37 @@ export function UserRow({ user }: { user: DirectoryUser }) {
         onClick={() => navigate(`/u/${user.id}`)}
         className="flex items-center gap-3 flex-1 min-w-0 text-left"
       >
-        <img
-          src={user.avatar}
-          alt={user.name}
-          className="w-[52px] h-[52px] rounded-full object-cover bg-[var(--line)] flex-none"
-        />
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-[52px] h-[52px] rounded-full object-cover bg-[var(--line)] flex-none"
+          />
+        ) : (
+          <div
+            role="img"
+            aria-label={user.name}
+            className="w-[52px] h-[52px] rounded-full flex-none bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] flex items-center justify-center"
+          >
+            <span className="text-white font-semibold text-[18px]">
+              {(user.name.trim()[0] ?? 'U').toUpperCase()}
+            </span>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="font-semibold text-[15px] text-[var(--ink)] truncate">
               {user.name}
             </p>
-            {user.visibility === 'private' && (
+            {(user.visibility === 'private' ||
+              user.visibility === 'PRIVATE') && (
               <Lock className="w-3.5 h-3.5 text-[var(--muted)] flex-none" />
             )}
           </div>
           <p className="text-[13px] text-[var(--muted)] truncate">
-            {user.career} · {user.followers.toLocaleString('es')} seguidores
+            {user.followers !== undefined
+              ? `${user.career ?? ''} · ${user.followers.toLocaleString('es')} seguidores`
+              : (user.career ?? (user.handle ? `@${user.handle}` : ''))}
           </p>
         </div>
       </button>
