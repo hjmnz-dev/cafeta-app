@@ -59,7 +59,7 @@ describe('HU03 · Recuperar contraseña (pedir el enlace)', () => {
     expect(forgotCalls(fetchMock)).toHaveLength(0);
   });
 
-  it('con un correo válido pide el enlace y avisa que revise su correo', async () => {
+  it('HU03 E1: con un correo válido pide el enlace y avisa que revise su correo', async () => {
     const user = userEvent.setup();
     const fetchMock = forgotResponds(() => new Response(null, { status: 204 }));
     renderWithProviders(<ForgotPasswordScreen />, {
@@ -76,7 +76,7 @@ describe('HU03 · Recuperar contraseña (pedir el enlace)', () => {
     expect(screen.getByText(/30 minutos/i)).toBeInTheDocument();
   });
 
-  it('la confirmación no afirma que la cuenta exista', async () => {
+  it('HU03 E2: la confirmación no afirma que la cuenta exista', async () => {
     const user = userEvent.setup();
     forgotResponds(() => new Response(null, { status: 204 }));
     renderWithProviders(<ForgotPasswordScreen />, {

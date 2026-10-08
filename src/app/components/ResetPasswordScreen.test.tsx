@@ -38,7 +38,7 @@ async function fillAndSubmit(
 }
 
 describe('HU03 · Recuperar contraseña (elegir la contraseña nueva)', () => {
-  it('manda el token de la URL y la contraseña nueva, y confirma el cambio', async () => {
+  it('HU03 E3: manda el token de la URL y la contraseña nueva, y confirma el cambio', async () => {
     const user = userEvent.setup();
     const fetchMock = resetResponds(() => new Response(null, { status: 204 }));
     renderWithProviders(<ResetPasswordScreen />, { route: ROUTE });
