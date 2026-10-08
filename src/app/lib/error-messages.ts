@@ -13,6 +13,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CAREER_NOT_FOUND: 'Elige una carrera de la lista.',
   INVALID_CREDENTIALS: 'Correo o contraseña incorrectos.',
   ACCOUNT_INACTIVE: 'Tu cuenta no está activa.',
+  RESET_TOKEN_INVALID: 'El enlace venció o ya se usó. Pide uno nuevo.',
   INVALID_PASSWORD: 'La contraseña no es correcta.',
   ADMIN_CANNOT_SELF_DEACTIVATE:
     'Un administrador no puede desactivar su propia cuenta.',
