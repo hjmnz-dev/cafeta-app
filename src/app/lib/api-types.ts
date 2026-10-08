@@ -712,6 +712,75 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}/reaction': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Pone mi reacción: la crea, la reactiva o cambia su tipo. */
+    put: operations['PostReactionsController_set'];
+    post?: never;
+    /** Quita mi reacción; si no tenía, no falla. */
+    delete: operations['PostReactionsController_remove'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/comments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Comentarios de la publicación, del más antiguo al más nuevo. */
+    get: operations['PostCommentsController_list'];
+    put?: never;
+    post: operations['PostCommentsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/comments/{commentId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Corrige un comentario propio; queda marcado como editado. */
+    patch: operations['PostCommentsController_edit'];
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/comments/{commentId}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Retira un comentario propio (baja lógica: se conserva para auditoría). */
+    post: operations['PostCommentsController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -816,6 +885,11 @@ export interface components {
       | 'CODE'
       | 'STUDY_GROUP'
       | 'ANNOUNCEMENT';
+    /**
+     * @description Mi reacción activa a la publicación; null si no he reaccionado.
+     * @enum {string}
+     */
+    ReactionType: 'HEART' | 'FIRE' | 'CLAP' | 'LAUGH' | 'WOW';
     /** @enum {string} */
     MediaType: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
     PostMediaDto: {
@@ -846,6 +920,8 @@ export interface components {
       codeSnippet: string | null;
       groupName: string | null;
       groupSpots: number | null;
+      /** @description Mi reacción activa a la publicación; null si no he reaccionado. */
+      myReaction: components['schemas']['ReactionType'] | null;
       id: string;
       /** @description Fecha de creación en ISO 8601. */
       createdAt: string;
@@ -1170,6 +1246,41 @@ export interface components {
     EditStoryDto: {
       /** @description Texto nuevo, de hasta 280 caracteres. Vacío quita el texto: la imagen o el video ya son obligatorios. */
       text: string;
+    };
+    SetReactionDto: {
+      type: components['schemas']['ReactionType'];
+    };
+    ReactionStateDto: {
+      myReaction: components['schemas']['ReactionType'] | null;
+      /** @description Reacciones activas de usuarios activos. */
+      reactionCount: number;
+    };
+    CommentAuthorDto: {
+      /** @description Enlace de lectura de la foto, o null si no tiene. */
+      avatarUrl: string | null;
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+    };
+    CommentViewDto: {
+      editedAt: string | null;
+      id: string;
+      content: string;
+      /** @description Fecha de creación en ISO 8601. */
+      createdAt: string;
+      author: components['schemas']['CommentAuthorDto'];
+      /** @description true si el comentario es mío: la web ofrece editar y desactivar. */
+      isMine: boolean;
+    };
+    CommentPageDto: {
+      items: components['schemas']['CommentViewDto'][];
+      /** @description id para pedir la página siguiente; null cuando no hay más. */
+      nextCursor: string | null;
+    };
+    CommentContentDto: {
+      /** @description Texto del comentario, de 1 a 500 caracteres sin los bordes. */
+      content: string;
     };
   };
   responses: never;
@@ -2302,6 +2413,149 @@ export interface operations {
       header?: never;
       path: {
         id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostReactionsController_set: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetReactionDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReactionStateDto'];
+        };
+      };
+    };
+  };
+  PostReactionsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReactionStateDto'];
+        };
+      };
+    };
+  };
+  PostCommentsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentPageDto'];
+        };
+      };
+    };
+  };
+  PostCommentsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentContentDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentViewDto'];
+        };
+      };
+    };
+  };
+  PostCommentsController_edit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        commentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentContentDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentViewDto'];
+        };
+      };
+    };
+  };
+  PostCommentsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        commentId: string;
       };
       cookie?: never;
     };

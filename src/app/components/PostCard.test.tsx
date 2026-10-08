@@ -87,7 +87,7 @@ describe('DEF-09 · HU22 — Editar publicación propia', () => {
     const card = within(screen.getByTestId('post-p1'));
     expect(card.getByText(/cambio de hora/i)).toBeInTheDocument();
     expect(card.getByText(/editado/i)).toBeInTheDocument();
-    expect(card.getByLabelText(/me gusta/i)).toHaveTextContent('18'); // interacciones intactas
+    expect(card.getByLabelText('18 reacciones')).toBeInTheDocument(); // interacciones intactas
   });
 
   it('guardar sin cambios no la marca como editada', async () => {
@@ -290,6 +290,7 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
 
 describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => {
   const now = new Date('2026-09-26T12:00:00Z');
+  const NO_REACTION = { mine: null, busy: false, select: () => undefined };
 
   it('muestra los datos reales y ningún botón sin backend', () => {
     const view = postView({
@@ -307,7 +308,12 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: false, authorId: 'u-2', isAnnouncement: false }}
+        live={{
+          isMine: false,
+          authorId: 'u-2',
+          isAnnouncement: false,
+          reaction: NO_REACTION,
+        }}
       />,
     );
 
@@ -321,10 +327,14 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     expect(card.getByText(/2h/)).toHaveTextContent('Editado');
     expect(card.getByText('Auditorio')).toBeInTheDocument();
     expect(card.getByText('Laboratorio 3')).toBeInTheDocument();
-    expect(card.getByLabelText('12 reacciones')).toBeInTheDocument();
+    expect(
+      card.getByRole('button', { name: 'Reaccionar. 12 reacciones' }),
+    ).toBeInTheDocument();
     expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
-    // Sin backend todavía: ni reaccionar, comentar, guardar, menú ni asistir.
-    expect(card.queryAllByRole('button')).toHaveLength(0);
+    // Sin backend todavía: ni guardar, menú ni asistir; solo reaccionar y comentar.
+    expect(
+      card.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['3 comentarios', 'Reaccionar. 12 reacciones']);
     // Sin foto: la inicial en un círculo.
     expect(card.getByRole('img', { name: 'Juan Pérez' })).toHaveTextContent(
       'J',
@@ -336,12 +346,19 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: false, authorId: 'u-2', isAnnouncement: false }}
+        live={{
+          isMine: false,
+          authorId: 'u-2',
+          isAnnouncement: false,
+          reaction: NO_REACTION,
+        }}
       />,
     );
 
     const card = within(screen.getByTestId('post-uno'));
-    expect(card.getByLabelText('1 reacción')).toBeInTheDocument();
+    expect(
+      card.getByRole('button', { name: 'Reaccionar. 1 reacción' }),
+    ).toBeInTheDocument();
     expect(card.getByLabelText('1 comentario')).toBeInTheDocument();
   });
 
@@ -354,7 +371,12 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     renderWithProviders(
       <PostCard
         post={toCardPost(view, now)}
-        live={{ isMine: true, authorId: 'u-1', isAnnouncement: true }}
+        live={{
+          isMine: true,
+          authorId: 'u-1',
+          isAnnouncement: true,
+          reaction: NO_REACTION,
+        }}
       />,
     );
 
