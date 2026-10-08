@@ -712,6 +712,75 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/stories/{id}/reaction': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Pone mi reacción: la crea, la reactiva o cambia su tipo. */
+    put: operations['StoryReactionsController_set'];
+    post?: never;
+    /** Quita mi reacción; si no tenía, no falla. */
+    delete: operations['StoryReactionsController_remove'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/stories/{id}/comments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Comentarios de la historia, del más antiguo al más nuevo. */
+    get: operations['StoryCommentsController_list'];
+    put?: never;
+    post: operations['StoryCommentsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/stories/{id}/comments/{commentId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Corrige un comentario propio; queda marcado como editado. */
+    patch: operations['StoryCommentsController_edit'];
+    trace?: never;
+  };
+  '/api/v1/stories/{id}/comments/{commentId}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Retira un comentario propio (baja lógica: se conserva para auditoría). */
+    post: operations['StoryCommentsController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/posts/{id}/reaction': {
     parameters: {
       query?: never;
@@ -1221,12 +1290,18 @@ export interface components {
     StoryViewDto: {
       text: string | null;
       editedAt: string | null;
+      /** @description Mi reacción a la historia, o null si no he reaccionado. */
+      myReaction: components['schemas']['ReactionType'] | null;
+      /** @description Reacciones de usuarios activos; solo lo ve el autor, para los demás es null. */
+      reactionCount: number | null;
       id: string;
       media: components['schemas']['StoryMediaDto'];
       /** @description Fecha de creación en ISO 8601. */
       createdAt: string;
       /** @description Vence 24 horas después de crearse y no cambia al editar. */
       expiresAt: string;
+      /** @description Comentarios activos de usuarios activos. */
+      commentCount: number;
     };
     StoryAuthorDto: {
       /** @description Enlace de lectura de la foto, o null si no tiene. */
@@ -1250,10 +1325,10 @@ export interface components {
     SetReactionDto: {
       type: components['schemas']['ReactionType'];
     };
-    ReactionStateDto: {
+    StoryReactionStateDto: {
       myReaction: components['schemas']['ReactionType'] | null;
-      /** @description Reacciones activas de usuarios activos. */
-      reactionCount: number;
+      /** @description Reacciones activas de usuarios activos; solo para el autor, null para los demás. */
+      reactionCount: number | null;
     };
     CommentAuthorDto: {
       /** @description Enlace de lectura de la foto, o null si no tiene. */
@@ -1281,6 +1356,11 @@ export interface components {
     CommentContentDto: {
       /** @description Texto del comentario, de 1 a 500 caracteres sin los bordes. */
       content: string;
+    };
+    ReactionStateDto: {
+      myReaction: components['schemas']['ReactionType'] | null;
+      /** @description Reacciones activas de usuarios activos. */
+      reactionCount: number;
     };
   };
   responses: never;
@@ -2413,6 +2493,149 @@ export interface operations {
       header?: never;
       path: {
         id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  StoryReactionsController_set: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetReactionDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StoryReactionStateDto'];
+        };
+      };
+    };
+  };
+  StoryReactionsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StoryReactionStateDto'];
+        };
+      };
+    };
+  };
+  StoryCommentsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentPageDto'];
+        };
+      };
+    };
+  };
+  StoryCommentsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentContentDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentViewDto'];
+        };
+      };
+    };
+  };
+  StoryCommentsController_edit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        commentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentContentDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CommentViewDto'];
+        };
+      };
+    };
+  };
+  StoryCommentsController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        commentId: string;
       };
       cookie?: never;
     };

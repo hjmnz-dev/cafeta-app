@@ -3,10 +3,12 @@ import type { StoryGroup, StoryView } from './stories-api';
 import {
   authorSegment,
   groupOf,
+  mapStoryInTray,
   playbackQueue,
   remainingLabel,
   STORY_DURATION_MS,
   STORY_TEXT_MAX,
+  withStoryReaction,
 } from './stories';
 
 // Reglas puras de las historias de la API (decisión 22): cola de reproducción,
@@ -18,6 +20,9 @@ const story = (id: string): StoryView => ({
   id,
   text: null,
   editedAt: null,
+  myReaction: null,
+  reactionCount: null,
+  commentCount: 0,
   createdAt: '2026-10-07T10:00:00.000Z',
   expiresAt: '2026-10-08T10:00:00.000Z',
   media: {
@@ -112,5 +117,34 @@ describe('lib/stories', () => {
         'Vencida',
       );
     });
+  });
+});
+
+describe('reacciones de historias (decisión 24)', () => {
+  it('withStoryReaction pone o quita mi reacción sin tocar el conteo del autor', () => {
+    const base = { ...story('a'), reactionCount: 4 };
+
+    expect(withStoryReaction(base, 'FIRE')).toMatchObject({
+      myReaction: 'FIRE',
+      reactionCount: 4,
+    });
+    expect(
+      withStoryReaction(withStoryReaction(base, 'FIRE'), null).myReaction,
+    ).toBeNull();
+  });
+
+  it('mapStoryInTray cambia solo la historia pedida y deja el resto igual', () => {
+    const tray = {
+      groups: [group('ana', ['a1', 'a2']), group('beto', ['b1'])],
+    };
+
+    const next = mapStoryInTray(tray, 'a2', (s) => withStoryReaction(s, 'WOW'));
+
+    expect(next?.groups[0].stories.map((s) => s.myReaction)).toEqual([
+      null,
+      'WOW',
+    ]);
+    expect(next?.groups[1]).toEqual(tray.groups[1]);
+    expect(mapStoryInTray(undefined, 'a2', (s) => s)).toBeUndefined();
   });
 });

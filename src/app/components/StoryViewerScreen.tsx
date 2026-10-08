@@ -17,6 +17,8 @@ import {
 import { useSession } from '../store/SessionStore';
 import { useStoryTray } from '../store/stories-queries';
 import { StoryAvatar } from './StoryAvatar';
+import { StoryCommentsSheet } from './StoryCommentsSheet';
+import { StoryEngagement } from './StoryEngagement';
 import { StoryOwnerMenu } from './StoryOwnerMenu';
 
 /**
@@ -30,9 +32,11 @@ import { StoryOwnerMenu } from './StoryOwnerMenu';
  * mide las historias *de quien se está viendo* (una franja por historia suya) y
  * al acabarse todas las que quedaban por ver, el visor se cierra solo. Editar y
  * desactivar (solo en la historia propia) viven en StoryOwnerMenu, que detiene
- * la reproducción mientras hay un menú o un diálogo abierto (decisión 23);
- * reaccionar y comentar llegan con la funcionalidad 24. Las reglas de la cola
- * y del tiempo restante viven en lib/stories.
+ * la reproducción mientras hay un menú o un diálogo abierto (decisión 23).
+ * Reaccionar (fila de cinco en las ajenas, conteo en la propia) y comentar
+ * viven en StoryEngagement y StoryCommentsSheet (decisión 24); la hoja de
+ * comentarios también pausa. Las reglas de la cola y del tiempo restante viven
+ * en lib/stories.
  */
 
 const SCREEN = 'w-full h-full bg-[#0d0a09]';
@@ -43,14 +47,20 @@ export function StoryViewerScreen() {
   const location = useLocation();
   const { user } = useSession();
   const [muted, setMuted] = useState(true);
-  // Con un menú o un diálogo abierto no avanza solo; al cerrarlo, la barra y el
-  // temporizador arrancan de nuevo (restart cambia la clave de la franja).
-  const [paused, setPaused] = useState(false);
+  // Con un menú, un diálogo o la hoja de comentarios abiertos no avanza solo;
+  // al cerrarlos, la barra y el temporizador arrancan de nuevo (restart cambia
+  // la clave de la franja).
+  const [menuBusy, setMenuBusy] = useState(false);
+  const [commentsFor, setCommentsFor] = useState<string | null>(null);
   const [restart, setRestart] = useState(0);
   const handleBusy = useCallback((busy: boolean) => {
-    setPaused(busy);
+    setMenuBusy(busy);
     if (!busy) setRestart((count) => count + 1);
   }, []);
+  const toggleComments = (storyId: string) => {
+    if (commentsFor === storyId) setRestart((count) => count + 1);
+    setCommentsFor(commentsFor === storyId ? null : storyId);
+  };
 
   /**
    * Pantalla desde la que se abrió la historia. Cerrar debe devolver ahí —al
@@ -67,6 +77,8 @@ export function StoryViewerScreen() {
   const prev = queue[index - 1];
   const next = queue[index + 1];
   const nextId = next?.story.id ?? null;
+  const commentsOpen = entry !== undefined && commentsFor === entry.story.id;
+  const paused = menuBusy || commentsOpen;
 
   useEffect(() => {
     if (!entry || paused) return;
@@ -240,6 +252,13 @@ export function StoryViewerScreen() {
         )}
       </div>
 
+      <StoryEngagement
+        story={story}
+        isMine={user?.id === author.id}
+        commentsOpen={commentsOpen}
+        onToggleComments={() => toggleComments(story.id)}
+      />
+
       {/* Navegación entre historias vigentes */}
       <div className="relative px-3 pb-8 flex items-center justify-between">
         <button
@@ -266,6 +285,13 @@ export function StoryViewerScreen() {
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
+
+      {commentsOpen && (
+        <StoryCommentsSheet
+          story={story}
+          onClose={() => toggleComments(story.id)}
+        />
+      )}
     </div>
   );
 }

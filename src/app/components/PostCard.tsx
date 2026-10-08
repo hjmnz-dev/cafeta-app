@@ -477,7 +477,10 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 />
               </div>
               {commentsOpen && (
-                <CommentsPanel postId={post.id} count={post.comments} />
+                <CommentsPanel
+                  target={{ kind: 'posts', id: post.id }}
+                  count={post.comments}
+                />
               )}
             </>
           )}

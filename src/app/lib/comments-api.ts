@@ -1,7 +1,8 @@
 /**
- * Llamadas de comentarios en publicaciones (spec 0009, decisión 21). Los tipos
- * salen del contrato OpenAPI generado en api-types.ts, nunca escritos a mano.
- * La 24 usa la misma forma para las historias.
+ * Llamadas de comentarios en publicaciones (spec 0009, decisión 21) y en
+ * historias (decisión 24): las mismas cuatro rutas bajo `/posts/:id/comments` y
+ * `/stories/:id/comments`. Los tipos salen del contrato OpenAPI generado en
+ * api-types.ts, nunca escritos a mano.
  */
 import type { components } from './api-types';
 import { apiRequest } from './http';
@@ -14,32 +15,44 @@ export type CommentPage = Schemas['CommentPageDto'];
 /** Largo máximo de un comentario; la API cuenta puntos de código. */
 export const COMMENT_MAX = 500;
 
-const base = (postId: string) => `/posts/${postId}/comments`;
+/** Qué se comenta: una publicación o una historia. */
+export interface CommentTarget {
+  kind: 'posts' | 'stories';
+  id: string;
+}
 
-export const postCommentsApi = {
+const base = ({ kind, id }: CommentTarget) => `/${kind}/${id}/comments`;
+
+export const commentsApi = {
   /** Del más antiguo al más nuevo, 20 por página. */
-  list: (postId: string, cursor: string | null) =>
-    apiRequest<CommentPage>(`${base(postId)}${toQueryString({ cursor })}`),
-  create: ({ postId, content }: { postId: string; content: string }) =>
-    apiRequest<CommentView>(base(postId), {
+  list: (target: CommentTarget, cursor: string | null) =>
+    apiRequest<CommentPage>(`${base(target)}${toQueryString({ cursor })}`),
+  create: ({ target, content }: { target: CommentTarget; content: string }) =>
+    apiRequest<CommentView>(base(target), {
       method: 'POST',
       body: { content },
     }),
   edit: ({
-    postId,
+    target,
     commentId,
     content,
   }: {
-    postId: string;
+    target: CommentTarget;
     commentId: string;
     content: string;
   }) =>
-    apiRequest<CommentView>(`${base(postId)}/${commentId}`, {
+    apiRequest<CommentView>(`${base(target)}/${commentId}`, {
       method: 'PATCH',
       body: { content },
     }),
-  deactivate: ({ postId, commentId }: { postId: string; commentId: string }) =>
-    apiRequest<void>(`${base(postId)}/${commentId}/deactivate`, {
+  deactivate: ({
+    target,
+    commentId,
+  }: {
+    target: CommentTarget;
+    commentId: string;
+  }) =>
+    apiRequest<void>(`${base(target)}/${commentId}/deactivate`, {
       method: 'POST',
     }),
 };

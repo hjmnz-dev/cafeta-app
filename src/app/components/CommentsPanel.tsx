@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { COMMENT_MAX } from '../lib/comments-api';
+import { COMMENT_MAX, type CommentTarget } from '../lib/comments-api';
 import { userMessageOf } from '../lib/http';
 import { countChars } from '../lib/posts';
-import { useCreateComment, usePostComments } from '../store/comments-queries';
+import { useComments, useCreateComment } from '../store/comments-queries';
 import { CommentItem } from './CommentItem';
 
 /**
- * HU21 y HU22 · Panel de comentarios bajo la tarjeta (decisión 21).
+ * HU21 y HU22 · Panel de comentarios bajo la tarjeta (decisión 21) y en el
+ * visor de historias (decisión 24): el mismo panel para las dos.
  *
  * Se monta solo al abrirlo, así que la lista se pide cuando hace falta. Los
  * comentarios van del más antiguo al más nuevo, con "Ver más" para las páginas
@@ -15,15 +16,15 @@ import { CommentItem } from './CommentItem';
  * TanStack Query al escribir, sin evento por socket.
  */
 export function CommentsPanel({
-  postId,
+  target,
   count,
 }: {
-  postId: string;
+  target: CommentTarget;
   count: number;
 }) {
   const [now] = useState(() => new Date());
   const [draft, setDraft] = useState('');
-  const comments = usePostComments(postId, true);
+  const comments = useComments(target, true);
   const createComment = useCreateComment();
 
   const items = comments.data?.pages.flatMap((page) => page.items) ?? [];
@@ -33,7 +34,7 @@ export function CommentsPanel({
 
   const send = () =>
     createComment.mutate(
-      { postId, content: draft.trim() },
+      { target, content: draft.trim() },
       {
         onSuccess: () => setDraft(''),
         onError: (error) => toast.error(userMessageOf(error)),
@@ -78,7 +79,7 @@ export function CommentsPanel({
           {items.map((comment) => (
             <CommentItem
               key={comment.id}
-              postId={postId}
+              target={target}
               comment={comment}
               now={now}
             />

@@ -2,7 +2,13 @@
  * Reglas de las historias de la API (decisión 22): cola de reproducción y
  * tiempo restante. Sin red ni estado, para probarlas sin depender del reloj.
  */
-import type { StoryAuthor, StoryGroup, StoryView } from './stories-api';
+import type { ReactionType } from './reactions';
+import type {
+  StoryAuthor,
+  StoryGroup,
+  StoryTray,
+  StoryView,
+} from './stories-api';
 
 /** Lo que dura una historia en pantalla antes de pasar sola a la siguiente. */
 export const STORY_DURATION_MS = 10_000;
@@ -56,4 +62,30 @@ export function remainingLabel(
   const hours = Math.floor(left / (60 * 60 * 1000));
   if (hours >= 1) return `Quedan ${hours} h`;
   return `Quedan ${Math.max(1, Math.floor(left / (60 * 1000)))} min`;
+}
+
+/** La historia con mi reacción `next` (null la quita). El conteo es del autor y no se toca. */
+export function withStoryReaction(
+  story: StoryView,
+  next: ReactionType | null,
+): StoryView {
+  return { ...story, myReaction: next };
+}
+
+/** Aplica `change` a la historia `id` de la bandeja; el resto queda igual. */
+export function mapStoryInTray(
+  tray: StoryTray | undefined,
+  id: string,
+  change: (story: StoryView) => StoryView,
+): StoryTray | undefined {
+  if (!tray) return tray;
+  return {
+    ...tray,
+    groups: tray.groups.map((group) => ({
+      ...group,
+      stories: group.stories.map((story) =>
+        story.id === id ? change(story) : story,
+      ),
+    })),
+  };
 }
