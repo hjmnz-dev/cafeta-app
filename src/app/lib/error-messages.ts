@@ -41,6 +41,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
   ALREADY_INACTIVE: 'Esto ya estaba desactivado.',
+  CANNOT_SAVE_OWN_POST: 'No puedes guardar tu propia publicación.',
   COMMENT_EMPTY: 'Escribe algo antes de comentar.',
   COMMENT_TOO_LONG: 'Un comentario admite hasta 500 caracteres.',
   COMMENT_NOT_FOUND: 'Este comentario ya no está disponible.',

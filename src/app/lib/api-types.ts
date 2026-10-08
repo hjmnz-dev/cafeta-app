@@ -731,6 +731,41 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}/save': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Guarda la publicación de otra persona; guardarla dos veces deja una sola. */
+    put: operations['SavedPostsController_save'];
+    post?: never;
+    /** La quita de mi lista sin tocar la publicación; si no estaba, no falla. */
+    delete: operations['SavedPostsController_remove'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/me/saved': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Mis guardadas, la más reciente primero. */
+    get: operations['SavedPostsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -880,6 +915,8 @@ export interface components {
       author: components['schemas']['PostAuthorDto'];
       reactionCount: number;
       commentCount: number;
+      /** @description true si guardé la publicación (spec 0009, decisión 19). */
+      savedByMe: boolean;
     };
     PostPageDto: {
       items: components['schemas']['PostViewDto'][];
@@ -2388,6 +2425,68 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  SavedPostsController_save: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SavedPostsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SavedPostsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
       };
     };
   };

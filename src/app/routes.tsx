@@ -3,6 +3,7 @@ import { AppLayout } from './components/AppLayout';
 import { SplashScreen } from './components/SplashScreen';
 import { FeedScreen } from './components/FeedScreen';
 import { ProfileScreen } from './components/ProfileScreen';
+import { SavedPostsScreen } from './components/SavedPostsScreen';
 import { MessagesScreen } from './components/MessagesScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { RegisterScreen } from './components/RegisterScreen';
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
           { path: 'home/software', element: <Navigate to="/home" replace /> },
           { path: 'create-post', Component: CreatePostScreen },
           { path: 'profile', Component: ProfileScreen },
+          { path: 'profile/saved', Component: SavedPostsScreen },
           { path: 'u/:userId', Component: UserProfileScreen },
           { path: 'messages', Component: MessagesScreen },
           { path: 'search', Component: SearchScreen },

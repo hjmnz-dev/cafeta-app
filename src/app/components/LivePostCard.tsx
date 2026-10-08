@@ -6,12 +6,14 @@ import {
   useDeactivatePost,
   useDeletePost,
   useReactToPost,
+  useSavePost,
   useUpdatePost,
 } from '../store/posts-queries';
 import {
   PostCard,
   type LiveAuthorActions,
   type LiveReaction,
+  type LiveSave,
 } from './PostCard';
 
 /** Mi reacción contra la API; si falla, se deshace sola y se avisa (spec 0009). */
@@ -23,6 +25,20 @@ function useLiveReaction(view: PostView): LiveReaction {
     select: (type) =>
       react.mutate(
         { id: view.id, type, previous: view.myReaction },
+        { onError: (error) => toast.error(userMessageOf(error)) },
+      ),
+  };
+}
+
+/** Guardar o quitar contra la API; si falla, se deshace sola y se avisa (spec 0009). */
+function useLiveSave(view: PostView): LiveSave {
+  const save = useSavePost();
+  return {
+    saved: view.savedByMe,
+    busy: save.isPending,
+    toggle: () =>
+      save.mutate(
+        { id: view.id, saved: !view.savedByMe },
         { onError: (error) => toast.error(userMessageOf(error)) },
       ),
   };
@@ -94,6 +110,7 @@ export function LivePostCard({
   isMine: boolean;
 }) {
   const reaction = useLiveReaction(view);
+  const save = useLiveSave(view);
   if (isMine) return <MyPostCard view={view} now={now} reaction={reaction} />;
   return (
     <PostCard
@@ -103,6 +120,7 @@ export function LivePostCard({
         authorId: view.author.id,
         isAnnouncement: view.type === 'ANNOUNCEMENT',
         reaction,
+        save,
       }}
     />
   );

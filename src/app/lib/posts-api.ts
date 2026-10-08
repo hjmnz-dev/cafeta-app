@@ -54,4 +54,11 @@ export const postsApi = {
     }),
   unreact: (id: string) =>
     apiRequest<ReactionState>(`/posts/${id}/reaction`, { method: 'DELETE' }),
+  // Guardados (spec 0009, decisión 19): guardar y quitar son idempotentes.
+  save: (id: string) =>
+    apiRequest<void>(`/posts/${id}/save`, { method: 'PUT' }),
+  unsave: (id: string) =>
+    apiRequest<void>(`/posts/${id}/save`, { method: 'DELETE' }),
+  saved: (cursor: string | null) =>
+    apiRequest<PostPage>(`/me/saved${toQueryString({ cursor })}`),
 };

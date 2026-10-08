@@ -142,16 +142,20 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     ).toBeInTheDocument();
   });
 
-  it('las pestañas muestran contenido propio o un vacío explicado, no fotos de relleno', async () => {
+  it('Recursos muestra un vacío explicado, no fotos de relleno', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
     await user.click(screen.getByRole('button', { name: /recursos/i }));
     expect(screen.getByText(/no has compartido recursos/i)).toBeInTheDocument();
+  });
+
+  it('decisión 19 — Guardados abre su propia pantalla en /profile/saved', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
     await user.click(screen.getByRole('button', { name: /guardados/i }));
-    expect(
-      screen.getByText(/no tienes publicaciones guardadas/i),
-    ).toBeInTheDocument();
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/profile/saved');
   });
 });

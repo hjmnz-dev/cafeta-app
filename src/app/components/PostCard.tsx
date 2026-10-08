@@ -45,8 +45,9 @@ import { ReportDialog } from './ReportDialog';
  *
  * Con `live` (spec 0005) la publicación viene de la API: la autoría la decide
  * la pantalla, y se ocultan las acciones que todavía no tienen backend
- * (guardar, compartir, reportar). Reaccionar (spec 0009, decisión 20) llega por
- * `live.reaction` y comentar (decisión 21) abre el panel de comentarios. El menú de autor
+ * (compartir, reportar). Reaccionar (spec 0009, decisión 20) llega por
+ * `live.reaction`, comentar (decisión 21) abre el panel de comentarios y guardar
+ * (decisión 19) llega por `live.save`, solo en las publicaciones ajenas. El menú de autor
  * (editar, desactivar, eliminar) aparece cuando la pantalla pasa
  * `live.actions` (spec 0008, decisión 17). Sin `live` sigue igual para las
  * pantallas que aún usan AppState.
@@ -61,6 +62,17 @@ export interface LivePost {
   actions?: LiveAuthorActions;
   /** Mi reacción contra la API (spec 0009, decisión 20). */
   reaction: LiveReaction;
+  /** Guardar contra la API (spec 0009, decisión 19); no existe en las propias. */
+  save?: LiveSave;
+}
+
+export interface LiveSave {
+  /** La tengo guardada. */
+  saved: boolean;
+  /** Hay una petición en curso para esta publicación. */
+  busy: boolean;
+  /** Guarda o quita según el estado actual. */
+  toggle: () => void;
 }
 
 export interface LiveReaction {
@@ -475,6 +487,29 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                   busy={live.reaction.busy}
                   onSelect={live.reaction.select}
                 />
+                {live.save && (
+                  <button
+                    onClick={live.save.toggle}
+                    disabled={live.save.busy}
+                    aria-pressed={live.save.saved}
+                    aria-label={
+                      live.save.saved
+                        ? 'Quitar de guardados'
+                        : 'Guardar publicación'
+                    }
+                    className="ml-auto px-1.5 py-1 group disabled:opacity-60"
+                  >
+                    <Bookmark
+                      className={
+                        'w-[18px] h-[18px] transition-colors ' +
+                        (live.save.saved
+                          ? 'text-[var(--brand)] fill-[var(--brand)]'
+                          : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
+                      }
+                      aria-hidden="true"
+                    />
+                  </button>
+                )}
               </div>
               {commentsOpen && (
                 <CommentsPanel postId={post.id} count={post.comments} />
