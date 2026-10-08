@@ -22,3 +22,21 @@ export function useCreateStory() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storyKeys.all }),
   });
 }
+
+/** Editar el texto: la bandeja vuelve a pedirse y el visor muestra "Editada". */
+export function useEditStory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: storiesApi.edit,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storyKeys.all }),
+  });
+}
+
+/** Desactivar: la historia sale de la bandeja de inmediato. */
+export function useDeactivateStory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: storiesApi.deactivate,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storyKeys.all }),
+  });
+}

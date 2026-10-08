@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   X,
@@ -14,8 +14,10 @@ import {
   remainingLabel,
   STORY_DURATION_MS,
 } from '../lib/stories';
+import { useSession } from '../store/SessionStore';
 import { useStoryTray } from '../store/stories-queries';
 import { StoryAvatar } from './StoryAvatar';
+import { StoryOwnerMenu } from './StoryOwnerMenu';
 
 /**
  * HU13 · Ver una historia, contra la API (decisión 22).
@@ -26,9 +28,11 @@ import { StoryAvatar } from './StoryAvatar';
  *
  * La reproducción es automática: cada historia dura 10 s, la barra de arriba
  * mide las historias *de quien se está viendo* (una franja por historia suya) y
- * al acabarse todas las que quedaban por ver, el visor se cierra solo. Editar,
- * desactivar, reaccionar y comentar llegan con las funcionalidades 23 y 24.
- * Las reglas de la cola y del tiempo restante viven en lib/stories.
+ * al acabarse todas las que quedaban por ver, el visor se cierra solo. Editar y
+ * desactivar (solo en la historia propia) viven en StoryOwnerMenu, que detiene
+ * la reproducción mientras hay un menú o un diálogo abierto (decisión 23);
+ * reaccionar y comentar llegan con la funcionalidad 24. Las reglas de la cola
+ * y del tiempo restante viven en lib/stories.
  */
 
 const SCREEN = 'w-full h-full bg-[#0d0a09]';
@@ -37,7 +41,16 @@ export function StoryViewerScreen() {
   const { storyId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useSession();
   const [muted, setMuted] = useState(true);
+  // Con un menú o un diálogo abierto no avanza solo; al cerrarlo, la barra y el
+  // temporizador arrancan de nuevo (restart cambia la clave de la franja).
+  const [paused, setPaused] = useState(false);
+  const [restart, setRestart] = useState(0);
+  const handleBusy = useCallback((busy: boolean) => {
+    setPaused(busy);
+    if (!busy) setRestart((count) => count + 1);
+  }, []);
 
   /**
    * Pantalla desde la que se abrió la historia. Cerrar debe devolver ahí —al
@@ -56,7 +69,7 @@ export function StoryViewerScreen() {
   const nextId = next?.story.id ?? null;
 
   useEffect(() => {
-    if (!entry) return;
+    if (!entry || paused) return;
     const timer = setTimeout(() => {
       // Se acabaron las historias por ver: se cierra el visor.
       if (nextId)
@@ -64,7 +77,7 @@ export function StoryViewerScreen() {
       else navigate(from);
     }, STORY_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [entry, nextId, from, navigate]);
+  }, [entry, nextId, from, navigate, paused]);
 
   if (tray.isPending) {
     return (
@@ -165,10 +178,11 @@ export function StoryViewerScreen() {
             )}
             {i === segmentIndex && (
               <span
-                key={e.story.id}
+                key={`${e.story.id}-${restart}`}
                 className="block h-full w-0 rounded-full bg-[var(--surface)]"
                 style={{
                   animation: `story-progress ${STORY_DURATION_MS}ms linear forwards`,
+                  animationPlayState: paused ? 'paused' : 'running',
                 }}
               />
             )}
@@ -204,6 +218,13 @@ export function StoryViewerScreen() {
               <Volume2 className="w-[18px] h-[18px]" />
             )}
           </button>
+        )}
+        {user?.id === author.id && (
+          <StoryOwnerMenu
+            story={story}
+            onBusyChange={handleBusy}
+            onDeactivated={goBack}
+          />
         )}
         <button onClick={goBack} aria-label="Cerrar" className={iconButton}>
           <X className="w-5 h-5" />

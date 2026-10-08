@@ -41,7 +41,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_CONTENT_REQUIRED: 'Escribe algo antes de enviar.',
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
-  ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
+  ALREADY_INACTIVE: 'Esto ya estaba desactivado.',
+  STORY_NOT_FOUND: 'Esta historia ya no está disponible.',
+  NOT_STORY_AUTHOR: 'Solo quien publicó la historia puede cambiarla.',
+  STORY_EXPIRED: 'Esta historia ya venció y no se puede cambiar.',
   NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
