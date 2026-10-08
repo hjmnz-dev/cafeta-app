@@ -40,7 +40,11 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_CONTENT_REQUIRED: 'Escribe algo antes de enviar.',
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
-  ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
+  ALREADY_INACTIVE: 'Esto ya estaba desactivado.',
+  COMMENT_EMPTY: 'Escribe algo antes de comentar.',
+  COMMENT_TOO_LONG: 'Un comentario admite hasta 500 caracteres.',
+  COMMENT_NOT_FOUND: 'Este comentario ya no está disponible.',
+  NOT_COMMENT_AUTHOR: 'Solo quien escribió el comentario puede cambiarlo.',
   NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',

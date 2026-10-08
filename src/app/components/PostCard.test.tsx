@@ -331,8 +331,10 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
       card.getByRole('button', { name: 'Reaccionar. 12 reacciones' }),
     ).toBeInTheDocument();
     expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
-    // Sin backend todavía: ni comentar, guardar, menú ni asistir; solo reaccionar.
-    expect(card.getAllByRole('button')).toHaveLength(1);
+    // Sin backend todavía: ni guardar, menú ni asistir; solo reaccionar y comentar.
+    expect(
+      card.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['3 comentarios', 'Reaccionar. 12 reacciones']);
     // Sin foto: la inicial en un círculo.
     expect(card.getByRole('img', { name: 'Juan Pérez' })).toHaveTextContent(
       'J',

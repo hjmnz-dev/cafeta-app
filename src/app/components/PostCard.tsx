@@ -25,6 +25,7 @@ import { useAppState, Post } from '../store/AppState';
 import { useBlockUser } from '../store/blocks-queries';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
 import type { ReactionType } from '../lib/reactions';
+import { CommentsPanel } from './CommentsPanel';
 import { PostReactionButton } from './PostReactionButton';
 import { ReportDialog } from './ReportDialog';
 
@@ -44,8 +45,8 @@ import { ReportDialog } from './ReportDialog';
  *
  * Con `live` (spec 0005) la publicación viene de la API: la autoría la decide
  * la pantalla, y se ocultan las acciones que todavía no tienen backend
- * (comentar, guardar, compartir, reportar). Reaccionar sí lo tiene (spec 0009,
- * decisión 20) y llega por `live.reaction`. El menú de autor
+ * (guardar, compartir, reportar). Reaccionar (spec 0009, decisión 20) llega por
+ * `live.reaction` y comentar (decisión 21) abre el panel de comentarios. El menú de autor
  * (editar, desactivar, eliminar) aparece cuando la pantalla pasa
  * `live.actions` (spec 0008, decisión 17). Sin `live` sigue igual para las
  * pantallas que aún usan AppState.
@@ -160,6 +161,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
   const blockMutation = useBlockUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [confirming, setConfirming] = useState<null | 'deactivate' | 'delete'>(
@@ -448,23 +450,36 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             </div>
           )}
 
-          {/* Con live, lo que ya tiene backend: reaccionar y los conteos reales
-              (comentar y guardar llegan con sus funcionalidades). */}
+          {/* Con live, lo que ya tiene backend: reaccionar, comentar (spec 0009,
+              decisión 21) y los conteos reales (guardar llega con su funcionalidad). */}
           {live && (
-            <div className="flex items-center gap-1 pt-1 -ml-1.5">
-              <Count
-                icon={MessageCircle}
-                value={post.comments}
-                singular="comentario"
-                plural="comentarios"
-              />
-              <PostReactionButton
-                count={post.likes}
-                mine={live.reaction.mine}
-                busy={live.reaction.busy}
-                onSelect={live.reaction.select}
-              />
-            </div>
+            <>
+              <div className="flex items-center gap-1 pt-1 -ml-1.5">
+                <button
+                  onClick={() => setCommentsOpen((open) => !open)}
+                  aria-expanded={commentsOpen}
+                  aria-label={`${post.comments} ${post.comments === 1 ? 'comentario' : 'comentarios'}`}
+                  className="flex items-center gap-1.5 px-1.5 py-1 rounded-full text-[var(--muted)] hover:text-[var(--brand)] transition-colors"
+                >
+                  <MessageCircle
+                    className="w-[19px] h-[19px]"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[13px] font-medium" aria-hidden="true">
+                    {compact(post.comments)}
+                  </span>
+                </button>
+                <PostReactionButton
+                  count={post.likes}
+                  mine={live.reaction.mine}
+                  busy={live.reaction.busy}
+                  onSelect={live.reaction.select}
+                />
+              </div>
+              {commentsOpen && (
+                <CommentsPanel postId={post.id} count={post.comments} />
+              )}
+            </>
           )}
 
           {/* Interacciones (se conservan al editar, HU22) */}

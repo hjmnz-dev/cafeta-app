@@ -72,3 +72,9 @@ export const searchKeys = {
   posts: (q: string) => ['search', 'posts', q] as const,
   explore: () => ['explore', 'posts'] as const,
 };
+
+/** Comentarios (spec 0009, decisión 21): los de cada publicación. */
+export const commentKeys = {
+  all: ['comments'] as const,
+  post: (postId: string) => ['comments', 'post', postId] as const,
+};
