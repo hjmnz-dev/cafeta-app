@@ -36,7 +36,10 @@ const BottomNav = () => {
       />
       <div className="flex-shrink-0 -mt-6">
         <Link to="/create-post">
-          <button className="w-14 h-14 bg-[var(--brand)] rounded-full flex items-center justify-center shadow-[0_4px_16px_rgba(214,40,40,0.3)] hover:scale-105 transition-transform">
+          <button
+            aria-label="Crear publicación"
+            className="w-14 h-14 bg-[var(--brand)] rounded-full flex items-center justify-center shadow-[0_4px_16px_rgba(214,40,40,0.3)] hover:scale-105 transition-transform"
+          >
             <Plus className="w-6 h-6 text-white" />
           </button>
         </Link>

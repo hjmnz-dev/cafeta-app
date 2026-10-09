@@ -42,6 +42,7 @@ export function PeopleScreen() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
           <input
             type="text"
+            aria-label="Buscar personas por nombre o carrera"
             placeholder="Buscar personas por nombre o carrera..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}

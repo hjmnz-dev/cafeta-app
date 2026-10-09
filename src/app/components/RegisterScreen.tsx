@@ -168,10 +168,14 @@ export function RegisterScreen() {
           {/* Nombre + Apellido row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+              <label
+                htmlFor="register-first-name"
+                className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+              >
                 Nombre
               </label>
               <input
+                id="register-first-name"
                 type="text"
                 placeholder="Juan"
                 value={nombre}
@@ -190,10 +194,14 @@ export function RegisterScreen() {
               )}
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+              <label
+                htmlFor="register-last-name"
+                className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+              >
                 Apellido
               </label>
               <input
+                id="register-last-name"
                 type="text"
                 placeholder="Pérez"
                 value={apellido}
@@ -215,10 +223,14 @@ export function RegisterScreen() {
 
           {/* Email */}
           <div>
-            <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+            <label
+              htmlFor="register-email"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
               Correo Electrónico
             </label>
             <input
+              id="register-email"
               type="email"
               placeholder="tu@est.intec.edu.do"
               value={email}
@@ -301,11 +313,15 @@ export function RegisterScreen() {
 
           {/* Password */}
           <div>
-            <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+            <label
+              htmlFor="register-password"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
               Contraseña
             </label>
             <div className="relative">
               <input
+                id="register-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
@@ -342,11 +358,15 @@ export function RegisterScreen() {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+            <label
+              htmlFor="register-confirm"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
               Confirmar Contraseña
             </label>
             <div className="relative">
               <input
+                id="register-confirm"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={confirmPassword}

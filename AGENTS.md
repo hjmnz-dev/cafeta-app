@@ -46,7 +46,8 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 | `src/app/lib/auth-api.ts`             | Llamadas de auth y carreras, con sus tipos tomados de `api-types.ts`                                                                                                                                   |
 | `src/app/store/SessionStore.tsx`      | Sesión real (`useSession()`): token en `localStorage` con "Recordarme", en `sessionStorage` sin él                                                                                                     |
 | `src/app/components/RequireAuth.tsx`  | Guardia de las rutas protegidas en `routes.tsx`                                                                                                                                                        |
-| `src/styles/theme.css`                | Tokens de color y tema (oscuro por defecto)                                                                                                                                                            |
+| `src/styles/theme.css`                | Tokens de color y tema (oscuro por defecto), foco visible con teclado y movimiento reducido                                                                                                            |
+| `design.md`                           | Lenguaje visual (tipografía, color, espaciado, componentes, significado de las etiquetas del perfil) y reglas de accesibilidad; la consola copia estos tokens                                          |
 | `deploy/server.mjs`                   | Servidor estático de producción en App Service (spec 0006): solo `GET`/`HEAD`, nunca sale de `dist/`, `index.html` para las rutas internas, 404 para estáticos que no existen; igual en `Cafeta-Admin` |
 | `.github/workflows/ci.yml`            | CI en cada push; job `deploy` solo en `main`: build con `VITE_API_URL` del ambiente `production`, `dist/version.txt` con el commit, subida con OIDC y prueba de humo que espera ese commit             |
 
@@ -61,10 +62,12 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 - Los datos de la API se leen con hooks de TanStack Query en `store/<dominio>-queries.ts`, con claves de `lib/query-keys.ts` y llamadas de `lib/<dominio>-api.ts`; al escribir se invalida la clave raíz del dominio. Nunca se guardan en `AppState` ni en `localStorage`.
 - Una publicación de la API se dibuja con `<PostCard live={…} />` (convierte con `toCardPost` de `lib/posts.ts`); sin `live`, la tarjeta sigue en modo `AppState` para las pantallas aún no conectadas.
 - Los avisos usan `toast` de `sonner`; el `Toaster` está montado una vez en `App.tsx`.
+- Accesibilidad (ver `design.md`): todo campo lleva `<label htmlFor>` o `aria-label`, todo botón de solo ícono lleva `aria-label`, el color nunca es el único dato, y un token de texto nuevo debe pasar `src/app/lib/contrast.test.ts` (AA, 4,5:1). El foco visible es global en `theme.css`; no lo quites con `outline-none` sin dar otro indicador.
 
 ## Gotchas
 
 - En `vite.config.ts`, los plugins de React y Tailwind son obligatorios aunque parezcan sobrar; no los quites.
+- En `vite.config.ts`, `test.css` deja pasar solo `theme.css`: es lo que permite a `contrast.test.ts` leerlo con `?raw`; el resto del CSS sigue apagado en las pruebas.
 - Los imports `figma:asset/<archivo>` se resuelven a `src/assets/` con un plugin propio de Vite.
 - `localStorage` guarda unos 5 MB en total; por eso las imágenes se reducen antes de guardarse (`lib/image.ts`). Deja de importar cuando la pantalla usa la API.
 - La URL de la API sale de `VITE_API_URL` (ver `.env.example`); sin ella usa `http://localhost:3000/api/v1`.

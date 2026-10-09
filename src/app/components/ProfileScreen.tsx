@@ -189,6 +189,7 @@ export function ProfileScreen() {
               return (
                 <span
                   key={`${t.category}:${t.label}`}
+                  title={cat.label}
                   className="px-3 py-1 rounded-full text-[13px] font-semibold border shadow-sm"
                   style={{
                     background: cat.bg,
@@ -196,6 +197,7 @@ export function ProfileScreen() {
                     borderColor: cat.border,
                   }}
                 >
+                  <span className="sr-only">{cat.label}: </span>
                   {t.label}
                 </span>
               );
