@@ -726,6 +726,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}/reaction': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Pone mi reacción: la crea, la reactiva o cambia su tipo. */
+    put: operations['PostReactionsController_set'];
+    post?: never;
+    /** Quita mi reacción; si no tenía, no falla. */
+    delete: operations['PostReactionsController_remove'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/reports': {
     parameters: {
       query?: never;
@@ -1114,6 +1132,11 @@ export interface components {
      * @enum {string}
      */
     PostState: 'ACTIVE' | 'ARCHIVED' | 'DEACTIVATED';
+    /**
+     * @description Mi reacción activa a la publicación; null si no he reaccionado.
+     * @enum {string}
+     */
+    ReactionType: 'HEART' | 'FIRE' | 'CLAP' | 'LAUGH' | 'WOW';
     /** @enum {string} */
     MediaType: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
     PostMediaDto: {
@@ -1146,6 +1169,8 @@ export interface components {
       codeSnippet: string | null;
       groupName: string | null;
       groupSpots: number | null;
+      /** @description Mi reacción activa a la publicación; null si no he reaccionado. */
+      myReaction: components['schemas']['ReactionType'] | null;
       id: string;
       /** @description Fecha de creación en ISO 8601. */
       createdAt: string;
@@ -1451,6 +1476,14 @@ export interface components {
     DeactivateAccountDto: {
       /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
       password: string;
+    };
+    SetReactionDto: {
+      type: components['schemas']['ReactionType'];
+    };
+    ReactionStateDto: {
+      myReaction: components['schemas']['ReactionType'] | null;
+      /** @description Reacciones activas de usuarios activos. */
+      reactionCount: number;
     };
     CreateReportDto: {
       /** @enum {string} */
@@ -2857,6 +2890,52 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  PostReactionsController_set: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetReactionDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReactionStateDto'];
+        };
+      };
+    };
+  };
+  PostReactionsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReactionStateDto'];
+        };
       };
     };
   };

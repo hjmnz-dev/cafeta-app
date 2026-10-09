@@ -6,11 +6,30 @@ import {
   useArchivePost,
   useDeactivatePost,
   useDeletePost,
+  useReactToPost,
   useReactivatePost,
   useRestorePost,
   useUpdatePost,
 } from '../store/posts-queries';
-import { PostCard, type LiveAuthorActions } from './PostCard';
+import {
+  PostCard,
+  type LiveAuthorActions,
+  type LiveReaction,
+} from './PostCard';
+
+/** Mi reacción contra la API; si falla, se deshace sola y se avisa (spec 0009). */
+function useLiveReaction(view: PostView): LiveReaction {
+  const react = useReactToPost();
+  return {
+    mine: view.myReaction,
+    busy: react.isPending,
+    select: (type) =>
+      react.mutate(
+        { id: view.id, type, previous: view.myReaction },
+        { onError: (error) => toast.error(userMessageOf(error)) },
+      ),
+  };
+}
 
 /** Acciones del autor contra la API (spec 0008, decisiones 17 y 18). */
 function useAuthorActions(id: string): LiveAuthorActions {
@@ -67,7 +86,15 @@ function useAuthorActions(id: string): LiveAuthorActions {
   };
 }
 
-function MyPostCard({ view, now }: { view: PostView; now: Date }) {
+function MyPostCard({
+  view,
+  now,
+  reaction,
+}: {
+  view: PostView;
+  now: Date;
+  reaction: LiveReaction;
+}) {
   const actions = useAuthorActions(view.id);
   return (
     <PostCard
@@ -78,6 +105,7 @@ function MyPostCard({ view, now }: { view: PostView; now: Date }) {
         isAnnouncement: view.type === 'ANNOUNCEMENT',
         state: view.state,
         actions,
+        reaction,
       }}
     />
   );
@@ -93,7 +121,8 @@ export function LivePostCard({
   now: Date;
   isMine: boolean;
 }) {
-  if (isMine) return <MyPostCard view={view} now={now} />;
+  const reaction = useLiveReaction(view);
+  if (isMine) return <MyPostCard view={view} now={now} reaction={reaction} />;
   return (
     <PostCard
       post={toCardPost(view, now)}
@@ -101,6 +130,7 @@ export function LivePostCard({
         isMine: false,
         authorId: view.author.id,
         isAnnouncement: view.type === 'ANNOUNCEMENT',
+        reaction,
       }}
     />
   );

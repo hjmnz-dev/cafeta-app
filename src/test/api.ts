@@ -70,6 +70,7 @@ export function postView(
     media: [],
     reactionCount: 0,
     commentCount: 0,
+    myReaction: null,
     ...rest,
     author: {
       id: '01926f00-0000-7000-8000-0000000000aa',

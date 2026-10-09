@@ -87,8 +87,6 @@ export interface Post {
   videoUrl?: string;
   /** PDF adjunto (enlace de Blob, spec 0008 decisión 13). */
   documentUrl?: string;
-  /** ¿El usuario actual reaccionó a esta publicación? (HU28) */
-  liked?: boolean;
 }
 
 /**
@@ -185,8 +183,6 @@ interface AppStateValue {
   editStoryComment: (storyId: string, commentId: string, text: string) => void;
   /** Desactivar un comentario propio — baja lógica (HU19). */
   deactivateStoryComment: (storyId: string, commentId: string) => void;
-  /** Reaccionar a una publicación; repetir la acción retira la reacción (HU28). */
-  togglePostReaction: (id: string) => void;
   // ── Mensajería (DEF-06 · HU35-HU37) ──
   messages: Message[];
   /** Mensajes visibles de una conversación (los retirados no se muestran). */
@@ -764,18 +760,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const deactivatePost = (id: string) => setActive(id, false);
   const reactivatePost = (id: string) => setActive(id, true);
 
-  // HU28: una reacción por persona. Se guarda la marca propia y se ajusta el
-  // contador, que ya venía con las reacciones de los demás.
-  const togglePostReaction = (id: string) =>
-    setState((s) => ({
-      ...s,
-      posts: s.posts.map((p) =>
-        p.id === id
-          ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) }
-          : p,
-      ),
-    }));
-
   const deletePost = (id: string) =>
     setState((s) => ({
       ...s,
@@ -991,7 +975,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         addStoryComment,
         editStoryComment,
         deactivateStoryComment,
-        togglePostReaction,
         messages,
         conversationMessages,
         sendMessage,

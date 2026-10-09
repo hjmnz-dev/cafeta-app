@@ -3,15 +3,23 @@
  * hooks; la red queda en posts-api.ts y la caché en TanStack Query.
  */
 import {
+  type InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { careersApi } from '../lib/auth-api';
-import { postsApi } from '../lib/posts-api';
+import { postsApi, type PostPage } from '../lib/posts-api';
 import { uploadsApi } from '../lib/uploads-api';
-import { careerKeys, postKeys } from '../lib/query-keys';
+import { careerKeys, isPostListKey, postKeys } from '../lib/query-keys';
+import {
+  mapPostInPages,
+  withReaction,
+  withServerState,
+  type ReactionState,
+  type ReactionType,
+} from '../lib/reactions';
 
 const firstPage = null as string | null;
 
@@ -86,6 +94,42 @@ export function useArchivedPosts() {
     queryFn: ({ pageParam }) => postsApi.archived(pageParam),
     initialPageParam: firstPage,
     getNextPageParam: (page) => page.nextCursor,
+  });
+}
+
+export interface ReactInput {
+  id: string;
+  /** La reacción que queda; null la quita. */
+  type: ReactionType | null;
+  /** La que tenía antes de tocar, para devolverla si la API falla. */
+  previous: ReactionType | null;
+}
+
+/**
+ * Mi reacción a una publicación (spec 0009, decisión 20). Se ve al instante en
+ * todas las listas donde aparece; si la API falla se deshace, y si responde se
+ * toma su conteo, que manda. No invalida nada: las listas no se vuelven a pedir.
+ */
+export function useReactToPost() {
+  const queryClient = useQueryClient();
+  const change = (id: string, edit: Parameters<typeof mapPostInPages>[2]) =>
+    queryClient.setQueriesData<InfiniteData<PostPage>>(
+      { predicate: (query) => isPostListKey(query.queryKey) },
+      (data) => mapPostInPages(data, id, edit),
+    );
+  return useMutation<ReactionState, Error, ReactInput>({
+    mutationFn: ({ id, type }) =>
+      type ? postsApi.react(id, { type }) : postsApi.unreact(id),
+    onMutate: async ({ id, type }) => {
+      await queryClient.cancelQueries({
+        predicate: (query) => isPostListKey(query.queryKey),
+      });
+      change(id, (view) => withReaction(view, type));
+    },
+    onError: (_error, { id, previous }) =>
+      change(id, (view) => withReaction(view, previous)),
+    onSuccess: (state, { id }) =>
+      change(id, (view) => withServerState(view, state)),
   });
 }
 

@@ -25,6 +25,9 @@ export function toQueryString(
   return search ? `?${search}` : '';
 }
 
+export type ReactionInput = Schemas['SetReactionDto'];
+export type ReactionState = Schemas['ReactionStateDto'];
+
 export const postsApi = {
   create: (input: CreatePostInput) =>
     apiRequest<PostView>('/posts', { method: 'POST', body: input }),
@@ -43,6 +46,14 @@ export const postsApi = {
     apiRequest<void>(`/posts/${id}/reactivate`, { method: 'POST' }),
   remove: (id: string) =>
     apiRequest<void>(`/posts/${id}`, { method: 'DELETE' }),
+  // Mi reacción (spec 0009, decisión 20): poner y quitar son idempotentes.
+  react: (id: string, input: ReactionInput) =>
+    apiRequest<ReactionState>(`/posts/${id}/reaction`, {
+      method: 'PUT',
+      body: input,
+    }),
+  unreact: (id: string) =>
+    apiRequest<ReactionState>(`/posts/${id}/reaction`, { method: 'DELETE' }),
   // Archivar y restaurar (spec 0008, funcionalidad 18).
   archived: (cursor: string | null) =>
     apiRequest<PostPage>(`/posts/archived${toQueryString({ cursor })}`),
