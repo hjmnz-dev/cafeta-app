@@ -59,15 +59,14 @@ function EmptyTab({
 }
 
 export function ProfileScreen() {
-  const [activeTab, setActiveTab] = useState<'posts' | 'resources' | 'saved'>(
-    'posts',
-  );
+  const [activeTab, setActiveTab] = useState<'posts' | 'resources'>('posts');
   const navigate = useNavigate();
   const { posts } = useAppState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Mis publicaciones y su conteo vienen de la API (spec 0005); cabecera,
-  // recursos y guardados siguen con AppState hasta sus funcionalidades.
+  // y recursos siguen con AppState hasta sus funcionalidades. Los guardados
+  // viven en su propia pantalla (/profile/saved).
   const { user } = useSession();
   const myLivePosts = useUserPosts(user?.id);
   const postCount = useUserPostCount(user?.id);
@@ -272,20 +271,13 @@ export function ProfileScreen() {
             )}
           </button>
 
+          {/* Guardados abre su propia pantalla (spec 0009, decisión 19) */}
           <button
-            onClick={() => setActiveTab('saved')}
-            className={cn(
-              'flex-1 pb-4 flex items-center justify-center gap-2 font-semibold text-[15px] transition-colors relative',
-              activeTab === 'saved'
-                ? 'text-[var(--brand)]'
-                : 'text-[var(--muted)]',
-            )}
+            onClick={() => navigate('/profile/saved')}
+            className="flex-1 pb-4 flex items-center justify-center gap-2 font-semibold text-[15px] transition-colors relative text-[var(--muted)]"
           >
             <Bookmark className="w-[18px] h-[18px]" />
             Guardados
-            {activeTab === 'saved' && (
-              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[var(--brand)] rounded-t-full shadow-[0_-2px_8px_rgba(214,40,40,0.5)]"></div>
-            )}
           </button>
         </div>
 
@@ -329,14 +321,6 @@ export function ProfileScreen() {
               ))}
             </div>
           ))}
-
-        {/* Guardados: sin marcadores todavía; se dice, en vez de rellenar */}
-        {activeTab === 'saved' && (
-          <EmptyTab
-            title="No tienes publicaciones guardadas"
-            detail="Usa el marcador de una publicación para guardarla y encontrarla aquí."
-          />
-        )}
       </div>
     </div>
   );

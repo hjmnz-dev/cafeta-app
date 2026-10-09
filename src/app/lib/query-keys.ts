@@ -8,19 +8,22 @@ export const postKeys = {
   feed: (careerId: string | null) => ['posts', 'feed', careerId] as const,
   byAuthor: (userId: string) => ['posts', 'author', userId] as const,
   count: (userId: string) => ['posts', 'count', userId] as const,
+  /** Mis guardadas (spec 0009, decisión 19). */
+  saved: ['posts', 'saved'] as const,
   /** Mis archivadas y desactivadas (solo las veo yo). */
   archived: ['posts', 'archived'] as const,
 };
 
 /**
- * ¿La clave es una lista paginada de publicaciones (feed, perfil, búsqueda o
- * explorar)? Las reacciones se ajustan en todas a la vez; el conteo de un
+ * ¿La clave es una lista paginada de publicaciones (feed, perfil, guardadas,
+ * búsqueda o explorar)? Reacciones y guardados se ajustan en todas a la vez; el conteo de un
  * perfil (['posts', 'count', …]) no es una lista.
  */
 export function isPostListKey(key: readonly unknown[]): boolean {
   const [root, kind] = key;
   return (
-    (root === 'posts' && (kind === 'feed' || kind === 'author')) ||
+    (root === 'posts' &&
+      (kind === 'feed' || kind === 'author' || kind === 'saved')) ||
     (root === 'search' && kind === 'posts') ||
     (root === 'explore' && kind === 'posts')
   );
