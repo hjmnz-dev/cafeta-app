@@ -277,6 +277,22 @@ export interface paths {
     patch: operations['PrivacyController_update'];
     trace?: never;
   };
+  '/api/v1/me/profile': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['MeProfileController_update'];
+    trace?: never;
+  };
   '/api/v1/follows/requests': {
     parameters: {
       query?: never;
@@ -1157,10 +1173,14 @@ export interface components {
     ProfileViewDto: {
       /** @example Ingeniería de Software */
       careerName: string | null;
+      careerId: string | null;
+      /** @description Enlace de lectura de la foto (vence en una hora como máximo), o null si no tiene. */
+      avatarUrl: string | null;
       visibility: components['schemas']['ProfileVisibility'];
       /** @description Seguimiento de quien pregunta hacia este perfil. */
       followStatus: components['schemas']['FollowState'];
       bio: string | null;
+      location: string | null;
       tags: components['schemas']['ProfileTagDto'][];
       id: string;
       /** @example cgomez_intec */
@@ -1182,6 +1202,25 @@ export interface components {
     };
     UpdatePrivacyDto: {
       visibility: components['schemas']['ProfileVisibility'];
+    };
+    UpdateProfileTagDto: {
+      category: components['schemas']['TagCategory'];
+      /** @example React */
+      label: string;
+    };
+    UpdateProfileDto: {
+      bio?: string | null;
+      location?: string | null;
+      /** @description Clave que devolvió POST /uploads (una imagen). null quita la foto. */
+      avatarKey?: string | null;
+      tags?: components['schemas']['UpdateProfileTagDto'][];
+      /**
+       * @description No puede quedar vacío.
+       * @example Carlos Gómez
+       */
+      displayName?: string;
+      /** Format: uuid */
+      careerId?: string;
     };
     FollowUserViewDto: {
       /** Format: uuid */
@@ -2057,6 +2096,29 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PrivacyDto'];
+        };
+      };
+    };
+  };
+  MeProfileController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateProfileDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProfileViewDto'];
         };
       };
     };
