@@ -51,6 +51,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   COMMENT_TOO_LONG: 'Un comentario admite hasta 500 caracteres.',
   COMMENT_NOT_FOUND: 'Este comentario ya no está disponible.',
   NOT_COMMENT_AUTHOR: 'Solo quien escribió el comentario puede cambiarlo.',
+  STORY_NOT_FOUND: 'Esta historia ya no está disponible.',
+  NOT_STORY_AUTHOR: 'Solo quien publicó la historia puede cambiarla.',
+  STORY_EXPIRED: 'Esta historia ya venció y no se puede cambiar.',
   NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
