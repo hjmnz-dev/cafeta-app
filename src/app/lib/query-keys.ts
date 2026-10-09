@@ -8,6 +8,8 @@ export const postKeys = {
   feed: (careerId: string | null) => ['posts', 'feed', careerId] as const,
   byAuthor: (userId: string) => ['posts', 'author', userId] as const,
   count: (userId: string) => ['posts', 'count', userId] as const,
+  /** Mis archivadas y desactivadas (solo las veo yo). */
+  archived: ['posts', 'archived'] as const,
 };
 
 /**
@@ -71,4 +73,10 @@ export const searchKeys = {
   users: (q: string) => ['search', 'users', q] as const,
   posts: (q: string) => ['search', 'posts', q] as const,
   explore: () => ['explore', 'posts'] as const,
+};
+
+/** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
+export const reportKeys = {
+  sent: (targetType: string, targetId: string) =>
+    ['reports', 'sent', targetType, targetId] as const,
 };

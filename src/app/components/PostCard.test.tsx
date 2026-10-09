@@ -27,6 +27,7 @@ describe('DEF-09 — Validación de autoría', () => {
     cards();
 
     // El menú existe en toda publicación, pero en las ajenas solo modera (FT11).
+    // Reportar solo se ofrece en las publicaciones reales (LivePostCard.report.test).
     await user.click(
       within(screen.getByTestId('post-p2')).getByRole('button', {
         name: /opciones/i,
@@ -37,8 +38,8 @@ describe('DEF-09 — Validación de autoría', () => {
     expect(screen.queryByRole('button', { name: /^desactivar$/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /^eliminar$/i })).toBeNull();
     expect(
-      screen.getByRole('button', { name: /reportar publicación/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: /reportar publicación/i }),
+    ).toBeNull();
   });
 
   it('las publicaciones propias ofrecen editar, desactivar y eliminar', async () => {
@@ -331,8 +332,14 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
       card.getByRole('button', { name: 'Reaccionar. 12 reacciones' }),
     ).toBeInTheDocument();
     expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
-    // Sin backend todavía: ni comentar, guardar, menú ni asistir; solo reaccionar.
-    expect(card.getAllByRole('button')).toHaveLength(1);
+    // Sin backend todavía: ni comentar, guardar ni asistir. Quedan el menú de una
+    // publicación ajena (solo ofrece reportar) y reaccionar.
+    expect(
+      card.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
+    ).toEqual([
+      'Opciones de la publicación de Juan Pérez',
+      'Reaccionar. 12 reacciones',
+    ]);
     // Sin foto: la inicial en un círculo.
     expect(card.getByRole('img', { name: 'Juan Pérez' })).toHaveTextContent(
       'J',

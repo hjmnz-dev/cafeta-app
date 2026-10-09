@@ -54,4 +54,11 @@ export const postsApi = {
     }),
   unreact: (id: string) =>
     apiRequest<ReactionState>(`/posts/${id}/reaction`, { method: 'DELETE' }),
+  // Archivar y restaurar (spec 0008, funcionalidad 18).
+  archived: (cursor: string | null) =>
+    apiRequest<PostPage>(`/posts/archived${toQueryString({ cursor })}`),
+  archive: (id: string) =>
+    apiRequest<void>(`/posts/${id}/archive`, { method: 'POST' }),
+  restore: (id: string) =>
+    apiRequest<void>(`/posts/${id}/restore`, { method: 'POST' }),
 };

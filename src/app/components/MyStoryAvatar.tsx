@@ -1,5 +1,8 @@
 import { Link, useLocation } from 'react-router';
-import { useAppState, CURRENT_USER_ID, MY_AVATAR } from '../store/AppState';
+import { useAppState, CURRENT_USER_ID } from '../store/AppState';
+import { useProfile } from '../store/profiles-queries';
+import { useSession } from '../store/SessionStore';
+import { ProfileAvatar } from './ProfileAvatar';
 import { visibleStories, playbackQueue } from '../lib/stories';
 
 /**
@@ -16,6 +19,9 @@ import { visibleStories, playbackQueue } from '../lib/stories';
  */
 export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   const { stories, followingIds } = useAppState();
+  // La foto es la real de mi perfil (decisión 13); sin ella, mi inicial.
+  const { user } = useSession();
+  const me = useProfile(user?.id ?? '', Boolean(user));
   // De dónde se sale, para poder volver aquí al cerrar (feed o perfil).
   const { pathname: from } = useLocation();
 
@@ -39,11 +45,13 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   };
 
   const avatar = (ring: boolean) => (
-    <img
-      src={MY_AVATAR}
-      alt=""
+    <ProfileAvatar
+      url={me.data?.avatarUrl}
+      name={me.data?.displayName ?? user?.profile.displayName ?? ''}
+      size={ring ? size - 5 : size}
+      radius={size}
       className={
-        'w-full h-full rounded-full object-cover bg-[var(--surface-3)] border-2 ' +
+        'w-full h-full border-2 ' +
         (ring ? 'border-[var(--surface)]' : 'border-[var(--line)]')
       }
     />

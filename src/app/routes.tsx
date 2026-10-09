@@ -8,7 +8,9 @@ import { LoginScreen } from './components/LoginScreen';
 import { RegisterScreen } from './components/RegisterScreen';
 import { CreatePostScreen } from './components/CreatePostScreen';
 import { ForgotPasswordScreen } from './components/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 import { EditProfileScreen } from './components/EditProfileScreen';
+import { ArchivedPostsScreen } from './components/ArchivedPostsScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { UserProfileScreen } from './components/UserProfileScreen';
 import { PeopleScreen } from './components/PeopleScreen';
@@ -39,6 +41,8 @@ export const router = createBrowserRouter([
       { path: 'login', Component: LoginScreen },
       { path: 'register', Component: RegisterScreen },
       { path: 'forgot-password', Component: ForgotPasswordScreen },
+      // Enlace del correo de recuperación (spec 0008, decisión 10).
+      { path: 'reset-password', Component: ResetPasswordScreen },
       // Textos legales: se leen sin iniciar sesión (spec 0009, decisión 12).
       { path: 'terms', Component: TermsScreen },
       { path: 'privacy', Component: PrivacyScreen },
@@ -47,6 +51,7 @@ export const router = createBrowserRouter([
         Component: RequireAuth,
         children: [
           { path: 'profile/edit', Component: EditProfileScreen },
+          { path: 'profile/archived', Component: ArchivedPostsScreen },
           { path: 'settings', Component: SettingsScreen },
           { path: 'home', Component: FeedScreen },
           // Enlace viejo: las pestañas de carrera viven en /home?carrera=<id>.
