@@ -4,12 +4,13 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { profilesApi } from '../lib/profiles-api';
-import { postKeys, profileKeys } from '../lib/query-keys';
+import { followKeys, postKeys, profileKeys } from '../lib/query-keys';
 
-export function useProfile(userId: string) {
+export function useProfile(userId: string, enabled = true) {
   return useQuery({
     queryKey: profileKeys.view(userId),
     queryFn: () => profilesApi.view(userId),
+    enabled: enabled && Boolean(userId),
   });
 }
 
@@ -29,6 +30,22 @@ export function useUpdatePrivacy() {
       queryClient.setQueryData(profileKeys.privacy, privacy);
       void queryClient.invalidateQueries({ queryKey: profileKeys.all });
       void queryClient.invalidateQueries({ queryKey: postKeys.all });
+    },
+  });
+}
+
+/**
+ * Guardar el perfil propio: lo nuevo se ve de inmediato (se escribe en la
+ * caché) y se refrescan las listas que muestran mi nombre y mi foto.
+ */
+export function useUpdateProfile(userId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: profilesApi.update,
+    onSuccess: (profile) => {
+      queryClient.setQueryData(profileKeys.view(userId), profile);
+      void queryClient.invalidateQueries({ queryKey: postKeys.all });
+      void queryClient.invalidateQueries({ queryKey: followKeys.all });
     },
   });
 }

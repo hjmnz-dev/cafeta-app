@@ -13,6 +13,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CAREER_NOT_FOUND: 'Elige una carrera de la lista.',
   INVALID_CREDENTIALS: 'Correo o contraseña incorrectos.',
   ACCOUNT_INACTIVE: 'Tu cuenta no está activa.',
+  RESET_TOKEN_INVALID: 'El enlace venció o ya se usó. Pide uno nuevo.',
+  INVALID_PASSWORD: 'La contraseña no es correcta.',
+  ADMIN_CANNOT_SELF_DEACTIVATE:
+    'Un administrador no puede desactivar su propia cuenta.',
   SESSION_REVOKED: 'Tu sesión terminó. Inicia sesión de nuevo.',
   UNAUTHORIZED: 'Tu sesión terminó. Inicia sesión de nuevo.',
   TOO_MANY_REQUESTS: 'Demasiados intentos. Espera un minuto.',
@@ -44,6 +48,15 @@ const MESSAGES: Readonly<Record<string, string>> = {
   NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
+  CANNOT_FOLLOW_SELF: 'No puedes seguirte a ti mismo.',
+  FOLLOW_NOT_FOUND: 'No sigues a este usuario.',
+  FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
+  TAG_DUPLICATED: 'Hay etiquetas repetidas. Quita una.',
+  PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
+  CANNOT_REPORT_SELF: 'No puedes reportarte a ti mismo ni a tu publicación.',
+  DETAILS_REQUIRED: 'Cuéntanos qué pasó para poder enviar el reporte.',
+  REPORT_ALREADY_PENDING:
+    'Ya reportaste esto, un administrador lo está revisando.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';

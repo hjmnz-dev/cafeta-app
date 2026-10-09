@@ -1,26 +1,48 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { REPORT_REASONS } from '../store/AppState';
+import {
+  cleanDetails,
+  countChars,
+  REPORT_DETAILS_MAX,
+  REPORT_REASONS,
+  reportBlocker,
+} from '../lib/reports';
+import type { ReportReason } from '../lib/reports-api';
+
+export interface ReportChoice {
+  reason: ReportReason;
+  details?: string;
+}
 
 /**
  * DEF-12 · HU55/HU56 — Diálogo de denuncia.
  *
  * Reportar exige elegir un motivo: una denuncia sin motivo no le sirve a quien
- * después la revisa (FT10). Lo comparten el reporte de usuarios y el de
- * publicaciones para que ambos pidan lo mismo.
+ * después la revisa (FT10). Con "Otro" también pide contarlo. Lo comparten el
+ * reporte de usuarios y el de publicaciones para que ambos pidan lo mismo.
+ * Solo dibuja y recoge la elección; enviarla es de `ReportTargetDialog`.
  */
 export function ReportDialog({
   title,
   subject,
+  pending = false,
+  error = null,
   onConfirm,
   onClose,
 }: {
   title: string;
   subject: string;
-  onConfirm: (reason: string) => void;
+  pending?: boolean;
+  error?: string | null;
+  onConfirm: (choice: ReportChoice) => void;
   onClose: () => void;
 }) {
-  const [reason, setReason] = useState<string>('');
+  const [reason, setReason] = useState<ReportReason | null>(null);
+  const [details, setDetails] = useState('');
+
+  const blocker = reportBlocker(reason, details);
+  const canSend = blocker === null && !pending;
+  const used = countChars(details);
 
   return (
     <div
@@ -40,25 +62,60 @@ export function ReportDialog({
         </div>
         <p className="text-[13px] text-[var(--muted)] mb-4">{subject}</p>
 
-        <fieldset className="flex flex-col gap-1 mb-5">
+        <fieldset className="flex flex-col gap-1 mb-4">
           <legend className="sr-only">Motivo de la denuncia</legend>
-          {REPORT_REASONS.map((r) => (
+          {REPORT_REASONS.map(({ code, label }) => (
             <label
-              key={r}
+              key={code}
               className="flex items-center gap-3 px-1 py-2 text-[14px] text-[var(--ink)] cursor-pointer"
             >
               <input
                 type="radio"
                 name="report-reason"
-                value={r}
-                checked={reason === r}
-                onChange={() => setReason(r)}
+                value={code}
+                checked={reason === code}
+                onChange={() => setReason(code)}
                 className="accent-[var(--brand)] w-4 h-4"
               />
-              {r}
+              {label}
             </label>
           ))}
         </fieldset>
+
+        {reason === 'OTHER' && (
+          <div className="mb-4">
+            <label
+              htmlFor="report-details"
+              className="block text-[13px] font-medium text-[var(--ink)] mb-1"
+            >
+              Cuéntanos qué pasó
+            </label>
+            <textarea
+              id="report-details"
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              rows={3}
+              className="w-full rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-[14px] text-[var(--ink)] resize-none"
+            />
+            <p
+              className={
+                'text-[12px] text-right ' +
+                (used > REPORT_DETAILS_MAX
+                  ? 'text-[var(--brand)]'
+                  : 'text-[var(--muted)]')
+              }
+              aria-live="polite"
+            >
+              {used}/{REPORT_DETAILS_MAX}
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <p role="alert" className="text-[13px] text-[var(--brand)] mb-3">
+            {error}
+          </p>
+        )}
 
         <div className="flex gap-2">
           <button
@@ -68,11 +125,13 @@ export function ReportDialog({
             Cancelar
           </button>
           <button
-            onClick={() => reason && onConfirm(reason)}
-            disabled={!reason}
+            onClick={() =>
+              reason && onConfirm({ reason, details: cleanDetails(details) })
+            }
+            disabled={!canSend}
             className="flex-1 py-2.5 rounded-full text-[14px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-strong)] transition-colors disabled:opacity-40"
           >
-            Enviar denuncia
+            {pending ? 'Enviando…' : 'Enviar denuncia'}
           </button>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { useLocation } from 'react-router';
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { UserProfileScreen } from './UserProfileScreen';
 import { renderRoutes } from '../../test/utils';
 import { page, postView, signIn, TEST_USER } from '../../test/api';
@@ -15,6 +17,9 @@ function profileView(overrides: Partial<ProfileView> = {}): ProfileView {
     handle: 'mrodriguez',
     displayName: 'María Rodríguez',
     careerName: 'Medicina',
+    careerId: null,
+    avatarUrl: null,
+    location: null,
     verified: false,
     visibility: 'PUBLIC',
     isSelf: false,
@@ -26,6 +31,11 @@ function profileView(overrides: Partial<ProfileView> = {}): ProfileView {
     counts: { posts: 1, followers: 12, following: 3 },
     ...overrides,
   };
+}
+
+/** Destino de "Enviar mensaje": muestra el query para comprobar a quién se escribe. */
+function MessagesSearch() {
+  return <p data-testid="messages-search">{useLocation().search}</p>;
 }
 
 function renderProfile(
@@ -52,6 +62,7 @@ function renderProfile(
     [
       { path: '/u/:userId', element: <UserProfileScreen /> },
       { path: '/profile', element: <p>Mi perfil</p> },
+      { path: '/messages', element: <MessagesSearch /> },
     ],
     { route: `/u/${OTHER}` },
   );
@@ -71,7 +82,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       within(screen.getByTestId('follower-count')).getByText('12'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^seguir$/i }),
+      screen.getByRole('button', { name: /^seguir a maría$/i }),
     ).toBeInTheDocument();
     expect(
       await screen.findByText('Repaso de anatomía hoy'),
@@ -102,10 +113,32 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       within(screen.getByTestId('follower-count')).getByText('12'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^seguir$/i }),
+      screen.getByRole('button', { name: /^seguir a maría$/i }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Repaso de anatomía hoy')).toBeNull();
     expect(postsCalls).toEqual([]);
+  });
+
+  it('decisión 14 — muestra su foto y "Enviar mensaje" abre la conversación con ella', async () => {
+    const user = userEvent.setup();
+    renderProfile(
+      profileView({
+        avatarUrl: 'https://blob.test/maria.png',
+        location: 'Santiago',
+      }),
+    );
+
+    await screen.findByRole('heading', { name: 'María Rodríguez' });
+    expect(
+      document.querySelector('img[src="https://blob.test/maria.png"]'),
+    ).not.toBeNull();
+
+    expect(screen.getByText('Santiago')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /enviar mensaje/i }));
+    expect(screen.getByTestId('messages-search')).toHaveTextContent(
+      `?to=${OTHER}`,
+    );
   });
 
   it('una solicitud pendiente se ve como Solicitado', async () => {
@@ -118,7 +151,9 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
     );
 
     expect(
-      await screen.findByRole('button', { name: /solicitado/i }),
+      await screen.findByRole('button', {
+        name: /cancelar la solicitud a maría/i,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -153,6 +188,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       [
         { path: '/u/:userId', element: <UserProfileScreen /> },
         { path: '/profile', element: <p>Mi perfil</p> },
+        { path: '/messages', element: <p>Mensajes</p> },
       ],
       { route: `/u/${TEST_USER.id}` },
     );

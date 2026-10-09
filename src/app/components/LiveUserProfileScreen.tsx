@@ -1,13 +1,11 @@
 import { useRef, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate } from 'react-router';
 import {
   ArrowLeft,
-  Clock,
+  GraduationCap,
   Lock,
   MapPin,
   MessageCircle,
-  UserCheck,
-  UserPlus,
   Users,
 } from 'lucide-react';
 import { ApiError, userMessageOf } from '../lib/http';
@@ -18,11 +16,15 @@ import {
   tagCategoryOf,
   VISIBILITY_LABEL,
 } from '../lib/profiles';
-import { TAG_CATEGORIES } from '../store/AppState';
+import { TAG_CATEGORIES, useAppState } from '../store/AppState';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
+import { useBlockUser } from '../store/blocks-queries';
 import { useSession } from '../store/SessionStore';
+import { FollowButton } from './FollowButton';
 import { LivePostList } from './LivePostList';
+import { ProfileAvatar } from './ProfileAvatar';
+import { ProfileOptionsMenu } from './ProfileOptionsMenu';
 
 /**
  * Perfil de otro usuario desde la API (decisión 15, HU07 E2 y HU09). La API
@@ -109,60 +111,40 @@ function ProfileShell({
   );
 }
 
-function FollowButton({ profile }: { profile: ProfileView }) {
-  const state = profile.followStatus;
-  // Un PRIVATE sin seguimiento previo no muestra el botón (decisión 15).
-  if (!profile.canFollow && state === 'NONE') return null;
-  // TODO(16): seguir, cancelar la solicitud y dejar de seguir.
-  return (
-    <button
-      disabled
-      aria-pressed={state !== 'NONE'}
-      className={
-        'h-[40px] px-5 rounded-full font-semibold text-[14px] flex items-center gap-1.5 shadow-sm disabled:cursor-default ' +
-        (state === 'NONE'
-          ? 'bg-[var(--brand)] text-[var(--on-brand)]'
-          : 'bg-[var(--surface)] border-2 border-[var(--line)] ' +
-            (state === 'PENDING' ? 'text-[var(--muted)]' : 'text-[var(--ink)]'))
-      }
-    >
-      {state === 'ACCEPTED' ? (
-        <>
-          <UserCheck className="w-[16px] h-[16px]" /> Siguiendo
-        </>
-      ) : state === 'PENDING' ? (
-        <>
-          <Clock className="w-[16px] h-[16px]" /> Solicitado
-        </>
-      ) : (
-        <>
-          <UserPlus className="w-[16px] h-[16px]" /> Seguir
-        </>
-      )}
-    </button>
-  );
-}
-
+/** Un conteo; con `to` lleva a su lista (HU32). */
 function Stat({
   value,
   label,
   testId,
+  to,
 }: {
   value: number;
   label: string;
   testId?: string;
+  to?: string;
 }) {
-  return (
-    <div
-      className="flex flex-col items-center gap-1 flex-1"
-      data-testid={testId}
-    >
+  const body = (
+    <>
       <span className="font-['Space_Grotesk',sans-serif] font-bold text-[18px] text-[var(--ink)]">
         {value.toLocaleString('es')}
       </span>
       <span className="text-[var(--muted)] text-[12px] font-medium">
         {label}
       </span>
+    </>
+  );
+  const className = 'flex flex-col items-center gap-1 flex-1';
+  return to ? (
+    <Link
+      to={to}
+      className={`${className} rounded-[12px] hover:bg-[var(--surface-2)]`}
+      data-testid={testId}
+    >
+      {body}
+    </Link>
+  ) : (
+    <div className={className} data-testid={testId}>
+      {body}
     </div>
   );
 }
@@ -172,7 +154,8 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const posts = useUserPosts(profile.id, profile.canSeeContent);
   const notice = restrictedNotice(profile);
-  const initial = (profile.displayName.trim()[0] ?? 'C').toUpperCase();
+  const blockMutation = useBlockUser();
+  const { blockUser } = useAppState();
 
   return (
     <div
@@ -187,23 +170,31 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
 
       <div className="px-5 pb-4">
         <div className="flex justify-between items-end -mt-9 mb-4 relative z-10">
-          {/* TODO(14): la foto de perfil llega con la subida de archivos. */}
-          <div
-            className="w-[78px] h-[78px] rounded-[24px] border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)] bg-[var(--brand)] flex items-center justify-center"
-            aria-hidden="true"
-          >
-            <span className="text-white font-['Space_Grotesk',sans-serif] font-bold text-[30px]">
-              {initial}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
+          <ProfileAvatar
+            url={profile.avatarUrl}
+            name={profile.displayName}
+            size={78}
+            radius={24}
+            className="border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)]"
+          />
+          <div className="flex items-center gap-2 relative">
             <button
-              onClick={() => navigate('/messages')}
+              onClick={() => navigate(`/messages?to=${profile.id}`)}
               className="w-[40px] h-[40px] rounded-full border-2 border-[var(--line)] bg-[var(--surface)] flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
               aria-label="Enviar mensaje"
             >
               <MessageCircle className="w-[18px] h-[18px]" />
             </button>
+            <ProfileOptionsMenu
+              userId={profile.id}
+              displayName={profile.displayName}
+              handle={profile.handle}
+              firstName={firstNameOf(profile.displayName)}
+              onBlock={() => {
+                blockMutation.mutate(profile.id);
+                blockUser(profile.id);
+              }}
+            />
             <FollowButton profile={profile} />
           </div>
         </div>
@@ -257,12 +248,20 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             })}
           </div>
         )}
-        {profile.careerName && (
-          <div className="flex items-center gap-1.5 text-[var(--muted)] text-[13px] font-medium mb-5">
-            <MapPin className="w-4 h-4" aria-hidden="true" />
-            <span>{profile.careerName} · INTEC</span>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[var(--muted)] text-[13px] font-medium mb-5">
+          {profile.careerName && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <GraduationCap className="w-4 h-4 flex-none" aria-hidden="true" />
+              <span>{profile.careerName} · INTEC</span>
+            </div>
+          )}
+          {profile.location && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <MapPin className="w-4 h-4 flex-none" aria-hidden="true" />
+              <span className="truncate">{profile.location}</span>
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-between items-center bg-[var(--surface)] rounded-[20px] p-5 shadow-[0_2px_12px_rgba(23,19,19,0.06)] border border-[var(--line)]">
           <Stat value={profile.counts.posts} label="Posts" />
@@ -271,9 +270,18 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             value={profile.counts.followers}
             label="Seguidores"
             testId="follower-count"
+            to={
+              profile.canSeeContent ? `/u/${profile.id}/followers` : undefined
+            }
           />
           <div className="w-[1px] h-[30px] bg-[var(--line-soft)]" />
-          <Stat value={profile.counts.following} label="Siguiendo" />
+          <Stat
+            value={profile.counts.following}
+            label="Siguiendo"
+            to={
+              profile.canSeeContent ? `/u/${profile.id}/following` : undefined
+            }
+          />
         </div>
       </div>
 

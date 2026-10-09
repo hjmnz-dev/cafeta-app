@@ -9,14 +9,11 @@ import {
   UserPlus,
   Clock,
   MoreHorizontal,
-  Flag,
   Ban,
-  Check,
 } from 'lucide-react';
 import { useAppState, TAG_CATEGORIES } from '../store/AppState';
 import { isApiUserId } from '../lib/profiles';
 import { LiveUserProfileScreen } from './LiveUserProfileScreen';
-import { ReportDialog } from './ReportDialog';
 
 /**
  * Perfil de otro usuario. Ruta: /u/:userId. Con un id de la API (UUID) es el
@@ -46,11 +43,8 @@ function DemoUserProfileScreen({ userId }: { userId: string }) {
     isBlocked,
     blockUser,
     unblockUser,
-    reportUser,
-    hasReported,
   } = useAppState();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [reporting, setReporting] = useState(false);
 
   const user = getUser(userId);
 
@@ -196,48 +190,16 @@ function DemoUserProfileScreen({ userId }: { userId: string }) {
             <div className="absolute right-5 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--app-bg)] overflow-hidden w-[210px]">
               <button
                 onClick={() => {
-                  setReporting(true);
-                  setMenuOpen(false);
-                }}
-                disabled={hasReported('user', user.id)}
-                className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
-              >
-                {hasReported('user', user.id) ? (
-                  <>
-                    <Check className="w-4 h-4 text-[var(--muted)]" /> Usuario
-                    reportado
-                  </>
-                ) : (
-                  <>
-                    <Flag className="w-4 h-4 text-[var(--muted)]" /> Reportar
-                    usuario
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => {
                   blockUser(user.id);
                   setMenuOpen(false);
                 }}
-                className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors border-t border-[var(--app-bg)]"
+                className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--brand)] hover:bg-[var(--tint)] transition-colors"
               >
                 <Ban className="w-4 h-4" />
                 Bloquear a {user.name.split(' ')[0]}
               </button>
             </div>
           </>
-        )}
-
-        {reporting && (
-          <ReportDialog
-            title="Reportar usuario"
-            subject={`Perfil de ${user.name} (${user.handle})`}
-            onClose={() => setReporting(false)}
-            onConfirm={(reason) => {
-              reportUser(user.id, reason);
-              setReporting(false);
-            }}
-          />
         )}
 
         {/* Nombre */}

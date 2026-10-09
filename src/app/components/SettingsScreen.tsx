@@ -1,16 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import {
-  ArrowLeft,
-  User,
-  ChevronRight,
-  LogOut,
-  Ban,
-  Moon,
-  Sun,
-} from 'lucide-react';
+import { ArrowLeft, LogOut, Ban, Moon, Sun } from 'lucide-react';
 import { useAppState, Theme } from '../store/AppState';
 import { useSession } from '../store/SessionStore';
+import { useBlockedUsers, useUnblockUser } from '../store/blocks-queries';
+import { AccountInfo } from './AccountInfo';
+import { DeactivateAccount } from './DeactivateAccount';
+import { LegalLinks } from './LegalLinks';
 import { NotificationSettings } from './NotificationSettings';
 import { PrivacySettings } from './PrivacySettings';
 
@@ -46,11 +42,31 @@ const THEME_OPTIONS: {
 
 export function SettingsScreen() {
   const navigate = useNavigate();
-  const { logout } = useSession();
-  const { profile, settings, updateSettings, users, blockedIds, unblockUser } =
+  const { user: sessionUser, logout } = useSession();
+  const { settings, updateSettings, users, blockedIds, unblockUser } =
     useAppState();
 
-  const blockedUsers = users.filter((u) => blockedIds.includes(u.id));
+  const apiBlocked = useBlockedUsers();
+  const unblockMutation = useUnblockUser();
+
+  const isLive = Boolean(sessionUser);
+  const blockedUsers =
+    isLive && apiBlocked.data
+      ? apiBlocked.data.items.map((b) => ({
+          id: b.id,
+          name: b.displayName,
+          handle: `@${b.handle.replace(/^@/, '')}`,
+        }))
+      : users
+          .filter((u) => blockedIds.includes(u.id))
+          .map((u) => ({ id: u.id, name: u.name, handle: u.handle }));
+
+  const handleUnblock = (userId: string) => {
+    if (isLive) {
+      unblockMutation.mutate(userId);
+    }
+    unblockUser(userId);
+  };
 
   const setTheme = (theme: Theme) => updateSettings({ theme });
 
@@ -76,37 +92,12 @@ export function SettingsScreen() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-7">
-        {/* HU06 — Cuenta / datos generales */}
-        <section>
-          <h2 className={sectionTitle}>Cuenta</h2>
-          <div className={card}>
-            <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--line-soft)]">
-              <div className="w-11 h-11 rounded-[14px] bg-[var(--brand)] flex items-center justify-center flex-none">
-                <span className="text-white font-['Space_Grotesk',sans-serif] font-bold text-[20px]">
-                  {(profile.name.trim()[0] || 'C').toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[15px] text-[var(--ink)] truncate">
-                  {profile.name}
-                </p>
-                <p className="text-[13px] text-[var(--muted)] truncate">
-                  {profile.handle}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/profile/edit')}
-              className="w-full flex items-center gap-3 px-4 py-4 hover:bg-[var(--surface-2)] transition-colors"
-            >
-              <User className="w-5 h-5 text-[var(--muted)]" />
-              <span className="flex-1 text-left text-[15px] text-[var(--ink)]">
-                Editar perfil
-              </span>
-              <ChevronRight className="w-5 h-5 text-[var(--muted)]" />
-            </button>
-          </div>
-        </section>
+        {/* HU06 — Cuenta: datos de la sesión real */}
+        <AccountInfo
+          user={sessionUser}
+          sectionTitle={sectionTitle}
+          card={card}
+        />
 
         {/* HU07 — Privacidad, contra la API (decisión 15) */}
         <PrivacySettings sectionTitle={sectionTitle} card={card} />
@@ -179,7 +170,7 @@ export function SettingsScreen() {
                     </p>
                   </div>
                   <button
-                    onClick={() => unblockUser(u.id)}
+                    onClick={() => handleUnblock(u.id)}
                     aria-label={`Desbloquear a ${u.name}`}
                     className="h-[32px] px-4 rounded-full text-[13px] font-semibold text-[var(--brand)] border-2 border-[var(--line)] hover:bg-[var(--tint)] transition-colors flex-none"
                   >
@@ -191,6 +182,9 @@ export function SettingsScreen() {
           </div>
         </section>
 
+        {/* Textos legales (decisión 12) */}
+        <LegalLinks sectionTitle={sectionTitle} card={card} />
+
         {/* Cerrar sesión (HU04): revoca la sesión en la API y vuelve al login */}
         <button
           onClick={() => {
@@ -201,6 +195,9 @@ export function SettingsScreen() {
           <LogOut className="w-5 h-5" />
           Cerrar sesión
         </button>
+
+        {/* HU05 — Desactivar cuenta, con contraseña (decisión 11) */}
+        <DeactivateAccount sectionTitle={sectionTitle} card={card} />
 
         <div className="h-6" />
       </div>

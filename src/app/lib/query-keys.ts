@@ -38,3 +38,31 @@ export const profileKeys = {
   view: (userId: string) => ['profiles', 'view', userId] as const,
   privacy: ['profiles', 'privacy'] as const,
 };
+
+/** Seguimiento y red (decisión 16): todo cuelga de ['follows']. */
+export const followKeys = {
+  all: ['follows'] as const,
+  followers: (userId: string) => ['follows', 'followers', userId] as const,
+  following: (userId: string) => ['follows', 'following', userId] as const,
+  requests: ['follows', 'requests'] as const,
+};
+
+/** Bloqueos (decisión 29): lista de usuarios bloqueados. */
+export const blockKeys = {
+  all: ['blocks'] as const,
+  list: ['blocks', 'list'] as const,
+};
+
+/** Búsqueda y descubrimiento (spec 0008, decisión 28). */
+export const searchKeys = {
+  all: ['search'] as const,
+  users: (q: string) => ['search', 'users', q] as const,
+  posts: (q: string) => ['search', 'posts', q] as const,
+  explore: () => ['explore', 'posts'] as const,
+};
+
+/** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
+export const reportKeys = {
+  sent: (targetType: string, targetId: string) =>
+    ['reports', 'sent', targetType, targetId] as const,
+};
