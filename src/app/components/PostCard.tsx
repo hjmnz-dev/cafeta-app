@@ -19,12 +19,19 @@ import {
   Ban,
   Check,
   Megaphone,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
 import { useBlockUser } from '../store/blocks-queries';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
-import { ReportDialog } from './ReportDialog';
+import type { ReactionType } from '../lib/reactions';
+import { CommentsPanel } from './CommentsPanel';
+import type { PostView } from '../lib/posts-api';
+import { useHasReported } from '../store/reports-queries';
+import { PostReactionButton } from './PostReactionButton';
+import { ReportTargetDialog } from './ReportTargetDialog';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -42,7 +49,9 @@ import { ReportDialog } from './ReportDialog';
  *
  * Con `live` (spec 0005) la publicación viene de la API: la autoría la decide
  * la pantalla, y se ocultan las acciones que todavía no tienen backend
- * (reaccionar, comentar, guardar, compartir, reportar). El menú de autor
+ * (compartir, reportar). Reaccionar (spec 0009, decisión 20) llega por
+ * `live.reaction`, comentar (decisión 21) abre el panel de comentarios y guardar
+ * (decisión 19) llega por `live.save`, solo en las publicaciones ajenas. El menú de autor
  * (editar, desactivar, eliminar) aparece cuando la pantalla pasa
  * `live.actions` (spec 0008, decisión 17). Sin `live` sigue igual para las
  * pantallas que aún usan AppState.
@@ -53,14 +62,41 @@ export interface LivePost {
   /** Para enlazar al perfil del autor (/u/:id), que aplica su privacidad. */
   authorId: string;
   isAnnouncement: boolean;
+  /** Estado de la publicación; solo las propias llegan archivadas o desactivadas. */
+  state?: PostView['state'];
   /** Acciones del autor contra la API (spec 0008, decisión 17); solo en las propias. */
   actions?: LiveAuthorActions;
+  /** Mi reacción contra la API (spec 0009, decisión 20). */
+  reaction: LiveReaction;
+  /** Guardar contra la API (spec 0009, decisión 19); no existe en las propias. */
+  save?: LiveSave;
+}
+
+export interface LiveSave {
+  /** La tengo guardada. */
+  saved: boolean;
+  /** Hay una petición en curso para esta publicación. */
+  busy: boolean;
+  /** Guarda o quita según el estado actual. */
+  toggle: () => void;
+}
+
+export interface LiveReaction {
+  /** Mi reacción activa; null si no he reaccionado. */
+  mine: ReactionType | null;
+  /** Hay una petición en curso para esta publicación. */
+  busy: boolean;
+  /** El tipo que queda; null cuando se quita. */
+  select: (type: ReactionType | null) => void;
 }
 
 export interface LiveAuthorActions {
   /** Resuelve true si la API guardó el cambio. */
   edit: (content: string) => Promise<boolean>;
   deactivate: () => void;
+  reactivate: () => void;
+  archive: () => void;
+  restore: () => void;
   remove: () => void;
   busy: boolean;
 }
@@ -138,22 +174,20 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     deactivatePost,
     reactivatePost,
     deletePost,
-    togglePostReaction,
     blockUser,
-    reportPost,
-    hasReported,
   } = useAppState();
   const own = live ? live.isMine : isOwnPost(post.id);
   const blockMutation = useBlockUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [confirming, setConfirming] = useState<null | 'deactivate' | 'delete'>(
     null,
   );
   const [reporting, setReporting] = useState(false);
-  const reported = hasReported('post', post.id);
+  const reported = useHasReported('POST', post.id);
 
   const startEdit = () => {
     setDraft(post.content);
@@ -229,19 +263,22 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                     Desactivada
                   </span>
                 )}
+                {live?.state === 'ARCHIVED' && (
+                  <span className="text-[var(--muted)] font-semibold text-[11px] bg-[var(--surface-3)] px-2 py-0.5 rounded-md">
+                    Archivada
+                  </span>
+                )}
               </div>
             </div>
 
-            {(!live || actions) && (
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label={`Opciones de la publicación de ${post.authorName}`}
-                aria-expanded={menuOpen}
-                className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
-              >
-                <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
-              </button>
-            )}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={`Opciones de la publicación de ${post.authorName}`}
+              aria-expanded={menuOpen}
+              className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
+            </button>
           </div>
 
           {/* Contenido */}
@@ -435,23 +472,59 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             </div>
           )}
 
-          {/* Con live, solo los conteos reales: reaccionar y comentar llegan
-              con sus funcionalidades (spec 0005). */}
+          {/* Con live, lo que ya tiene backend: reaccionar, comentar (spec 0009,
+              decisión 21) y los conteos reales (guardar llega con su funcionalidad). */}
           {live && (
-            <div className="flex items-center gap-1 pt-1 -ml-1.5">
-              <Count
-                icon={MessageCircle}
-                value={post.comments}
-                singular="comentario"
-                plural="comentarios"
-              />
-              <Count
-                icon={Heart}
-                value={post.likes}
-                singular="reacción"
-                plural="reacciones"
-              />
-            </div>
+            <>
+              <div className="flex items-center gap-1 pt-1 -ml-1.5">
+                <button
+                  onClick={() => setCommentsOpen((open) => !open)}
+                  aria-expanded={commentsOpen}
+                  aria-label={`${post.comments} ${post.comments === 1 ? 'comentario' : 'comentarios'}`}
+                  className="flex items-center gap-1.5 px-1.5 py-1 rounded-full text-[var(--muted)] hover:text-[var(--brand)] transition-colors"
+                >
+                  <MessageCircle
+                    className="w-[19px] h-[19px]"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[13px] font-medium" aria-hidden="true">
+                    {compact(post.comments)}
+                  </span>
+                </button>
+                <PostReactionButton
+                  count={post.likes}
+                  mine={live.reaction.mine}
+                  busy={live.reaction.busy}
+                  onSelect={live.reaction.select}
+                />
+                {live.save && (
+                  <button
+                    onClick={live.save.toggle}
+                    disabled={live.save.busy}
+                    aria-pressed={live.save.saved}
+                    aria-label={
+                      live.save.saved
+                        ? 'Quitar de guardados'
+                        : 'Guardar publicación'
+                    }
+                    className="ml-auto px-1.5 py-1 group disabled:opacity-60"
+                  >
+                    <Bookmark
+                      className={
+                        'w-[18px] h-[18px] transition-colors ' +
+                        (live.save.saved
+                          ? 'text-[var(--brand)] fill-[var(--brand)]'
+                          : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
+                      }
+                      aria-hidden="true"
+                    />
+                  </button>
+                )}
+              </div>
+              {commentsOpen && (
+                <CommentsPanel postId={post.id} count={post.comments} />
+              )}
+            </>
           )}
 
           {/* Interacciones (se conservan al editar, HU22) */}
@@ -468,32 +541,12 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                   </span>
                 </button>
 
-                {/* HU28 — Reaccionar: la marca propia se distingue del conteo total */}
-                <button
-                  onClick={() => togglePostReaction(post.id)}
-                  aria-label={post.liked ? 'Quitar reacción' : 'Me gusta'}
-                  aria-pressed={Boolean(post.liked)}
-                  className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
-                >
-                  <Heart
-                    className={
-                      'w-[19px] h-[19px] transition-all ' +
-                      (post.liked
-                        ? 'text-[var(--brand)] fill-[var(--brand)] scale-110'
-                        : 'text-[var(--muted)] group-hover:text-[var(--brand)]')
-                    }
-                  />
-                  <span
-                    className={
-                      'text-[13px] font-medium ' +
-                      (post.liked
-                        ? 'text-[var(--brand)]'
-                        : 'text-[var(--muted)]')
-                    }
-                  >
-                    {compact(post.likes)}
-                  </span>
-                </button>
+                <Count
+                  icon={Heart}
+                  value={post.likes}
+                  singular="reacción"
+                  plural="reacciones"
+                />
 
                 <button
                   className="flex items-center px-1.5 py-1 rounded-full group"
@@ -524,21 +577,26 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
           <div className="absolute top-12 right-4 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden w-[210px]">
             {!own && (
               <>
-                <button
-                  onClick={() => {
-                    setReporting(true);
-                    setMenuOpen(false);
-                  }}
-                  disabled={reported}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
-                >
-                  {reported ? (
-                    <Check className="w-4 h-4 text-[var(--muted)]" />
-                  ) : (
-                    <Flag className="w-4 h-4 text-[var(--muted)]" />
-                  )}
-                  {reported ? 'Publicación reportada' : 'Reportar publicación'}
-                </button>
+                {/* Solo las publicaciones reales se pueden reportar (HU56). */}
+                {live && (
+                  <button
+                    onClick={() => {
+                      setReporting(true);
+                      setMenuOpen(false);
+                    }}
+                    disabled={reported}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
+                  >
+                    {reported ? (
+                      <Check className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Flag className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {reported
+                      ? 'Publicación reportada'
+                      : 'Reportar publicación'}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (live || post.authorId.includes('-')) {
@@ -556,14 +614,33 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             )}
             {own && (
               <>
-                <button
-                  onClick={startEdit}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
-                >
-                  <Pencil className="w-4 h-4 text-[var(--muted)]" />
-                  Editar
-                </button>
-                {live || post.active ? (
+                {!(live && !post.active) && (
+                  <button
+                    onClick={startEdit}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                  >
+                    <Pencil className="w-4 h-4 text-[var(--muted)]" />
+                    Editar
+                  </button>
+                )}
+                {actions && post.active && (
+                  <button
+                    onClick={() => {
+                      if (live?.state === 'ARCHIVED') actions.restore();
+                      else actions.archive();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
+                  >
+                    {live?.state === 'ARCHIVED' ? (
+                      <ArchiveRestore className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Archive className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {live?.state === 'ARCHIVED' ? 'Restaurar' : 'Archivar'}
+                  </button>
+                )}
+                {post.active ? (
                   <button
                     onClick={() => {
                       setConfirming('deactivate');
@@ -577,7 +654,8 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 ) : (
                   <button
                     onClick={() => {
-                      reactivatePost(post.id);
+                      if (actions) actions.reactivate();
+                      else reactivatePost(post.id);
                       setMenuOpen(false);
                     }}
                     className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
@@ -603,15 +681,13 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
       )}
 
       {/* HU56 — Reportar publicación */}
-      {reporting && (
-        <ReportDialog
+      {reporting && live && (
+        <ReportTargetDialog
+          targetType="POST"
+          targetId={post.id}
           title="Reportar publicación"
           subject={`Publicación de ${post.authorName}`}
           onClose={() => setReporting(false)}
-          onConfirm={(reason) => {
-            reportPost(post.id, reason);
-            setReporting(false);
-          }}
         />
       )}
 

@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import {
   Settings,
+  Archive,
   Edit2,
   MapPin,
-  Calendar,
   Grid,
   Folder,
   Bookmark,
@@ -16,6 +16,7 @@ import {
   TAG_CATEGORIES,
   CURRENT_USER_ID,
 } from '../store/AppState';
+import { tagCategoryOf } from '../lib/profiles';
 import { PostCard } from './PostCard';
 import { LivePostList } from './LivePostList';
 import { useUserPostCount, useUserPosts } from '../store/posts-queries';
@@ -58,21 +59,21 @@ function EmptyTab({
 }
 
 export function ProfileScreen() {
-  const [activeTab, setActiveTab] = useState<'posts' | 'resources' | 'saved'>(
-    'posts',
-  );
+  const [activeTab, setActiveTab] = useState<'posts' | 'resources'>('posts');
   const navigate = useNavigate();
-  const { profile, posts } = useAppState();
+  const { posts } = useAppState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Mis publicaciones y su conteo vienen de la API (spec 0005); cabecera,
-  // recursos y guardados siguen con AppState hasta sus funcionalidades.
+  // y recursos siguen con AppState hasta sus funcionalidades. Los guardados
+  // viven en su propia pantalla (/profile/saved).
   const { user } = useSession();
   const myLivePosts = useUserPosts(user?.id);
   const postCount = useUserPostCount(user?.id);
   // Seguidores y seguidos reales (decisión 16); tocarlos abre Mi red.
   const myProfile = useProfile(user?.id ?? '', Boolean(user));
-  const counts = myProfile.data?.counts;
+  const me = myProfile.data;
+  const counts = me?.counts;
   const myPosts = posts.filter((p) => p.authorId === CURRENT_USER_ID);
 
   // Recursos: publicaciones propias que aportan material de estudio.
@@ -90,15 +91,24 @@ export function ProfileScreen() {
           al avatar, que es donde se leen de un vistazo. */}
       <div className="px-5 pt-14 pb-2 flex items-center justify-between gap-3">
         <p className="text-[var(--brand)] text-[13px] font-semibold truncate">
-          {profile.career} · INTEC
+          {me?.careerName ?? 'INTEC'} · INTEC
         </p>
-        <button
-          onClick={() => navigate('/settings')}
-          className="w-10 h-10 flex-none rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
-          aria-label="Configuración"
-        >
-          <Settings className="w-[20px] h-[20px]" />
-        </button>
+        <div className="flex items-center flex-none">
+          <button
+            onClick={() => navigate('/profile/archived')}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+            aria-label="Publicaciones archivadas"
+          >
+            <Archive className="w-[20px] h-[20px]" />
+          </button>
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+            aria-label="Configuración"
+          >
+            <Settings className="w-[20px] h-[20px]" />
+          </button>
+        </div>
       </div>
 
       <div className="px-5 pb-6">
@@ -153,17 +163,17 @@ export function ProfileScreen() {
         {/* Name and Handle */}
         <div className="mb-4">
           <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] leading-tight mb-1">
-            {profile.name}
+            {me?.displayName ?? user?.profile.displayName}
           </h1>
           <p className="text-[var(--muted)] text-[15px] font-medium">
-            {profile.handle}
+            @{me?.handle ?? user?.profile.handle}
           </p>
         </div>
 
         {/* Bio — si está vacía se guía en vez de dejar el hueco */}
-        {profile.bio.trim() ? (
+        {me?.bio?.trim() ? (
           <p className="text-[var(--ink)] text-[15px] leading-relaxed mb-4 break-words">
-            {profile.bio}
+            {me.bio}
           </p>
         ) : (
           <p className="text-[var(--muted)] text-[15px] italic leading-relaxed mb-4">
@@ -172,13 +182,13 @@ export function ProfileScreen() {
         )}
 
         {/* Tags — color por categoría (carrera / habilidad / interés). Ver leyenda abajo. */}
-        {profile.tags.length > 0 && (
+        {me && me.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
-            {profile.tags.map((t) => {
-              const cat = TAG_CATEGORIES[t.category];
+            {me.tags.map((t) => {
+              const cat = TAG_CATEGORIES[tagCategoryOf(t.category)];
               return (
                 <span
-                  key={t.label}
+                  key={`${t.category}:${t.label}`}
                   className="px-3 py-1 rounded-full text-[13px] font-semibold border shadow-sm"
                   style={{
                     background: cat.bg,
@@ -210,16 +220,12 @@ export function ProfileScreen() {
 
         {/* Info Icons */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[var(--muted)] text-[13px] font-medium mb-6">
-          {profile.location.trim() && (
+          {me?.location?.trim() && (
             <div className="flex items-center gap-1.5 min-w-0">
               <MapPin className="w-4 h-4 flex-none" />
-              <span className="truncate">{profile.location}</span>
+              <span className="truncate">{me.location}</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 flex-none" />
-            <span>Unido {profile.joined}</span>
-          </div>
         </div>
 
         {/* Editar perfil, a lo ancho: es la acción principal de esta pantalla */}
@@ -265,20 +271,13 @@ export function ProfileScreen() {
             )}
           </button>
 
+          {/* Guardados abre su propia pantalla (spec 0009, decisión 19) */}
           <button
-            onClick={() => setActiveTab('saved')}
-            className={cn(
-              'flex-1 pb-4 flex items-center justify-center gap-2 font-semibold text-[15px] transition-colors relative',
-              activeTab === 'saved'
-                ? 'text-[var(--brand)]'
-                : 'text-[var(--muted)]',
-            )}
+            onClick={() => navigate('/profile/saved')}
+            className="flex-1 pb-4 flex items-center justify-center gap-2 font-semibold text-[15px] transition-colors relative text-[var(--muted)]"
           >
             <Bookmark className="w-[18px] h-[18px]" />
             Guardados
-            {activeTab === 'saved' && (
-              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[var(--brand)] rounded-t-full shadow-[0_-2px_8px_rgba(214,40,40,0.5)]"></div>
-            )}
           </button>
         </div>
 
@@ -322,14 +321,6 @@ export function ProfileScreen() {
               ))}
             </div>
           ))}
-
-        {/* Guardados: sin marcadores todavía; se dice, en vez de rellenar */}
-        {activeTab === 'saved' && (
-          <EmptyTab
-            title="No tienes publicaciones guardadas"
-            detail="Usa el marcador de una publicación para guardarla y encontrarla aquí."
-          />
-        )}
       </div>
     </div>
   );

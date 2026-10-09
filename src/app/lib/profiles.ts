@@ -20,6 +20,14 @@ const TAG_CATEGORY: Readonly<
   INTEREST: 'interes',
 };
 
+/** Orden en que se ofrecen las categorías al editar etiquetas. */
+export const API_TAG_CATEGORIES: readonly ProfileView['tags'][number]['category'][] =
+  ['CAREER', 'SKILL', 'INTEREST'];
+
+/** Máximo de etiquetas por perfil (lo valida la API). */
+export const PROFILE_TAGS_MAX = 12;
+export const BIO_MAX = 160;
+
 /** La categoría de la API en la paleta de etiquetas de la app. */
 export function tagCategoryOf(
   category: ProfileView['tags'][number]['category'],
