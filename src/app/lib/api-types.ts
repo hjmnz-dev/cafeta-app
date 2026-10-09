@@ -679,6 +679,268 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/auth/forgot-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Pide un enlace por correo para restablecer la contraseña
+     * @description Responde igual exista o no la cuenta. El límite es de 3 pedidos por hora por IP.
+     */
+    post: operations['PasswordResetController_forgotPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/reset-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Pone una contraseña nueva con el token del correo
+     * @description El token sirve una sola vez y dura 30 minutos. Al usarlo se cierran todas las sesiones.
+     */
+    post: operations['PasswordResetController_resetPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/dashboard': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Métricas generales de la plataforma (solo admin) */
+    get: operations['AdminDashboardController_metrics'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/audit-logs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Bitácora de auditoría con filtros (solo admin) */
+    get: operations['AdminAuditController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/audit-logs/actions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Catálogo de acciones auditables (solo admin) */
+    get: operations['AdminAuditController_actions'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/announcements': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Todos los anuncios, activos y desactivados (solo admin) */
+    get: operations['AnnouncementsController_list'];
+    put?: never;
+    /** Publicar un anuncio oficial (solo admin) */
+    post: operations['AnnouncementsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista de usuarios con filtros (solo admin) */
+    get: operations['AdminUsersController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/users/{id}/deactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Desactivar una cuenta y cerrar sus sesiones */
+    post: operations['AdminUsersController_deactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/users/{id}/reactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reactivar una cuenta con su historial */
+    post: operations['AdminUsersController_reactivate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/users/{id}/verification': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Verificar o rechazar una cuenta pendiente */
+    post: operations['AdminUsersController_decide'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/reports/{kind}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Genera un informe (actividad o moderación) para ver en pantalla */
+    get: operations['AdminReportsController_generate'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/reports/{kind}/csv': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Descarga el informe en CSV (UTF 8 con BOM, abre bien en Excel) */
+    get: operations['AdminReportsController_download'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/community-reports': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Cola de reportes con filtros (solo admin) */
+    get: operations['ReportReviewController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/community-reports/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Detalle de un reporte y sus pendientes hermanos */
+    get: operations['ReportReviewController_detail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/community-reports/{id}/resolve': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Desestimar el reporte o sancionar al objetivo */
+    post: operations['ReportReviewController_resolve'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1124,6 +1386,242 @@ export interface components {
       status: 'PENDING' | 'SANCTIONED' | 'DISMISSED';
       /** Format: date-time */
       createdAt: string;
+    };
+    ForgotPasswordDto: {
+      /**
+       * Format: email
+       * @example 1113672@est.intec.edu.do
+       */
+      email: string;
+    };
+    ResetPasswordDto: {
+      /** @description El token del enlace del correo. */
+      token: string;
+      /** @description De 8 a 72 caracteres, con al menos una letra y un número (igual que al registrarse). */
+      password: string;
+    };
+    CountWithRecentDto: {
+      /** @description Total vigente. */
+      total: number;
+      /** @description Cuántos nacieron en los últimos 7 días. */
+      last7Days: number;
+    };
+    DashboardMetricsDto: {
+      /** @description Momento del cálculo, en ISO 8601. Las cifras no se guardan en caché. */
+      generatedAt: string;
+      /** @description Estudiantes con la cuenta activa (los admins no cuentan). */
+      users: components['schemas']['CountWithRecentDto'];
+      /** @description Publicaciones visibles: ni desactivadas ni archivadas. */
+      posts: components['schemas']['CountWithRecentDto'];
+      /** @description Historias vigentes: sin vencer y sin desactivar. */
+      activeStories: number;
+      /** @description Reportes en espera de revisión. */
+      pendingReports: number;
+      /** @description Cuentas de estudiantes activas que aún no se verifican. */
+      pendingVerifications: number;
+    };
+    /**
+     * @description Rol que tenía al actuar.
+     * @enum {string}
+     */
+    Role: 'STUDENT' | 'ADMIN';
+    AuditActorDto: {
+      /** @description Usuario de su perfil; null si no tiene. */
+      handle: string | null;
+      /** @description Rol que tenía al actuar. */
+      role: components['schemas']['Role'] | null;
+      id: string;
+      /** @example ana@est.intec.edu.do */
+      email: string;
+    };
+    AdminAuditEntryDto: {
+      /** @description Quién actuó; null si fue un intento sin sesión. */
+      actor: components['schemas']['AuditActorDto'] | null;
+      entityId: string | null;
+      /** @description Datos extra de la acción; su forma depende de la acción. */
+      metadata: {
+        [key: string]: unknown;
+      } | null;
+      ip: string | null;
+      id: string;
+      /** @description Cuándo ocurrió, en ISO 8601. */
+      createdAt: string;
+      /** @example post.create */
+      action: string;
+      /** @example post */
+      entityType: string;
+      /** @description false si el intento fue rechazado (por ejemplo `access.denied`). */
+      succeeded: boolean;
+    };
+    AdminAuditPageDto: {
+      /** @description id para pedir la página siguiente; null si no hay más. */
+      nextCursor: string | null;
+      items: components['schemas']['AdminAuditEntryDto'][];
+    };
+    AuditActionsDto: {
+      /** @description El catálogo de acciones auditables, para llenar un selector. */
+      actions: string[];
+    };
+    CreateAnnouncementDto: {
+      /** @description Texto del anuncio, de 1 a 2000 caracteres. */
+      content: string;
+      /** @description Claves que devolvió POST /uploads: hasta 4 imágenes, o 1 video, o 1 PDF. */
+      mediaKeys?: string[];
+    };
+    AdminAnnouncementViewDto: {
+      content: string | null;
+      editedAt: string | null;
+      deactivatedAt: string | null;
+      archivedAt: string | null;
+      id: string;
+      /** @description Fecha de publicación en ISO 8601. */
+      createdAt: string;
+      /** @description false si está desactivado o archivado: ya no sale en el feed. */
+      active: boolean;
+      /** @description Quién lo publicó (el admin autor). */
+      publishedBy: string;
+      media: components['schemas']['PostMediaDto'][];
+      reactionCount: number;
+      commentCount: number;
+    };
+    AdminAnnouncementPageDto: {
+      /** @description id para pedir la página siguiente; null si no hay más. */
+      nextCursor: string | null;
+      items: components['schemas']['AdminAnnouncementViewDto'][];
+    };
+    /** @enum {string} */
+    VerificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+    AdminUserViewDto: {
+      /** @description Nombre de la carrera; null si no tiene. */
+      career: string | null;
+      role: components['schemas']['Role'];
+      /** @description Cuándo se desactivó, en ISO 8601; null si está activa. */
+      deactivatedAt: string | null;
+      verificationStatus: components['schemas']['VerificationStatus'];
+      id: string;
+      /** @example ana@est.intec.edu.do */
+      email: string;
+      /** @example ana_intec */
+      handle: string;
+      displayName: string;
+      /** @description false si la cuenta está desactivada. */
+      active: boolean;
+      /** @description Fecha de registro en ISO 8601. */
+      createdAt: string;
+    };
+    AdminUserPageDto: {
+      /** @description id para pedir la página siguiente; null si no hay más. */
+      nextCursor: string | null;
+      items: components['schemas']['AdminUserViewDto'][];
+    };
+    AdminReasonDto: {
+      reason: string;
+    };
+    VerificationDecisionDto: {
+      /**
+       * @description VERIFIED aprueba la cuenta institucional; REJECTED la rechaza.
+       * @enum {string}
+       */
+      decision: 'VERIFIED' | 'REJECTED';
+    };
+    ReportTableDto: {
+      /** @enum {string} */
+      kind: 'activity' | 'moderation';
+      rows: (string | number)[][];
+      /** @description Nombre del informe. */
+      title: string;
+      /** @description Primer día del rango, YYYY-MM-DD. */
+      from: string;
+      /** @description Último día del rango, YYYY-MM-DD, inclusive. */
+      to: string;
+      /** @description Encabezados, en el mismo orden que las celdas de cada fila. */
+      columns: string[];
+      /** @description No hubo actividad registrada en el rango. */
+      isEmpty: boolean;
+    };
+    /** @enum {string} */
+    ReportTarget: 'USER' | 'POST';
+    /** @enum {string} */
+    ReportReason:
+      'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE' | 'IMPERSONATION' | 'OTHER';
+    /** @enum {string} */
+    ReportStatus: 'PENDING' | 'SANCTIONED' | 'DISMISSED';
+    ReportPersonDto: {
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+    };
+    AdminReportTargetDto: {
+      /** @description Usuario reportado; null si el objetivo es una publicación. */
+      userId: string | null;
+      /** @description Publicación reportada; null si es un usuario o ya fue borrada. */
+      postId: string | null;
+      /** @description Usuario reportado, o autor de la publicación; null si la borraron. */
+      handle: string | null;
+      displayName: string | null;
+      /** @description true si la cuenta o la publicación siguen activas; null si ya no existe. */
+      active: boolean | null;
+      /** @description Copia del texto de la publicación al momento del reporte. */
+      snapshot: string | null;
+      /** @description Texto actual de la publicación; null si fue borrada o no es publicación. */
+      currentContent: string | null;
+      /** @enum {string|null} */
+      postState: 'ACTIVE' | 'ARCHIVED' | 'DEACTIVATED' | 'DELETED' | null;
+    };
+    AdminReportViewDto: {
+      targetType: components['schemas']['ReportTarget'];
+      reason: components['schemas']['ReportReason'];
+      details: string | null;
+      status: components['schemas']['ReportStatus'];
+      resolvedBy: components['schemas']['ReportPersonDto'] | null;
+      resolvedAt: string | null;
+      resolutionNote: string | null;
+      id: string;
+      reporter: components['schemas']['ReportPersonDto'];
+      target: components['schemas']['AdminReportTargetDto'];
+      /** @description Otros reportes pendientes sobre el mismo objetivo. */
+      otherPending: number;
+      /** @description Fecha del reporte en ISO 8601. */
+      createdAt: string;
+    };
+    AdminReportPageDto: {
+      nextCursor: string | null;
+      items: components['schemas']['AdminReportViewDto'][];
+    };
+    RelatedReportDto: {
+      reason: components['schemas']['ReportReason'];
+      details: string | null;
+      id: string;
+      reporter: components['schemas']['ReportPersonDto'];
+      createdAt: string;
+    };
+    AdminReportDetailDto: {
+      targetType: components['schemas']['ReportTarget'];
+      reason: components['schemas']['ReportReason'];
+      details: string | null;
+      status: components['schemas']['ReportStatus'];
+      resolvedBy: components['schemas']['ReportPersonDto'] | null;
+      resolvedAt: string | null;
+      resolutionNote: string | null;
+      id: string;
+      reporter: components['schemas']['ReportPersonDto'];
+      target: components['schemas']['AdminReportTargetDto'];
+      /** @description Otros reportes pendientes sobre el mismo objetivo. */
+      otherPending: number;
+      /** @description Fecha del reporte en ISO 8601. */
+      createdAt: string;
+      /** @description Los otros reportes pendientes sobre el mismo objetivo, del más antiguo. */
+      related: components['schemas']['RelatedReportDto'][];
+    };
+    ResolveReportDto: {
+      /** @description Obligatoria al sancionar (3 a 500 caracteres); opcional al desestimar. */
+      note?: string;
+      /**
+       * @description DISMISS cierra solo este reporte; DEACTIVATE_TARGET sanciona al objetivo.
+       * @enum {string}
+       */
+      action: 'DISMISS' | 'DEACTIVATE_TARGET';
     };
   };
   responses: never;
@@ -2203,6 +2701,651 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ReportViewDto'];
         };
+      };
+    };
+  };
+  PasswordResetController_forgotPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ForgotPasswordDto'];
+      };
+    };
+    responses: {
+      /** @description Si la cuenta existe, el correo salió */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Más de 3 pedidos en una hora */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PasswordResetController_resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResetPasswordDto'];
+      };
+    };
+    responses: {
+      /** @description La contraseña cambió */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description RESET_TOKEN_INVALID (venció, ya se usó o no existe) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminDashboardController_metrics: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DashboardMetricsDto'];
+        };
+      };
+      /** @description Sin sesión */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description La cuenta no es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminAuditController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto en el correo o el usuario de quien actuó; ignora mayúsculas. */
+        actor?: string;
+        /** @description Una acción del catálogo, por ejemplo `post.create`. */
+        action?:
+          | 'account.register'
+          | 'account.deactivate'
+          | 'account.reactivate'
+          | 'account.verify'
+          | 'account.reject_verification'
+          | 'account.password_reset'
+          | 'profile.update'
+          | 'privacy.update'
+          | 'report.generate'
+          | 'post.create'
+          | 'post.update'
+          | 'post.archive'
+          | 'post.restore'
+          | 'post.deactivate'
+          | 'post.reactivate'
+          | 'post.delete'
+          | 'story.create'
+          | 'story.update'
+          | 'story.deactivate'
+          | 'post_comment.create'
+          | 'post_comment.update'
+          | 'post_comment.deactivate'
+          | 'story_comment.create'
+          | 'story_comment.update'
+          | 'story_comment.deactivate'
+          | 'message.update'
+          | 'message.deactivate'
+          | 'announcement.create'
+          | 'follow.create'
+          | 'follow.accept'
+          | 'follow.reject'
+          | 'follow.deactivate'
+          | 'block.create'
+          | 'block.deactivate'
+          | 'report.create'
+          | 'report.sanction'
+          | 'report.dismiss'
+          | 'access.denied'
+          | 'career.deactivate'
+          | 'career.reactivate'
+          | 'monitoring.test';
+        entityType?:
+          | 'user'
+          | 'profile'
+          | 'career'
+          | 'post'
+          | 'post_comment'
+          | 'story'
+          | 'story_comment'
+          | 'message'
+          | 'follow'
+          | 'block'
+          | 'report'
+          | 'route'
+          | 'monitoring';
+        /** @description `true` solo los que se completaron, `false` solo los rechazados. */
+        succeeded?: boolean;
+        /** @description Primer día, AAAA-MM-DD en hora de Santo Domingo (inclusivo). */
+        from?: string;
+        /** @description Último día, AAAA-MM-DD en hora de Santo Domingo (inclusivo). */
+        to?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAuditPageDto'];
+        };
+      };
+      /** @description Filtro inválido (VALIDATION_ERROR), rango de fechas inválido (INVALID_DATE_RANGE) o cursor ajeno (INVALID_CURSOR) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminAuditController_actions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AuditActionsDto'];
+        };
+      };
+      /** @description No es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AnnouncementsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAnnouncementPageDto'];
+        };
+      };
+      /** @description No es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AnnouncementsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateAnnouncementDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostViewDto'];
+        };
+      };
+      /** @description Texto vacío (POST_CONTENT_REQUIRED), adjunto ajeno (MEDIA_NOT_FOUND) o combinación inválida (MEDIA_COMBINATION_INVALID) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminUsersController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Texto en el correo, el usuario o el nombre; ignora mayúsculas. */
+        search?: string;
+        /** @description `active` (sin baja) o `inactive` (desactivadas). */
+        status?: 'active' | 'inactive';
+        verification?: 'PENDING' | 'VERIFIED' | 'REJECTED';
+        role?: 'STUDENT' | 'ADMIN';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminUserPageDto'];
+        };
+      };
+      /** @description No es admin (FORBIDDEN), o intenta actuar sobre sí mismo (CANNOT_ACT_ON_SELF) o sancionar a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminUsersController_deactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminReasonDto'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin (FORBIDDEN), o intenta actuar sobre sí mismo (CANNOT_ACT_ON_SELF) o sancionar a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Ya estaba desactivada: ALREADY_INACTIVE */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminUsersController_reactivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminReasonDto'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin (FORBIDDEN), o intenta actuar sobre sí mismo (CANNOT_ACT_ON_SELF) o sancionar a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Ya estaba activa: ALREADY_ACTIVE */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminUsersController_decide: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerificationDecisionDto'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin (FORBIDDEN), o intenta actuar sobre sí mismo (CANNOT_ACT_ON_SELF) o sancionar a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Ya tenía decisión: VERIFICATION_ALREADY_DECIDED */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminReportsController_generate: {
+    parameters: {
+      query: {
+        /** @description Primer día del rango. */
+        from: string;
+        /** @description Último día del rango, inclusive. */
+        to: string;
+      };
+      header?: never;
+      path: {
+        kind: 'activity' | 'moderation';
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReportTableDto'];
+        };
+      };
+      /** @description INVALID_DATE_RANGE, RANGE_TOO_LARGE o VALIDATION_ERROR */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Sin sesión */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description La cuenta no es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminReportsController_download: {
+    parameters: {
+      query: {
+        /** @description Primer día del rango. */
+        from: string;
+        /** @description Último día del rango, inclusive. */
+        to: string;
+      };
+      header?: never;
+      path: {
+        kind: 'activity' | 'moderation';
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Archivo CSV */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'text/csv': string;
+        };
+      };
+      /** @description INVALID_DATE_RANGE, RANGE_TOO_LARGE o VALIDATION_ERROR */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Sin sesión */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description La cuenta no es admin: FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ReportReviewController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description PENDING (por defecto), SANCTIONED o DISMISSED. */
+        status: 'PENDING' | 'SANCTIONED' | 'DISMISSED';
+        /** @description USER o POST; sin valor, de los dos. */
+        targetType?: 'USER' | 'POST';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminReportPageDto'];
+        };
+      };
+      /** @description No es admin (FORBIDDEN), o intenta sancionarse a sí mismo (CANNOT_ACT_ON_SELF) o a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ReportReviewController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminReportDetailDto'];
+        };
+      };
+      /** @description No es admin (FORBIDDEN), o intenta sancionarse a sí mismo (CANNOT_ACT_ON_SELF) o a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description REPORT_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ReportReviewController_resolve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResolveReportDto'];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No es admin (FORBIDDEN), o intenta sancionarse a sí mismo (CANNOT_ACT_ON_SELF) o a otro admin (CANNOT_SANCTION_ADMIN) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description REPORT_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description REPORT_ALREADY_RESOLVED */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
