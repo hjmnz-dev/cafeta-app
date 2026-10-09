@@ -53,6 +53,21 @@ describe('postsApi', () => {
     await postsApi.countByUser('u1');
     expect(lastCall().url).toBe(`${API_URL}/users/u1/posts/count`);
   });
+
+  it('funcionalidad 18: archivadas, archivar y restaurar cuelgan de /posts', async () => {
+    await postsApi.archived(null).catch(() => undefined);
+    expect(lastCall().url).toBe(`${API_URL}/posts/archived`);
+    await postsApi.archived('p20').catch(() => undefined);
+    expect(lastCall().url).toBe(`${API_URL}/posts/archived?cursor=p20`);
+
+    await postsApi.archive('p1').catch(() => undefined);
+    expect(lastCall().url).toBe(`${API_URL}/posts/p1/archive`);
+    expect(lastCall().init?.method).toBe('POST');
+
+    await postsApi.restore('p1').catch(() => undefined);
+    expect(lastCall().url).toBe(`${API_URL}/posts/p1/restore`);
+    expect(lastCall().init?.method).toBe('POST');
+  });
 });
 
 describe('postKeys', () => {
@@ -62,6 +77,7 @@ describe('postKeys', () => {
       postKeys.feed('c1'),
       postKeys.byAuthor('u1'),
       postKeys.count('u1'),
+      postKeys.archived,
     ];
     for (const key of keys) {
       expect(key.slice(0, postKeys.all.length)).toEqual([...postKeys.all]);

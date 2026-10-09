@@ -13,6 +13,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CAREER_NOT_FOUND: 'Elige una carrera de la lista.',
   INVALID_CREDENTIALS: 'Correo o contraseña incorrectos.',
   ACCOUNT_INACTIVE: 'Tu cuenta no está activa.',
+  RESET_TOKEN_INVALID: 'El enlace venció o ya se usó. Pide uno nuevo.',
   INVALID_PASSWORD: 'La contraseña no es correcta.',
   ADMIN_CANNOT_SELF_DEACTIVATE:
     'Un administrador no puede desactivar su propia cuenta.',
@@ -31,7 +32,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
   POST_NOT_FOUND: 'Esa publicación ya no existe.',
   NOT_POST_AUTHOR: 'Solo quien publicó puede cambiar esta publicación.',
-  POST_INACTIVE: 'Reactiva la publicación antes de editarla.',
+  POST_INACTIVE:
+    'Reactiva la publicación antes de editarla, archivarla o restaurarla.',
+  ALREADY_ARCHIVED: 'Esa publicación ya estaba archivada.',
+  NOT_ARCHIVED: 'Esa publicación no estaba archivada.',
   POST_FIELD_NOT_ALLOWED: 'Ese dato no aplica a este tipo de publicación.',
   MEDIA_COMBINATION_INVALID:
     'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',
@@ -42,6 +46,11 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
   ALREADY_INACTIVE: 'Esto ya estaba desactivado.',
+  CANNOT_SAVE_OWN_POST: 'No puedes guardar tu propia publicación.',
+  COMMENT_EMPTY: 'Escribe algo antes de comentar.',
+  COMMENT_TOO_LONG: 'Un comentario admite hasta 500 caracteres.',
+  COMMENT_NOT_FOUND: 'Este comentario ya no está disponible.',
+  NOT_COMMENT_AUTHOR: 'Solo quien escribió el comentario puede cambiarlo.',
   STORY_NOT_FOUND: 'Esta historia ya no está disponible.',
   NOT_STORY_AUTHOR: 'Solo quien publicó la historia puede cambiarla.',
   STORY_EXPIRED: 'Esta historia ya venció y no se puede cambiar.',
@@ -51,7 +60,12 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CANNOT_FOLLOW_SELF: 'No puedes seguirte a ti mismo.',
   FOLLOW_NOT_FOUND: 'No sigues a este usuario.',
   FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
+  TAG_DUPLICATED: 'Hay etiquetas repetidas. Quita una.',
   PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
+  CANNOT_REPORT_SELF: 'No puedes reportarte a ti mismo ni a tu publicación.',
+  DETAILS_REQUIRED: 'Cuéntanos qué pasó para poder enviar el reporte.',
+  REPORT_ALREADY_PENDING:
+    'Ya reportaste esto, un administrador lo está revisando.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';

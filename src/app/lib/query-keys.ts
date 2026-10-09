@@ -8,7 +8,26 @@ export const postKeys = {
   feed: (careerId: string | null) => ['posts', 'feed', careerId] as const,
   byAuthor: (userId: string) => ['posts', 'author', userId] as const,
   count: (userId: string) => ['posts', 'count', userId] as const,
+  /** Mis guardadas (spec 0009, decisión 19). */
+  saved: ['posts', 'saved'] as const,
+  /** Mis archivadas y desactivadas (solo las veo yo). */
+  archived: ['posts', 'archived'] as const,
 };
+
+/**
+ * ¿La clave es una lista paginada de publicaciones (feed, perfil, guardadas,
+ * búsqueda o explorar)? Reacciones y guardados se ajustan en todas a la vez; el conteo de un
+ * perfil (['posts', 'count', …]) no es una lista.
+ */
+export function isPostListKey(key: readonly unknown[]): boolean {
+  const [root, kind] = key;
+  return (
+    (root === 'posts' &&
+      (kind === 'feed' || kind === 'author' || kind === 'saved')) ||
+    (root === 'search' && kind === 'posts') ||
+    (root === 'explore' && kind === 'posts')
+  );
+}
 
 export const careerKeys = {
   all: ['careers'] as const,
@@ -57,6 +76,18 @@ export const searchKeys = {
   users: (q: string) => ['search', 'users', q] as const,
   posts: (q: string) => ['search', 'posts', q] as const,
   explore: () => ['explore', 'posts'] as const,
+};
+
+/** Comentarios (spec 0009, decisión 21): los de cada publicación. */
+export const commentKeys = {
+  all: ['comments'] as const,
+  post: (postId: string) => ['comments', 'post', postId] as const,
+};
+
+/** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
+export const reportKeys = {
+  sent: (targetType: string, targetId: string) =>
+    ['reports', 'sent', targetType, targetId] as const,
 };
 
 /** Historias (decisión 22): todo cuelga de ['stories']. */

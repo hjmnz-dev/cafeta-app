@@ -2,9 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfileScreen } from './ProfileScreen';
-import { EditProfileScreen } from './EditProfileScreen';
 import { renderWithProviders, renderRoutes } from '../../test/utils';
-import { page, postView, signIn, TEST_USER } from '../../test/api';
+import {
+  myProfileView,
+  page,
+  postView,
+  signIn,
+  TEST_USER,
+} from '../../test/api';
 import { json } from '../../test/setup';
 
 describe('DEF-08 — La información del perfil refleja el estado real', () => {
@@ -148,34 +153,32 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
   });
 
   it('sin biografía se explica el vacío en lugar de dejar el hueco', async () => {
-    const user = userEvent.setup();
-    renderRoutes(
-      [
-        { path: '/profile/edit', element: <EditProfileScreen /> },
-        { path: '/profile', element: <ProfileScreen /> },
-      ],
-      { route: '/profile/edit' },
+    signIn((url) =>
+      url.pathname.endsWith(`/users/${TEST_USER.id}/profile`)
+        ? json(200, myProfileView({ bio: null, location: null, tags: [] }))
+        : undefined,
     );
-
-    // El campo no está asociado a su etiqueta, se localiza por su contenido.
-    await user.clear(screen.getByDisplayValue(/desarrollo web/i));
-    await user.click(screen.getByRole('button', { name: /guardar/i }));
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
     expect(
-      screen.getByText(/aún no has escrito una biografía/i),
+      await screen.findByText(/aún no has escrito una biografía/i),
     ).toBeInTheDocument();
   });
 
-  it('las pestañas muestran contenido propio o un vacío explicado, no fotos de relleno', async () => {
+  it('Recursos muestra un vacío explicado, no fotos de relleno', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
     await user.click(screen.getByRole('button', { name: /recursos/i }));
     expect(screen.getByText(/no has compartido recursos/i)).toBeInTheDocument();
+  });
+
+  it('decisión 19 — Guardados abre su propia pantalla en /profile/saved', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
     await user.click(screen.getByRole('button', { name: /guardados/i }));
-    expect(
-      screen.getByText(/no tienes publicaciones guardadas/i),
-    ).toBeInTheDocument();
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/profile/saved');
   });
 });

@@ -87,30 +87,6 @@ export interface Post {
   videoUrl?: string;
   /** PDF adjunto (enlace de Blob, spec 0008 decisión 13). */
   documentUrl?: string;
-  /** ¿El usuario actual reaccionó a esta publicación? (HU28) */
-  liked?: boolean;
-}
-
-/** Motivos de denuncia ofrecidos al reportar (HU55/HU56). */
-export const REPORT_REASONS = [
-  'Contenido inapropiado',
-  'Acoso o intimidación',
-  'Spam o publicidad',
-  'Suplantación de identidad',
-  'Otro',
-] as const;
-
-/**
- * Denuncia levantada por el usuario (FT11). Sin backend queda registrada en el
- * cliente; es el insumo del proceso de revisión administrativa (FT10), que se
- * atiende en la aplicación de escritorio.
- */
-export interface Report {
-  id: string;
-  targetType: 'user' | 'post';
-  targetId: string;
-  reason: string;
-  createdAt: number;
 }
 
 /**
@@ -207,8 +183,6 @@ interface AppStateValue {
   editStoryComment: (storyId: string, commentId: string, text: string) => void;
   /** Desactivar un comentario propio — baja lógica (HU19). */
   deactivateStoryComment: (storyId: string, commentId: string) => void;
-  /** Reaccionar a una publicación; repetir la acción retira la reacción (HU28). */
-  togglePostReaction: (id: string) => void;
   // ── Mensajería (DEF-06 · HU35-HU37) ──
   messages: Message[];
   /** Mensajes visibles de una conversación (los retirados no se muestran). */
@@ -227,13 +201,6 @@ interface AppStateValue {
   blockUser: (id: string) => void;
   /** Desbloquear (HU54). No restaura el seguimiento anterior. */
   unblockUser: (id: string) => void;
-  reports: Report[];
-  /** Reportar a un usuario (HU55). */
-  reportUser: (id: string, reason: string) => void;
-  /** Reportar una publicación (HU56). */
-  reportPost: (id: string, reason: string) => void;
-  /** ¿Ya se reportó este objetivo? Evita duplicar la denuncia. */
-  hasReported: (targetType: Report['targetType'], targetId: string) => boolean;
 }
 
 const DEFAULT_PROFILE: Profile = {
@@ -614,7 +581,6 @@ interface PersistedState {
   stories: Story[];
   messages: Message[];
   blocked: string[];
-  reports: Report[];
 }
 
 function load(): PersistedState {
@@ -638,7 +604,6 @@ function load(): PersistedState {
           ? parsed.messages
           : SAMPLE_MESSAGES,
         blocked: Array.isArray(parsed.blocked) ? parsed.blocked : [],
-        reports: Array.isArray(parsed.reports) ? parsed.reports : [],
       };
     }
   } catch {
@@ -653,7 +618,6 @@ function load(): PersistedState {
     stories: sampleStories(),
     messages: SAMPLE_MESSAGES,
     blocked: [],
-    reports: [],
   };
 }
 
@@ -665,9 +629,6 @@ const nextCommentId = () => `sc-${++commentSeq}`;
 
 let messageSeq = 0;
 const nextMessageId = () => `msg-${++messageSeq}`;
-
-let reportSeq = 0;
-const nextReportId = () => `rep-${++reportSeq}`;
 
 const AppStateContext = createContext<AppStateValue | null>(null);
 
@@ -682,7 +643,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       stories,
       messages,
       blocked,
-      reports,
     },
     setState,
   ] = useState(load);
@@ -697,7 +657,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       stories,
       messages,
       blocked,
-      reports,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -726,7 +685,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     stories,
     messages,
     blocked,
-    reports,
   ]);
 
   const updateProfile = (patch: Partial<Profile>) =>
@@ -801,18 +759,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const deactivatePost = (id: string) => setActive(id, false);
   const reactivatePost = (id: string) => setActive(id, true);
-
-  // HU28: una reacción por persona. Se guarda la marca propia y se ajusta el
-  // contador, que ya venía con las reacciones de los demás.
-  const togglePostReaction = (id: string) =>
-    setState((s) => ({
-      ...s,
-      posts: s.posts.map((p) =>
-        p.id === id
-          ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) }
-          : p,
-      ),
-    }));
 
   const deletePost = (id: string) =>
     setState((s) => ({
@@ -1001,39 +947,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const unblockUser = (id: string) =>
     setState((s) => ({ ...s, blocked: s.blocked.filter((x) => x !== id) }));
 
-  const addReport = (
-    targetType: Report['targetType'],
-    targetId: string,
-    reason: string,
-  ) =>
-    setState((s) =>
-      s.reports.some(
-        (r) => r.targetType === targetType && r.targetId === targetId,
-      )
-        ? s // ya reportado: no se duplica la denuncia
-        : {
-            ...s,
-            reports: [
-              ...s.reports,
-              {
-                id: nextReportId(),
-                targetType,
-                targetId,
-                reason,
-                createdAt: Date.now(),
-              },
-            ],
-          },
-    );
-
-  const reportUser = (id: string, reason: string) =>
-    addReport('user', id, reason);
-  const reportPost = (id: string, reason: string) =>
-    addReport('post', id, reason);
-
-  const hasReported = (targetType: Report['targetType'], targetId: string) =>
-    reports.some((r) => r.targetType === targetType && r.targetId === targetId);
-
   return (
     <AppStateContext.Provider
       value={{
@@ -1062,7 +975,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         addStoryComment,
         editStoryComment,
         deactivateStoryComment,
-        togglePostReaction,
         messages,
         conversationMessages,
         sendMessage,
@@ -1072,10 +984,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         isBlocked,
         blockUser,
         unblockUser,
-        reports,
-        reportUser,
-        reportPost,
-        hasReported,
       }}
     >
       {children}
