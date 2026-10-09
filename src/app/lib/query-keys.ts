@@ -75,6 +75,12 @@ export const searchKeys = {
   explore: () => ['explore', 'posts'] as const,
 };
 
+/** Comentarios (spec 0009, decisión 21): los de cada publicación. */
+export const commentKeys = {
+  all: ['comments'] as const,
+  post: (postId: string) => ['comments', 'post', postId] as const,
+};
+
 /** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
 export const reportKeys = {
   sent: (targetType: string, targetId: string) =>

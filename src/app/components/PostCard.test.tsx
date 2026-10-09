@@ -332,12 +332,13 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
       card.getByRole('button', { name: 'Reaccionar. 12 reacciones' }),
     ).toBeInTheDocument();
     expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
-    // Sin backend todavía: ni comentar, guardar ni asistir. Quedan el menú de una
-    // publicación ajena (solo ofrece reportar) y reaccionar.
+    // Sin backend todavía: ni guardar ni asistir. Quedan el menú de una publicación
+    // ajena (solo ofrece reportar), comentar y reaccionar.
     expect(
       card.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
     ).toEqual([
       'Opciones de la publicación de Juan Pérez',
+      '3 comentarios',
       'Reaccionar. 12 reacciones',
     ]);
     // Sin foto: la inicial en un círculo.
