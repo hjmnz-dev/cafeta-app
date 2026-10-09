@@ -116,6 +116,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/archived': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PostsController_archived'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_archive'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/posts/{id}/restore': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PostsController_restore'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/posts/feed': {
     parameters: {
       query?: never;
@@ -1061,6 +1109,11 @@ export interface components {
       | 'CODE'
       | 'STUDY_GROUP'
       | 'ANNOUNCEMENT';
+    /**
+     * @description ACTIVE se ve en el feed y el perfil; ARCHIVED y DEACTIVATED solo las ve su autor.
+     * @enum {string}
+     */
+    PostState: 'ACTIVE' | 'ARCHIVED' | 'DEACTIVATED';
     /** @enum {string} */
     MediaType: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
     PostMediaDto: {
@@ -1085,6 +1138,8 @@ export interface components {
       content: string | null;
       /** @example Biblioteca */
       location: string | null;
+      /** @description ACTIVE se ve en el feed y el perfil; ARCHIVED y DEACTIVATED solo las ve su autor. */
+      state: components['schemas']['PostState'];
       editedAt: string | null;
       eventStartsAt: string | null;
       eventLocation: string | null;
@@ -1821,15 +1876,77 @@ export interface operations {
       };
     };
   };
-  PostsController_feed: {
+  PostsController_archived: {
     parameters: {
       query: {
-        /** @description Sin careerId es "Para ti"; con él, la pestaña de esa carrera. */
-        careerId?: string;
         /** @description id de la última publicación de la página anterior. */
         cursor?: string;
         /** @description De 1 a 50; 20 si no se envía. */
         limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostPageDto'];
+        };
+      };
+    };
+  };
+  PostsController_archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_restore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PostsController_feed: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+        /** @description Sin careerId es "Para ti"; con él, la pestaña de esa carrera. */
+        careerId?: string;
       };
       header?: never;
       path?: never;

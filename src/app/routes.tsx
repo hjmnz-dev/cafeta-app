@@ -10,6 +10,7 @@ import { CreatePostScreen } from './components/CreatePostScreen';
 import { ForgotPasswordScreen } from './components/ForgotPasswordScreen';
 import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 import { EditProfileScreen } from './components/EditProfileScreen';
+import { ArchivedPostsScreen } from './components/ArchivedPostsScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { UserProfileScreen } from './components/UserProfileScreen';
 import { PeopleScreen } from './components/PeopleScreen';
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
         Component: RequireAuth,
         children: [
           { path: 'profile/edit', Component: EditProfileScreen },
+          { path: 'profile/archived', Component: ArchivedPostsScreen },
           { path: 'settings', Component: SettingsScreen },
           { path: 'home', Component: FeedScreen },
           // Enlace viejo: las pestañas de carrera viven en /home?carrera=<id>.

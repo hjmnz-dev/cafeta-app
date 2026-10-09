@@ -214,3 +214,75 @@ describe('Spec 0008 decisión 17 — Acciones del autor en la tarjeta', () => {
     ).toBeInTheDocument();
   });
 });
+
+// Archivar y restaurar desde la tarjeta (HU21; spec 0008, funcionalidad 18).
+describe('HU21 — Archivar, restaurar y reactivar desde la tarjeta', () => {
+  it('E1: Archivar llama a /archive sin pedir confirmar y avisa', async () => {
+    const user = userEvent.setup();
+    const calls = fakeApi();
+    renderCard(mine());
+
+    await openMenu(user);
+    await user.click(screen.getByRole('button', { name: 'Archivar' }));
+
+    await waitFor(() =>
+      expect(calls).toEqual([
+        { method: 'POST', path: '/posts/mia/archive', body: undefined },
+      ]),
+    );
+    expect(await screen.findByText('Publicación archivada.')).toBeVisible();
+  });
+
+  it('E2: una archivada ofrece Restaurar (no Archivar) y llama a /restore', async () => {
+    const user = userEvent.setup();
+    const calls = fakeApi();
+    renderCard(mine({ state: 'ARCHIVED' }));
+
+    expect(screen.getByText('Archivada')).toBeInTheDocument();
+    await openMenu(user);
+    expect(
+      screen.queryByRole('button', { name: 'Archivar' }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Restaurar' }));
+
+    await waitFor(() =>
+      expect(calls).toEqual([
+        { method: 'POST', path: '/posts/mia/restore', body: undefined },
+      ]),
+    );
+    expect(await screen.findByText('Publicación restaurada.')).toBeVisible();
+  });
+
+  it('una desactivada ofrece Reactivar, y ni editar ni archivar', async () => {
+    const user = userEvent.setup();
+    const calls = fakeApi();
+    renderCard(mine({ state: 'DEACTIVATED' }));
+
+    expect(screen.getByText('Desactivada')).toBeInTheDocument();
+    await openMenu(user);
+    for (const name of ['Editar', 'Archivar', 'Restaurar', 'Desactivar']) {
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    }
+    await user.click(screen.getByRole('button', { name: 'Reactivar' }));
+
+    await waitFor(() =>
+      expect(calls).toEqual([
+        { method: 'POST', path: '/posts/mia/reactivate', body: undefined },
+      ]),
+    );
+    expect(await screen.findByText('Publicación reactivada.')).toBeVisible();
+  });
+
+  it('si la API rechaza archivar, muestra el mensaje traducido', async () => {
+    const user = userEvent.setup();
+    fakeApi(409, 'ALREADY_ARCHIVED');
+    renderCard(mine());
+
+    await openMenu(user);
+    await user.click(screen.getByRole('button', { name: 'Archivar' }));
+
+    expect(
+      await screen.findByText('Esa publicación ya estaba archivada.'),
+    ).toBeInTheDocument();
+  });
+});

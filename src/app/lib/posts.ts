@@ -70,7 +70,7 @@ export function toCardPost(view: PostView, now: Date): Post {
     content: view.content ?? '',
     likes: view.reactionCount,
     comments: view.commentCount,
-    active: true,
+    active: view.state !== 'DEACTIVATED',
     edited: view.editedAt !== null,
     eventDate: view.eventStartsAt
       ? EVENT_DATE.format(new Date(view.eventStartsAt))
