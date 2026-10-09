@@ -4,6 +4,7 @@
  */
 import type { components } from './api-types';
 import { apiRequest } from './http';
+import type { ReactionType } from './reactions';
 
 type Schemas = components['schemas'];
 export type StoryView = Schemas['StoryViewDto'];
@@ -12,6 +13,7 @@ export type StoryGroup = Schemas['StoryGroupDto'];
 export type StoryTray = Schemas['StoryTrayDto'];
 export type CreateStory = Schemas['CreateStoryDto'];
 export type EditStory = Schemas['EditStoryDto'];
+export type StoryReactionState = Schemas['StoryReactionStateDto'];
 
 export const storiesApi = {
   /** Historias vigentes de quienes sigo y las mías, agrupadas por autor. */
@@ -23,4 +25,14 @@ export const storiesApi = {
     apiRequest<StoryView>(`/stories/${id}`, { method: 'PATCH', body: input }),
   deactivate: (id: string) =>
     apiRequest<void>(`/stories/${id}/deactivate`, { method: 'POST' }),
+  // Reacciones (spec 0009, decisión 24): poner o cambiar, y quitar.
+  react: (id: string, type: ReactionType) =>
+    apiRequest<StoryReactionState>(`/stories/${id}/reaction`, {
+      method: 'PUT',
+      body: { type },
+    }),
+  unreact: (id: string) =>
+    apiRequest<StoryReactionState>(`/stories/${id}/reaction`, {
+      method: 'DELETE',
+    }),
 };

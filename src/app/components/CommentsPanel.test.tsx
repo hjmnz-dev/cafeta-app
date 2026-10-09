@@ -86,7 +86,7 @@ function renderPanel(
   });
   renderWithProviders(
     <>
-      <CommentsPanel postId={POST} count={count} />
+      <CommentsPanel target={{ kind: 'posts', id: POST }} count={count} />
       <Toaster />
     </>,
     { route: '/home' },

@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { EyeOff, MoreHorizontal, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { COMMENT_MAX, type CommentView } from '../lib/comments-api';
+import {
+  COMMENT_MAX,
+  type CommentTarget,
+  type CommentView,
+} from '../lib/comments-api';
 import { userMessageOf } from '../lib/http';
 import { countChars, relativeTime } from '../lib/posts';
 import {
@@ -11,7 +15,8 @@ import {
 } from '../store/comments-queries';
 
 /**
- * HU21 a HU24 · Un comentario de una publicación (decisión 21).
+ * HU21 a HU24 · Un comentario de una publicación (decisión 21) o de una
+ * historia (decisión 24).
  *
  * Los ajenos solo se leen. Los propios traen un menú con Editar (en el mismo
  * lugar, con contador de 500) y Desactivar (pide confirmar, porque no se puede
@@ -24,11 +29,11 @@ const ITEM =
   'w-full px-4 py-2.5 flex items-center gap-3 text-[13px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors';
 
 export function CommentItem({
-  postId,
+  target,
   comment,
   now,
 }: {
-  postId: string;
+  target: CommentTarget;
   comment: CommentView;
   now: Date;
 }) {
@@ -44,7 +49,7 @@ export function CommentItem({
 
   const save = () =>
     editComment.mutate(
-      { postId, commentId: comment.id, content: draft.trim() },
+      { target, commentId: comment.id, content: draft.trim() },
       {
         onSuccess: () => {
           toast.success('Comentario actualizado');
@@ -56,7 +61,7 @@ export function CommentItem({
 
   const deactivate = () =>
     deactivateComment.mutate(
-      { postId, commentId: comment.id },
+      { target, commentId: comment.id },
       {
         onSuccess: () => toast.success('Comentario desactivado'),
         onError: (error) => {

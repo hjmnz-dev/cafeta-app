@@ -78,12 +78,6 @@ export const searchKeys = {
   explore: () => ['explore', 'posts'] as const,
 };
 
-/** Comentarios (spec 0009, decisión 21): los de cada publicación. */
-export const commentKeys = {
-  all: ['comments'] as const,
-  post: (postId: string) => ['comments', 'post', postId] as const,
-};
-
 /** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
 export const reportKeys = {
   sent: (targetType: string, targetId: string) =>
@@ -94,4 +88,11 @@ export const reportKeys = {
 export const storyKeys = {
   all: ['stories'] as const,
   tray: ['stories', 'tray'] as const,
+};
+
+/** Comentarios (spec 0009, decisiones 21 y 24): los de cada publicación o historia. */
+export const commentKeys = {
+  all: ['comments'] as const,
+  of: (target: { kind: 'posts' | 'stories'; id: string }) =>
+    ['comments', target.kind, target.id] as const,
 };

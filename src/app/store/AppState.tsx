@@ -105,38 +105,6 @@ export interface Message {
   active: boolean; // HU37
 }
 
-/** Comentario de una historia (HU17-HU19). */
-export interface StoryComment {
-  id: string;
-  authorId: string;
-  authorName: string;
-  text: string;
-  edited: boolean; // HU18
-  active: boolean; // HU19 — baja lógica, mismo criterio que en publicaciones
-}
-
-/**
- * Historia (FT04): contenido efímero. A diferencia de una publicación, deja de
- * mostrarse cuando vence su ventana de vigencia (ver lib/stories.ts), aunque su
- * registro se conserve para trazabilidad.
- */
-export interface Story {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar: string;
-  text: string;
-  /** Imagen opcional como data URL (ver lib/image.ts). */
-  image?: string;
-  /** Publicación en epoch ms — base del cálculo de vigencia (HU13). */
-  createdAt: number;
-  active: boolean; // HU15
-  edited: boolean; // HU14
-  /** Reacción rápida por usuario: id de usuario → emoji (HU16). Una por persona. */
-  reactions: Record<string, string>;
-  comments: StoryComment[];
-}
-
 interface AppStateValue {
   profile: Profile;
   updateProfile: (patch: Partial<Profile>) => void;
@@ -165,24 +133,6 @@ interface AppStateValue {
   reactivatePost: (id: string) => void;
   /** Eliminar publicación propia — borrado físico permanente (HU23, decisión de negocio). */
   deletePost: (id: string) => void;
-  // ── Historias (DEF-04 · FT04) ──
-  stories: Story[];
-  /** ¿La historia es del usuario actual? (validación de autoría) */
-  isOwnStory: (id: string) => boolean;
-  /** Publicar historia (HU12). */
-  addStory: (story: { text: string; image?: string }) => void;
-  /** Editar historia propia mientras siga vigente (HU14). */
-  editStory: (id: string, text: string) => void;
-  /** Desactivar historia propia — baja lógica, conserva el registro (HU15). */
-  deactivateStory: (id: string) => void;
-  /** Reaccionar a una historia; repetir el mismo emoji retira la reacción (HU16). */
-  reactToStory: (id: string, emoji: string) => void;
-  /** Comentar una historia (HU17). */
-  addStoryComment: (storyId: string, text: string) => void;
-  /** Editar un comentario propio de historia (HU18). */
-  editStoryComment: (storyId: string, commentId: string, text: string) => void;
-  /** Desactivar un comentario propio — baja lógica (HU19). */
-  deactivateStoryComment: (storyId: string, commentId: string) => void;
   // ── Mensajería (DEF-06 · HU35-HU37) ──
   messages: Message[];
   /** Mensajes visibles de una conversación (los retirados no se muestran). */
@@ -407,52 +357,6 @@ const SAMPLE_POSTS: Post[] = [
   },
 ];
 
-const HOUR = 60 * 60 * 1000;
-
-/**
- * Historias de demostración. La fecha se calcula al arrancar en vez de
- * escribirse a mano: una historia con fecha fija estaría vencida al día
- * siguiente y el ejemplo dejaría de verse.
- */
-const sampleStories = (): Story[] => [
-  {
-    id: 's1',
-    authorId: 'maria',
-    authorName: 'María Rodríguez',
-    authorAvatar: AV('photo-1557353425-09253747c2bf'),
-    text: 'Maratón de estudio en la biblioteca hasta que cierre. ☕',
-    createdAt: Date.now() - 1 * HOUR,
-    active: true,
-    edited: false,
-    reactions: {},
-    comments: [],
-  },
-  {
-    id: 's2',
-    authorId: 'juan',
-    authorName: 'Juan Pérez',
-    authorAvatar: AV('photo-1611695434369-a8f5d76ceb7b'),
-    text: 'Fila enorme en la cafetería, avisados quedan.',
-    createdAt: Date.now() - 5 * HOUR,
-    active: true,
-    edited: false,
-    reactions: {},
-    comments: [],
-  },
-  {
-    id: 's3',
-    authorId: 'laura',
-    authorName: 'Laura Batista',
-    authorAvatar: AV('photo-1570078070514-1f84a3cf1736'),
-    text: 'Terminamos el prototipo del proyecto final. 🎉',
-    createdAt: Date.now() - 20 * HOUR,
-    active: true,
-    edited: false,
-    reactions: {},
-    comments: [],
-  },
-];
-
 /**
  * Conversación de demostración con María (id '1'), la que aparece abierta en la
  * lista de mensajes. El resto arranca con el último mensaje que muestra la
@@ -578,7 +482,6 @@ interface PersistedState {
   following: string[];
   pending: string[];
   posts: Post[];
-  stories: Story[];
   messages: Message[];
   blocked: string[];
 }
@@ -597,9 +500,6 @@ function load(): PersistedState {
         following: Array.isArray(parsed.following) ? parsed.following : [],
         pending: Array.isArray(parsed.pending) ? parsed.pending : [],
         posts: Array.isArray(parsed.posts) ? parsed.posts : SAMPLE_POSTS,
-        stories: Array.isArray(parsed.stories)
-          ? parsed.stories
-          : sampleStories(),
         messages: Array.isArray(parsed.messages)
           ? parsed.messages
           : SAMPLE_MESSAGES,
@@ -615,17 +515,10 @@ function load(): PersistedState {
     following: [],
     pending: [],
     posts: SAMPLE_POSTS,
-    stories: sampleStories(),
     messages: SAMPLE_MESSAGES,
     blocked: [],
   };
 }
-
-let storySeq = 0;
-const nextStoryId = () => `story-${++storySeq}`;
-
-let commentSeq = 0;
-const nextCommentId = () => `sc-${++commentSeq}`;
 
 let messageSeq = 0;
 const nextMessageId = () => `msg-${++messageSeq}`;
@@ -634,16 +527,7 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [
-    {
-      profile,
-      settings,
-      following,
-      pending,
-      posts,
-      stories,
-      messages,
-      blocked,
-    },
+    { profile, settings, following, pending, posts, messages, blocked },
     setState,
   ] = useState(load);
 
@@ -654,7 +538,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       following,
       pending,
       posts,
-      stories,
       messages,
       blocked,
     };
@@ -669,23 +552,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           JSON.stringify({
             ...snapshot,
             posts: posts.map(({ images: _images, ...p }) => p),
-            stories: stories.map(({ image: _image, ...st }) => st),
           }),
         );
       } catch {
         /* almacenamiento no disponible: el estado sigue solo en memoria */
       }
     }
-  }, [
-    profile,
-    settings,
-    following,
-    pending,
-    posts,
-    stories,
-    messages,
-    blocked,
-  ]);
+  }, [profile, settings, following, pending, posts, messages, blocked]);
 
   const updateProfile = (patch: Partial<Profile>) =>
     setState((s) => ({ ...s, profile: { ...s.profile, ...patch } }));
@@ -768,123 +641,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       ),
     }));
 
-  // ── Historias (DEF-04 · FT04) ────────────────────────────────────────────
-  // Mismas reglas que en publicaciones: solo el autor edita o desactiva, y la
-  // desactivación es lógica (el registro se conserva, HU15/HU19).
-
-  const isOwnStory = (id: string) =>
-    stories.find((st) => st.id === id)?.authorId === CURRENT_USER_ID;
-
-  const addStory: AppStateValue['addStory'] = ({ text, image }) =>
-    setState((s) => ({
-      ...s,
-      stories: [
-        {
-          id: nextStoryId(),
-          authorId: CURRENT_USER_ID,
-          authorName: s.profile.name,
-          authorAvatar: ME_AVATAR,
-          text,
-          image,
-          createdAt: Date.now(),
-          active: true,
-          edited: false,
-          reactions: {},
-          comments: [],
-        },
-        ...s.stories,
-      ],
-    }));
-
-  const editStory = (id: string, text: string) =>
-    setState((s) => ({
-      ...s,
-      stories: s.stories.map((st) =>
-        st.id === id && st.authorId === CURRENT_USER_ID
-          ? { ...st, text, edited: st.edited || text !== st.text }
-          : st,
-      ),
-    }));
-
-  const deactivateStory = (id: string) =>
-    setState((s) => ({
-      ...s,
-      stories: s.stories.map((st) =>
-        st.id === id && st.authorId === CURRENT_USER_ID
-          ? { ...st, active: false }
-          : st,
-      ),
-    }));
-
-  const reactToStory = (id: string, emoji: string) =>
-    setState((s) => ({
-      ...s,
-      stories: s.stories.map((st) => {
-        if (st.id !== id) return st;
-        const { [CURRENT_USER_ID]: mine, ...others } = st.reactions;
-        // Volver a pulsar la misma reacción la retira; otra la sustituye.
-        return {
-          ...st,
-          reactions:
-            mine === emoji ? others : { ...others, [CURRENT_USER_ID]: emoji },
-        };
-      }),
-    }));
-
-  const addStoryComment = (storyId: string, text: string) =>
-    setState((s) => ({
-      ...s,
-      stories: s.stories.map((st) =>
-        st.id === storyId
-          ? {
-              ...st,
-              comments: [
-                ...st.comments,
-                {
-                  id: nextCommentId(),
-                  authorId: CURRENT_USER_ID,
-                  authorName: s.profile.name,
-                  text,
-                  edited: false,
-                  active: true,
-                },
-              ],
-            }
-          : st,
-      ),
-    }));
-
-  const mapOwnComment = (
-    storyId: string,
-    commentId: string,
-    patch: (c: StoryComment) => StoryComment,
-  ) =>
-    setState((s) => ({
-      ...s,
-      stories: s.stories.map((st) =>
-        st.id === storyId
-          ? {
-              ...st,
-              comments: st.comments.map((c) =>
-                c.id === commentId && c.authorId === CURRENT_USER_ID
-                  ? patch(c)
-                  : c,
-              ),
-            }
-          : st,
-      ),
-    }));
-
-  const editStoryComment = (storyId: string, commentId: string, text: string) =>
-    mapOwnComment(storyId, commentId, (c) => ({
-      ...c,
-      text,
-      edited: c.edited || text !== c.text,
-    }));
-
-  const deactivateStoryComment = (storyId: string, commentId: string) =>
-    mapOwnComment(storyId, commentId, (c) => ({ ...c, active: false }));
-
   // ── Mensajería (DEF-06 · HU35-HU37) ─────────────────────────────────────
   // Solo se puede editar o retirar lo que uno mismo envió, y retirar es baja
   // lógica: el mensaje sale de la conversación pero su registro se conserva.
@@ -966,15 +722,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         deactivatePost,
         reactivatePost,
         deletePost,
-        stories,
-        isOwnStory,
-        addStory,
-        editStory,
-        deactivateStory,
-        reactToStory,
-        addStoryComment,
-        editStoryComment,
-        deactivateStoryComment,
         messages,
         conversationMessages,
         sendMessage,
