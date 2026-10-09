@@ -45,6 +45,12 @@ describe('messageForCode', () => {
     expect(messageForCode(code)).toBe(message);
   });
 
+  it('spec 0008 · decisión 10: RESET_TOKEN_INVALID pide un enlace nuevo', () => {
+    expect(messageForCode('RESET_TOKEN_INVALID')).toBe(
+      'El enlace venció o ya se usó. Pide uno nuevo.',
+    );
+  });
+
   it('el mensaje genérico es el de la spec', () => {
     expect(GENERIC_ERROR_MESSAGE).toBe('Algo salió mal. Intenta de nuevo.');
   });

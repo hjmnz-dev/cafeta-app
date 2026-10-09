@@ -84,6 +84,18 @@ export const useUpdatePost = () => usePostAction(postsApi.update);
 export const useDeactivatePost = () => usePostAction(postsApi.deactivate);
 export const useReactivatePost = () => usePostAction(postsApi.reactivate);
 export const useDeletePost = () => usePostAction(postsApi.remove);
+export const useArchivePost = () => usePostAction(postsApi.archive);
+export const useRestorePost = () => usePostAction(postsApi.restore);
+
+/** Mis publicaciones archivadas y desactivadas, con su `state` (funcionalidad 18). */
+export function useArchivedPosts() {
+  return useInfiniteQuery({
+    queryKey: postKeys.archived,
+    queryFn: ({ pageParam }) => postsApi.archived(pageParam),
+    initialPageParam: firstPage,
+    getNextPageParam: (page) => page.nextCursor,
+  });
+}
 
 export interface ReactInput {
   id: string;
