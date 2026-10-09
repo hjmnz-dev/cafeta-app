@@ -89,3 +89,9 @@ export const reportKeys = {
   sent: (targetType: string, targetId: string) =>
     ['reports', 'sent', targetType, targetId] as const,
 };
+
+/** Historias (decisión 22): todo cuelga de ['stories']. */
+export const storyKeys = {
+  all: ['stories'] as const,
+  tray: ['stories', 'tray'] as const,
+};

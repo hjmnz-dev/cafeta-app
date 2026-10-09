@@ -726,6 +726,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/stories': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['StoriesController_tray'];
+    put?: never;
+    post: operations['StoriesController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/posts/{id}/reaction': {
     parameters: {
       query?: never;
@@ -1564,6 +1580,44 @@ export interface components {
     DeactivateAccountDto: {
       /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
       password: string;
+    };
+    CreateStoryDto: {
+      /** @description Clave que devolvió POST /uploads: una imagen o un video (obligatorio). */
+      mediaKey: string;
+      /** @description Texto opcional de hasta 280 caracteres. */
+      text?: string;
+    };
+    StoryMediaDto: {
+      mediaType: components['schemas']['MediaType'];
+      /** @description Enlace de lectura que vence en una hora como máximo. */
+      url: string;
+      /** @example image/jpeg */
+      mimeType: string;
+    };
+    StoryViewDto: {
+      text: string | null;
+      editedAt: string | null;
+      id: string;
+      media: components['schemas']['StoryMediaDto'];
+      /** @description Fecha de creación en ISO 8601. */
+      createdAt: string;
+      /** @description Vence 24 horas después de crearse y no cambia al editar. */
+      expiresAt: string;
+    };
+    StoryAuthorDto: {
+      /** @description Enlace de lectura de la foto, o null si no tiene. */
+      avatarUrl: string | null;
+      id: string;
+      /** @example cgomez_intec */
+      handle: string;
+      displayName: string;
+    };
+    StoryGroupDto: {
+      author: components['schemas']['StoryAuthorDto'];
+      stories: components['schemas']['StoryViewDto'][];
+    };
+    StoryTrayDto: {
+      groups: components['schemas']['StoryGroupDto'][];
     };
     SetReactionDto: {
       type: components['schemas']['ReactionType'];
@@ -3005,6 +3059,48 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  StoriesController_tray: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StoryTrayDto'];
+        };
+      };
+    };
+  };
+  StoriesController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateStoryDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StoryViewDto'];
+        };
       };
     };
   };

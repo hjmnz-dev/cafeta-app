@@ -1,59 +1,81 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { X, Image as ImageIcon, Clock } from 'lucide-react';
-import { useAppState } from '../store/AppState';
-import { toStorableImage } from '../lib/image';
+import { toast } from 'sonner';
+import { messageForCode } from '../lib/error-messages';
+import { userMessageOf } from '../lib/http';
+import { checkMediaFile, kindOf } from '../lib/media';
+import { countChars } from '../lib/posts';
+import { STORY_TEXT_MAX } from '../lib/stories';
+import type { UploadView } from '../lib/uploads-api';
+import { useUploadFile } from '../store/posts-queries';
+import { useSession } from '../store/SessionStore';
+import { useCreateStory } from '../store/stories-queries';
+import { StoryAvatar } from './StoryAvatar';
 
 /**
- * DEF-04 · HU12 — Crear historia.
+ * HU12 · Crear historia, contra la API (decisión 22).
  *
  * Se diferencia de crear publicación en que el contenido es efímero: se avisa
  * en pantalla que dura 24 h para que la naturaleza temporal sea explícita antes
- * de publicar, no una sorpresa al día siguiente. Una sola imagen, reducida como
- * en las publicaciones (ver lib/image.ts).
+ * de publicar, no una sorpresa al día siguiente. La imagen o el video son
+ * obligatorios (se suben a la API al elegirlos) y el texto es opcional.
  */
+
+/** Una historia lleva imagen o video, nunca un documento. */
+const STORY_ACCEPT =
+  'image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm';
+
 export function CreateStoryScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, addStory } = useAppState();
+  const { user } = useSession();
+  const uploadFile = useUploadFile();
+  const createStory = useCreateStory();
 
   // Se publica desde el feed o desde el perfil: se vuelve a donde se estaba.
   const from = (location.state as { from?: string } | null)?.from ?? '/home';
 
   const [text, setText] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [publishing, setPublishing] = useState(false);
+  const [media, setMedia] = useState<UploadView | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const pickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const picked = e.target.files?.[0];
-    if (!picked) return;
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(picked);
-    setPreview(URL.createObjectURL(picked));
+  const used = countChars(text);
+  const tooLong = used > STORY_TEXT_MAX;
+  const uploading = uploadFile.isPending;
+  const publishing = createStory.isPending;
+  const canPublish = Boolean(media) && !uploading && !publishing && !tooLong;
+
+  const pickMedia = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Permite elegir el mismo archivo otra vez después de quitarlo.
+    event.target.value = '';
+    if (!file) return;
+    const problem = checkMediaFile(file);
+    if (problem) {
+      toast.error(messageForCode(problem));
+      return;
+    }
+    if (kindOf(file.type) === 'DOCUMENT') {
+      toast.error(messageForCode('STORY_MEDIA_INVALID'));
+      return;
+    }
+    uploadFile.mutate(file, {
+      onSuccess: (uploaded) => setMedia(uploaded),
+      onError: (error) => toast.error(userMessageOf(error)),
+    });
   };
 
-  const clearImage = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(null);
-    setPreview(null);
+  const publish = () => {
+    if (!media || !canPublish) return;
+    createStory.mutate(
+      { mediaKey: media.key, text: text.trim() ? text.trim() : undefined },
+      {
+        onSuccess: () => navigate(from),
+        onError: (error) => toast.error(userMessageOf(error)),
+      },
+    );
   };
-
-  const canPublish = Boolean(text.trim()) || Boolean(file);
-
-  const publish = async () => {
-    if (!canPublish || publishing) return;
-    setPublishing(true);
-
-    const image = file ? await toStorableImage(file) : undefined;
-    addStory({ text: text.trim(), image });
-
-    if (preview) URL.revokeObjectURL(preview);
-    navigate(from);
-  };
-
-  const initial = (profile.name.trim()[0] || 'C').toUpperCase();
 
   return (
     <div className="w-full h-full bg-[var(--surface)] flex flex-col">
@@ -71,15 +93,15 @@ export function CreateStoryScreen() {
         </h1>
         <button
           onClick={publish}
-          disabled={!canPublish || publishing}
+          disabled={!canPublish}
           className={
             'h-9 px-4 rounded-full text-[14px] font-semibold transition-colors ' +
-            (canPublish && !publishing
+            (canPublish
               ? 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]'
               : 'bg-[var(--surface-3)] text-[var(--muted)] cursor-not-allowed')
           }
         >
-          Publicar
+          {publishing ? 'Publicando…' : 'Publicar'}
         </button>
       </div>
 
@@ -94,52 +116,81 @@ export function CreateStoryScreen() {
           </p>
         </div>
 
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--brand)] text-[var(--on-brand)] flex items-center justify-center font-semibold flex-none">
-            {initial}
-          </div>
-          <textarea
-            autoFocus
-            aria-label="Texto de la historia"
-            placeholder="¿Qué está pasando ahora mismo en el campus?"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="flex-1 min-h-[120px] resize-none text-[16px] text-[var(--ink)] placeholder:text-[var(--muted)] outline-none bg-transparent"
-          />
-        </div>
-
-        {preview && (
+        {media ? (
           <div className="relative">
-            <img
-              src={preview}
-              alt="Vista previa de la historia"
-              className="w-full rounded-[18px] object-cover max-h-[320px]"
-            />
+            {media.mediaType === 'VIDEO' ? (
+              <video
+                src={media.url}
+                controls
+                muted
+                aria-label="Vista previa de la historia"
+                className="w-full rounded-[18px] max-h-[320px] bg-black"
+              />
+            ) : (
+              <img
+                src={media.url}
+                alt="Vista previa de la historia"
+                className="w-full rounded-[18px] object-cover max-h-[320px]"
+              />
+            )}
             <button
-              onClick={clearImage}
-              aria-label="Quitar imagen"
+              onClick={() => setMedia(null)}
+              aria-label="Quitar archivo"
               className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
+        ) : (
+          <div>
+            <button
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-10 rounded-[18px] border-2 border-dashed border-[var(--line)] text-[14px] font-medium text-[var(--ink-2)] hover:border-[var(--brand)] hover:text-[var(--brand)] transition-colors disabled:opacity-60"
+            >
+              <ImageIcon className="w-[18px] h-[18px]" />
+              {uploading ? 'Subiendo…' : 'Elige una imagen o un video'}
+            </button>
+            <p className="mt-2 text-[12px] text-[var(--muted)]">
+              Imagen JPG, PNG, WebP o GIF (hasta 5 MB), o video MP4 o WebM
+              (hasta 25 MB). Es obligatorio.
+            </p>
+          </div>
         )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept={STORY_ACCEPT}
+          aria-label="Archivo de la historia"
+          onChange={pickMedia}
+          className="hidden"
+        />
 
-        <div>
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--line)] text-[14px] font-medium text-[var(--ink-2)] hover:border-[var(--brand)] hover:text-[var(--brand)] transition-colors"
-          >
-            <ImageIcon className="w-[18px] h-[18px]" />
-            {preview ? 'Cambiar imagen' : 'Agregar imagen'}
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            onChange={pickImage}
-            className="hidden"
+        <div className="flex items-start gap-3">
+          <StoryAvatar
+            url={null}
+            name={user?.profile.displayName ?? ''}
+            className="w-10 h-10 flex-none"
           />
+          <div className="flex-1">
+            <textarea
+              aria-label="Texto de la historia"
+              placeholder="Agrega un texto (opcional)"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="w-full min-h-[96px] resize-none text-[16px] text-[var(--ink)] placeholder:text-[var(--muted)] outline-none bg-transparent"
+            />
+            <p
+              className={
+                'text-right text-[12px] ' +
+                (tooLong
+                  ? 'text-[var(--brand)] font-semibold'
+                  : 'text-[var(--muted)]')
+              }
+            >
+              {used}/{STORY_TEXT_MAX}
+            </p>
+          </div>
         </div>
       </div>
     </div>

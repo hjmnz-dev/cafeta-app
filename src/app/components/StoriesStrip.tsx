@@ -1,27 +1,28 @@
 import { Link, useLocation } from 'react-router';
-import { useAppState, CURRENT_USER_ID } from '../store/AppState';
-import { visibleStories } from '../lib/stories';
+import { groupOf } from '../lib/stories';
+import { useSession } from '../store/SessionStore';
+import { useStoryTray } from '../store/stories-queries';
 import { MyStoryAvatar } from './MyStoryAvatar';
+import { StoryAvatar } from './StoryAvatar';
 
 /**
- * DEF-04 · HU13 — Tira de historias del feed.
+ * HU13 · Tira de historias del feed, contra la API (decisión 22).
  *
- * Muestra las historias vigentes de quienes el usuario sigue (HU13). Cuando no
- * hay ninguna de terceros se explica por qué, en vez de dejar un hueco.
+ * Muestra las historias vigentes de quienes sigo, agrupadas por autor. Cuando
+ * no hay ninguna de terceros se explica por qué, en vez de dejar un hueco.
  *
  * Lo propio no ocupa un círculo aparte: vive en el avatar de siempre (ver
  * MyStoryAvatar), que abre las historias propias o lleva a publicar según dónde
- * se toque. Tener dos círculos con la misma cara se leía como un duplicado.
+ * se toque.
  */
 export function StoriesStrip() {
-  const { stories, followingIds } = useAppState();
+  const { user } = useSession();
+  const tray = useStoryTray();
   const { pathname: from } = useLocation();
-  const visibles = visibleStories(stories, {
-    currentUserId: CURRENT_USER_ID,
-    followingIds,
-  });
-  const others = visibles.filter((s) => s.authorId !== CURRENT_USER_ID);
-  const hasMine = visibles.some((s) => s.authorId === CURRENT_USER_ID);
+
+  const groups = tray.data?.groups ?? [];
+  const others = groups.filter((group) => group.author.id !== user?.id);
+  const hasMine = Boolean(groupOf(groups, user?.id));
 
   return (
     <div className="px-4 py-3 flex gap-3.5 overflow-x-auto no-scrollbar">
@@ -33,7 +34,20 @@ export function StoriesStrip() {
         </span>
       </div>
 
-      {others.length === 0 ? (
+      {tray.isError ? (
+        <div className="self-center text-[12px] text-[var(--muted)] leading-snug max-w-[220px]">
+          <p>No pudimos cargar las historias.</p>
+          <button
+            type="button"
+            onClick={() => void tray.refetch()}
+            className="font-semibold text-[var(--brand)]"
+          >
+            Reintentar
+          </button>
+        </div>
+      ) : tray.isPending ? (
+        <span className="sr-only">Cargando historias</span>
+      ) : others.length === 0 ? (
         <p className="self-center text-[12px] text-[var(--muted)] leading-snug max-w-[220px]">
           Sigue a alguien en{' '}
           <span className="font-semibold text-[var(--ink-2)]">Descubrir</span>{' '}
@@ -41,27 +55,27 @@ export function StoriesStrip() {
           {hasMine ? '.' : ', o publica la tuya.'}
         </p>
       ) : (
-        others.map((story) => (
+        others.map(({ author, stories }) => (
           <Link
-            key={story.id}
-            to={`/stories/${story.id}`}
+            key={author.id}
+            to={`/stories/${stories[0]?.id}`}
             state={{ from }}
             className="flex flex-col items-center gap-1.5 min-w-[68px]"
-            aria-label={`Ver historia de ${story.authorName}`}
+            aria-label={`Ver historia de ${author.displayName}`}
           >
             {/* Anillo de historia vigente */}
             <div
               className="w-[62px] h-[62px] rounded-full p-[2.5px]"
               style={{ background: 'var(--story-ring)' }}
             >
-              <img
-                src={story.authorAvatar}
-                className="w-full h-full rounded-full object-cover border-2 border-[var(--surface)]"
-                alt=""
+              <StoryAvatar
+                url={author.avatarUrl}
+                name={author.displayName}
+                className="w-full h-full border-2 border-[var(--surface)] text-[22px]"
               />
             </div>
             <span className="text-[11px] text-[var(--ink)] font-medium truncate w-[64px] text-center">
-              {story.authorName.split(' ')[0]}
+              {author.displayName.split(' ')[0]}
             </span>
           </Link>
         ))
