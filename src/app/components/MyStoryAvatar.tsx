@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { groupOf } from '../lib/stories';
+import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
 import { useStoryTray } from '../store/stories-queries';
 import { StoryAvatar } from './StoryAvatar';
@@ -18,14 +19,16 @@ import { StoryAvatar } from './StoryAvatar';
  */
 export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   const { user } = useSession();
+  // La foto es la real de mi perfil (decisión 13); sin ella, la del anillo o mi inicial.
+  const me = useProfile(user?.id ?? '', Boolean(user));
   const tray = useStoryTray();
   // De dónde se sale, para poder volver aquí al cerrar (feed o perfil).
   const { pathname: from } = useLocation();
 
   const mine = groupOf(tray.data?.groups ?? [], user?.id);
   const firstStory = mine?.stories[0];
-  const name = user?.profile.displayName ?? '';
-  const avatarUrl = mine?.author.avatarUrl ?? null;
+  const name = me.data?.displayName ?? user?.profile.displayName ?? '';
+  const avatarUrl = me.data?.avatarUrl ?? mine?.author.avatarUrl ?? null;
 
   const badgeSize = Math.round(size * 0.35);
   const badge =
