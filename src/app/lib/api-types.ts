@@ -662,6 +662,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/auth/forgot-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Pide un enlace por correo para restablecer la contraseña
+     * @description Responde igual exista o no la cuenta. El límite es de 3 pedidos por hora por IP.
+     */
+    post: operations['PasswordResetController_forgotPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/reset-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Pone una contraseña nueva con el token del correo
+     * @description El token sirve una sola vez y dura 30 minutos. Al usarlo se cierran todas las sesiones.
+     */
+    post: operations['PasswordResetController_resetPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1077,6 +1117,19 @@ export interface components {
     };
     DeactivateAccountDto: {
       /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
+      password: string;
+    };
+    ForgotPasswordDto: {
+      /**
+       * Format: email
+       * @example 1113672@est.intec.edu.do
+       */
+      email: string;
+    };
+    ResetPasswordDto: {
+      /** @description El token del enlace del correo. */
+      token: string;
+      /** @description De 8 a 72 caracteres, con al menos una letra y un número (igual que al registrarse). */
       password: string;
     };
   };
@@ -2130,6 +2183,64 @@ export interface operations {
     };
     responses: {
       204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PasswordResetController_forgotPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ForgotPasswordDto'];
+      };
+    };
+    responses: {
+      /** @description Si la cuenta existe, el correo salió */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Más de 3 pedidos en una hora */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PasswordResetController_resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResetPasswordDto'];
+      };
+    };
+    responses: {
+      /** @description La contraseña cambió */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description RESET_TOKEN_INVALID (venció, ya se usó o no existe) */
+      400: {
         headers: {
           [name: string]: unknown;
         };
