@@ -196,15 +196,21 @@ describe('Spec 0008 decisión 17 — Acciones del autor en la tarjeta', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU22 E2 y HU23 E2: en una publicación ajena no hay menú de autor', () => {
+  it('HU22 E2 y HU23 E2: en una publicación ajena no hay acciones de autor, solo reportar', async () => {
+    const user = userEvent.setup();
     fakeApi();
     renderCard(
       postView({ id: 'ajena', author: { id: 'otra-persona' } }),
       false,
     );
 
+    await openMenu(user);
+
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Desactivar' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Eliminar' })).toBeNull();
     expect(
-      screen.queryByRole('button', { name: /opciones de la publicación/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole('button', { name: /reportar publicación/i }),
+    ).toBeInTheDocument();
   });
 });

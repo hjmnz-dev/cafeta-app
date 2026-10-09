@@ -58,3 +58,9 @@ export const searchKeys = {
   posts: (q: string) => ['search', 'posts', q] as const,
   explore: () => ['explore', 'posts'] as const,
 };
+
+/** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
+export const reportKeys = {
+  sent: (targetType: string, targetId: string) =>
+    ['reports', 'sent', targetType, targetId] as const,
+};
