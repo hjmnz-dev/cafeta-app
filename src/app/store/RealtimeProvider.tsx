@@ -10,6 +10,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 import type { MessageView } from '../lib/conversations-api';
+import type { NotificationView } from '../lib/notifications-api';
 import { API_URL, readStoredSession } from '../lib/http';
 import { socketUrl } from '../lib/messages';
 import { conversationKeys } from '../lib/query-keys';
@@ -18,6 +19,7 @@ import {
   applyIncomingMessage,
   applyUpdatedMessage,
 } from './conversations-queries';
+import { refreshNotifications } from './notifications-queries';
 import { useSession } from './SessionStore';
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
@@ -47,9 +49,14 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
           payload.id,
         ),
     );
+    // Un aviso nuevo: la lista y el punto del ícono se piden de nuevo.
+    socket.on('notification:new', (_notification: NotificationView) => {
+      void refreshNotifications(queryClient);
+    });
     // Al reconectar pudo llegar algo mientras no había socket: se vuelve a pedir.
     socket.io.on('reconnect', () => {
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+      void refreshNotifications(queryClient);
     });
     return () => {
       socket.disconnect();

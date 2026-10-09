@@ -35,6 +35,22 @@ describe('messageForCode', () => {
     },
   );
 
+  it.each([
+    ['INVALID_PASSWORD', 'La contraseña no es correcta.'],
+    [
+      'ADMIN_CANNOT_SELF_DEACTIVATE',
+      'Un administrador no puede desactivar su propia cuenta.',
+    ],
+  ])('spec 0009 · decisión 11: %s se traduce a su mensaje', (code, message) => {
+    expect(messageForCode(code)).toBe(message);
+  });
+
+  it('spec 0008 · decisión 10: RESET_TOKEN_INVALID pide un enlace nuevo', () => {
+    expect(messageForCode('RESET_TOKEN_INVALID')).toBe(
+      'El enlace venció o ya se usó. Pide uno nuevo.',
+    );
+  });
+
   it('el mensaje genérico es el de la spec', () => {
     expect(GENERIC_ERROR_MESSAGE).toBe('Algo salió mal. Intenta de nuevo.');
   });

@@ -16,13 +16,15 @@ import {
   tagCategoryOf,
   VISIBILITY_LABEL,
 } from '../lib/profiles';
-import { TAG_CATEGORIES } from '../store/AppState';
+import { TAG_CATEGORIES, useAppState } from '../store/AppState';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
+import { useBlockUser } from '../store/blocks-queries';
 import { useSession } from '../store/SessionStore';
 import { FollowButton } from './FollowButton';
 import { LivePostList } from './LivePostList';
 import { ProfileAvatar } from './ProfileAvatar';
+import { ProfileOptionsMenu } from './ProfileOptionsMenu';
 
 /**
  * Perfil de otro usuario desde la API (decisión 15, HU07 E2 y HU09). La API
@@ -152,6 +154,8 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const posts = useUserPosts(profile.id, profile.canSeeContent);
   const notice = restrictedNotice(profile);
+  const blockMutation = useBlockUser();
+  const { blockUser } = useAppState();
 
   return (
     <div
@@ -173,7 +177,7 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             radius={24}
             className="border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)]"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             <button
               onClick={() => navigate(`/messages?to=${profile.id}`)}
               className="w-[40px] h-[40px] rounded-full border-2 border-[var(--line)] bg-[var(--surface)] flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
@@ -181,6 +185,16 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             >
               <MessageCircle className="w-[18px] h-[18px]" />
             </button>
+            <ProfileOptionsMenu
+              userId={profile.id}
+              displayName={profile.displayName}
+              handle={profile.handle}
+              firstName={firstNameOf(profile.displayName)}
+              onBlock={() => {
+                blockMutation.mutate(profile.id);
+                blockUser(profile.id);
+              }}
+            />
             <FollowButton profile={profile} />
           </div>
         </div>

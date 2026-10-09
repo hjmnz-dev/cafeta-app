@@ -394,22 +394,27 @@ export function RegisterScreen() {
               }}
             >
               Acepto los{' '}
-              {/* Los enlaces no deben marcar la casilla al pulsarlos. */}
-              <button
-                type="button"
+              {/* Los enlaces no deben marcar la casilla al pulsarlos, y abren en
+                  otra pestaña para no perder lo que ya escribiste. */}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="text-[var(--brand)] font-semibold hover:text-[var(--brand-strong)] transition-colors"
               >
                 términos y condiciones
-              </button>{' '}
+              </a>{' '}
               y la{' '}
-              <button
-                type="button"
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="text-[var(--brand)] font-semibold hover:text-[var(--brand-strong)] transition-colors"
               >
                 política de privacidad
-              </button>
+              </a>
             </Checkbox>
             {errors.terms && (
               <p className="mt-1.5 text-[12px] text-[var(--brand)] font-['DM_Sans',sans-serif] ml-7">

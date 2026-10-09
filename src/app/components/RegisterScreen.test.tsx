@@ -125,6 +125,29 @@ describe('Registro: catálogo de carreras', () => {
   });
 });
 
+describe('Registro: textos legales (spec 0009, decisión 12)', () => {
+  it('los términos y la política abren sus páginas en otra pestaña, sin marcar la casilla', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RegisterScreen />, { route: '/register' });
+
+    const terms = screen.getByRole('link', { name: 'términos y condiciones' });
+    const privacy = screen.getByRole('link', {
+      name: 'política de privacidad',
+    });
+    expect(terms).toHaveAttribute('href', '/terms');
+    expect(terms).toHaveAttribute('target', '_blank');
+    expect(privacy).toHaveAttribute('href', '/privacy');
+    expect(privacy).toHaveAttribute('target', '_blank');
+
+    // jsdom no abre pestañas; basta comprobar que el clic no marca la casilla.
+    terms.addEventListener('click', (e) => e.preventDefault());
+    await user.click(terms);
+    expect(
+      screen.getByRole('checkbox', { name: /acepto los/i }),
+    ).not.toBeChecked();
+  });
+});
+
 describe('Registro contra la API', () => {
   it('AC-1: un registro válido manda los datos normalizados, guarda la sesión y va al feed', async () => {
     const user = userEvent.setup();

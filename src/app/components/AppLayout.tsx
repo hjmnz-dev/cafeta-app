@@ -111,8 +111,14 @@ export function AppLayout() {
   const path = location.pathname;
   const isSplash = path === '/';
   // Pantallas de pantalla completa sin barra de estado ni navegación inferior.
+  // Los textos legales también: se leen sin sesión (spec 0009, decisión 12).
   const isAuthScreen =
-    path === '/login' || path === '/register' || path === '/forgot-password';
+    path === '/login' ||
+    path === '/register' ||
+    path === '/forgot-password' ||
+    path === '/reset-password' ||
+    path === '/terms' ||
+    path === '/privacy';
   // Pantallas internas con header propio: sin navegación inferior, pero con barra de estado.
   const hasOwnHeader =
     path === '/create-post' ||

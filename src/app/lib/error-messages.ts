@@ -13,6 +13,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   CAREER_NOT_FOUND: 'Elige una carrera de la lista.',
   INVALID_CREDENTIALS: 'Correo o contraseña incorrectos.',
   ACCOUNT_INACTIVE: 'Tu cuenta no está activa.',
+  RESET_TOKEN_INVALID: 'El enlace venció o ya se usó. Pide uno nuevo.',
+  INVALID_PASSWORD: 'La contraseña no es correcta.',
+  ADMIN_CANNOT_SELF_DEACTIVATE:
+    'Un administrador no puede desactivar su propia cuenta.',
   SESSION_REVOKED: 'Tu sesión terminó. Inicia sesión de nuevo.',
   UNAUTHORIZED: 'Tu sesión terminó. Inicia sesión de nuevo.',
   TOO_MANY_REQUESTS: 'Demasiados intentos. Espera un minuto.',
@@ -25,6 +29,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   FILE_REQUIRED: 'Elige un archivo para subir.',
   STORAGE_UNAVAILABLE: 'No pudimos subir el archivo ahora. Intenta más tarde.',
   MEDIA_NOT_FOUND: 'Uno de los archivos ya no está. Quítalo y súbelo de nuevo.',
+  POST_NOT_FOUND: 'Esa publicación ya no existe.',
+  NOT_POST_AUTHOR: 'Solo quien publicó puede cambiar esta publicación.',
+  POST_INACTIVE: 'Reactiva la publicación antes de editarla.',
+  POST_FIELD_NOT_ALLOWED: 'Ese dato no aplica a este tipo de publicación.',
   MEDIA_COMBINATION_INVALID:
     'Puedes adjuntar hasta 4 imágenes, o 1 video, o 1 PDF.',
   USER_NOT_FOUND: 'Este perfil no existe o ya no está disponible.',
@@ -34,6 +42,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   MESSAGE_NOT_FOUND: 'El mensaje ya no está disponible.',
   NOT_MESSAGE_AUTHOR: 'Solo quien envió el mensaje puede cambiarlo.',
   ALREADY_INACTIVE: 'El mensaje ya fue eliminado.',
+  NOTIFICATION_NOT_FOUND: 'Esta notificación ya no está disponible.',
   PROFILE_RESTRICTED:
     'Este perfil comparte su contenido solo con quien lo sigue.',
   CANNOT_FOLLOW_SELF: 'No puedes seguirte a ti mismo.',
@@ -41,6 +50,10 @@ const MESSAGES: Readonly<Record<string, string>> = {
   FOLLOW_REQUEST_NOT_FOUND: 'La solicitud ya no está disponible.',
   TAG_DUPLICATED: 'Hay etiquetas repetidas. Quita una.',
   PROFILE_PRIVATE: 'Esta cuenta es privada y no admite seguidores.',
+  CANNOT_REPORT_SELF: 'No puedes reportarte a ti mismo ni a tu publicación.',
+  DETAILS_REQUIRED: 'Cuéntanos qué pasó para poder enviar el reporte.',
+  REPORT_ALREADY_PENDING:
+    'Ya reportaste esto, un administrador lo está revisando.',
 };
 
 export const GENERIC_ERROR_MESSAGE = 'Algo salió mal. Intenta de nuevo.';

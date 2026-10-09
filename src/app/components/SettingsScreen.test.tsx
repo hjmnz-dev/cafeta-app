@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SettingsScreen } from './SettingsScreen';
 import { renderWithProviders } from '../../test/utils';
 import { SESSION_KEY } from '../lib/http';
-import { signIn } from '../../test/api';
+import { signIn, TEST_USER } from '../../test/api';
 import { Toaster } from './ui/sonner';
 import { json } from '../../test/setup';
 
@@ -177,18 +177,55 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     );
   });
 
-  it('HU08 — alternar una preferencia de notificación cambia y persiste su estado', async () => {
+  it('HU08 E1 — apagar "Comentarios" lo guarda en la API y deja los demás encendidos', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<SettingsScreen />, { route: '/settings' });
+    let saved = {
+      reactions: true,
+      comments: true,
+      follows: true,
+      messages: true,
+      stories: true,
+    };
+    const fetchMock = signIn((url, init) => {
+      if (!url.pathname.endsWith('/notifications/preferences')) {
+        return undefined;
+      }
+      if (init?.method === 'PATCH') {
+        saved = { ...saved, ...JSON.parse(String(init.body)) };
+      }
+      return json(200, saved);
+    });
+    renderSettingsWithToasts();
 
-    const switches = screen.getAllByRole('switch');
-    // Primera preferencia = "Reacciones", activa por defecto
-    expect(switches[0]).toHaveAttribute('aria-checked', 'true');
+    const comments = await screen.findByRole('switch', {
+      name: /notificaciones de comentarios/i,
+    });
+    await waitFor(() => expect(comments).toBeEnabled());
+    expect(comments).toHaveAttribute('aria-checked', 'true');
 
-    await user.click(switches[0]);
+    await user.click(comments);
 
-    expect(switches[0]).toHaveAttribute('aria-checked', 'false');
-    expect(readState().settings.notifications.likes).toBe(false);
+    await waitFor(() =>
+      expect(
+        screen.getByRole('switch', { name: /notificaciones de comentarios/i }),
+      ).toHaveAttribute('aria-checked', 'false'),
+    );
+    const patch = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'PATCH',
+    );
+    expect(JSON.parse(String(patch?.[1]?.body))).toEqual({ comments: false });
+    for (const other of ['reacciones', 'seguidores', 'mensajes', 'historias']) {
+      expect(
+        screen.getByRole('switch', {
+          name: new RegExp(`notificaciones de ${other}`, 'i'),
+        }),
+      ).toHaveAttribute('aria-checked', 'true');
+    }
+    expect(
+      await screen.findByText('Preferencias guardadas'),
+    ).toBeInTheDocument();
+    // Ya no se guardan en localStorage (AppState).
+    expect(readState().settings?.notifications).toBeUndefined();
   });
 });
 
@@ -229,6 +266,153 @@ describe('Apariencia — modo oscuro por defecto', () => {
     expect(screen.getByRole('button', { name: /claro/i })).toHaveAttribute(
       'aria-pressed',
       'true',
+    );
+  });
+});
+
+// HU05 y HU06 contra la API con fetch simulado (spec 0009, decisión 11).
+describe('HU06 · Datos de la cuenta y accesos', () => {
+  it('E1 — muestra los datos de la cuenta y los accesos a legal, cerrar sesión y desactivar', async () => {
+    signIn();
+    renderWithProviders(<SettingsScreen />, { route: '/settings' });
+
+    expect(await screen.findByText('Carlos Gómez')).toBeInTheDocument();
+    expect(screen.getByText('@cgomez_intec')).toBeInTheDocument();
+    expect(screen.getByText(TEST_USER.email)).toBeInTheDocument();
+    expect(
+      await screen.findByText('Ingeniería de Software'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('octubre de 2026')).toBeInTheDocument();
+    expect(screen.getByText('Pendiente de verificación')).toBeInTheDocument();
+    expect(screen.getByText(/privacidad del perfil/i)).toBeInTheDocument();
+    expect(screen.getByText('Notificaciones')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Términos de uso' }),
+    ).toHaveAttribute('href', '/terms');
+    expect(
+      screen.getByRole('link', { name: 'Política de privacidad' }),
+    ).toHaveAttribute('href', '/privacy');
+    expect(
+      screen.getByRole('button', { name: /cerrar sesión/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Desactivar cuenta' }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('HU05 · Desactivar cuenta', () => {
+  const deactivateCalls = (fetchMock: ReturnType<typeof signIn>) =>
+    fetchMock.mock.calls.filter(([input]) =>
+      String(input).endsWith('/me/deactivate'),
+    );
+
+  const openDialog = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: 'Desactivar cuenta' }));
+    return screen.findByRole('alertdialog');
+  };
+
+  it('E2 — pide confirmación y no desactiva nada hasta que se escribe la contraseña y se confirma', async () => {
+    const user = userEvent.setup();
+    const fetchMock = signIn();
+    renderSettingsWithToasts();
+
+    const dialog = await openDialog(user);
+    const confirm = within(dialog).getByRole('button', {
+      name: 'Desactivar cuenta',
+    });
+    expect(confirm).toBeDisabled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+    );
+    expect(deactivateCalls(fetchMock)).toHaveLength(0);
+    expect(screen.getByTestId('location')).toHaveTextContent('/settings');
+  });
+
+  it('E1 — con la contraseña la desactiva en la API, cierra la sesión y va al login', async () => {
+    const user = userEvent.setup();
+    const fetchMock = signIn((url, init) => {
+      if (url.pathname.endsWith('/me/deactivate'))
+        return new Response(null, { status: 204 });
+      // Sesión ya revocada por la baja.
+      if (url.pathname.endsWith('/auth/logout') && init?.method === 'POST')
+        return json(401, { statusCode: 401, code: 'SESSION_REVOKED' });
+      return undefined;
+    });
+    renderSettingsWithToasts();
+
+    const dialog = await openDialog(user);
+    await user.type(
+      within(dialog).getByLabelText('Tu contraseña'),
+      'clave-segura-2026',
+    );
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Desactivar cuenta' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/login'),
+    );
+    const [call] = deactivateCalls(fetchMock);
+    expect(call?.[1]?.method).toBe('POST');
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({
+      password: 'clave-segura-2026',
+    });
+    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+    expect(
+      await screen.findByText('Tu cuenta fue desactivada'),
+    ).toBeInTheDocument();
+  });
+
+  it('una contraseña incorrecta muestra el error, deja el diálogo abierto y la sesión intacta', async () => {
+    const user = userEvent.setup();
+    signIn((url) =>
+      url.pathname.endsWith('/me/deactivate')
+        ? json(403, { statusCode: 403, code: 'INVALID_PASSWORD' })
+        : undefined,
+    );
+    renderSettingsWithToasts();
+
+    const dialog = await openDialog(user);
+    await user.type(
+      within(dialog).getByLabelText('Tu contraseña'),
+      'otra-clave-1',
+    );
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Desactivar cuenta' }),
+    );
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'La contraseña no es correcta.',
+    );
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/settings');
+    expect(localStorage.getItem(SESSION_KEY)).not.toBeNull();
+  });
+
+  it('si la cuenta ya estaba desactivada (dos pestañas), igual cierra la sesión y va al login', async () => {
+    const user = userEvent.setup();
+    signIn((url) =>
+      url.pathname.endsWith('/me/deactivate')
+        ? json(409, { statusCode: 409, code: 'ALREADY_INACTIVE' })
+        : undefined,
+    );
+    renderSettingsWithToasts();
+
+    const dialog = await openDialog(user);
+    await user.type(
+      within(dialog).getByLabelText('Tu contraseña'),
+      'clave-segura-2026',
+    );
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Desactivar cuenta' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/login'),
     );
   });
 });

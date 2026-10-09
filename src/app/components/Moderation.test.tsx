@@ -1,15 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UserProfileScreen } from './UserProfileScreen';
 import { PeopleScreen } from './PeopleScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { SearchScreen } from './SearchScreen';
-import {
-  AppStatePosts,
-  renderRoutes,
-  renderWithProviders,
-} from '../../test/utils';
+import { renderRoutes } from '../../test/utils';
 
 const perfilDe = (id: string) =>
   renderRoutes([{ path: '/u/:userId', element: <UserProfileScreen /> }], {
@@ -145,52 +141,5 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
     expect(
       screen.getByRole('button', { name: /seguir a pedro sánchez/i }),
     ).toBeInTheDocument();
-  });
-});
-
-describe('DEF-12 · HU55/HU56 — Reportar usuario y publicación', () => {
-  it('HU55 — reportar a un usuario exige un motivo y queda registrado', async () => {
-    const user = userEvent.setup();
-    perfilDe('maria');
-
-    await user.click(
-      screen.getByRole('button', { name: /opciones sobre maría/i }),
-    );
-    await user.click(screen.getByRole('button', { name: /reportar usuario/i }));
-
-    // Sin motivo seleccionado no se puede enviar.
-    expect(
-      screen.getByRole('button', { name: /enviar denuncia/i }),
-    ).toBeDisabled();
-
-    await user.click(screen.getByLabelText(/acoso o intimidación/i));
-    await user.click(screen.getByRole('button', { name: /enviar denuncia/i }));
-
-    // La denuncia no se puede repetir sobre el mismo objetivo.
-    await user.click(
-      screen.getByRole('button', { name: /opciones sobre maría/i }),
-    );
-    expect(
-      screen.getByRole('button', { name: /usuario reportado/i }),
-    ).toBeDisabled();
-  });
-
-  it('HU56 — reportar una publicación ajena queda registrado', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<AppStatePosts />);
-
-    const card = screen.getByTestId('post-p2');
-    await user.click(within(card).getByRole('button', { name: /opciones/i }));
-    await user.click(
-      screen.getByRole('button', { name: /reportar publicación/i }),
-    );
-
-    await user.click(screen.getByLabelText(/spam o publicidad/i));
-    await user.click(screen.getByRole('button', { name: /enviar denuncia/i }));
-
-    await user.click(within(card).getByRole('button', { name: /opciones/i }));
-    expect(
-      screen.getByRole('button', { name: /publicación reportada/i }),
-    ).toBeDisabled();
   });
 });

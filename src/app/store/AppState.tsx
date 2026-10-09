@@ -26,20 +26,11 @@ export type TagCategory = 'carrera' | 'habilidad' | 'interes';
 
 export type ProfileVisibility = 'public' | 'followers' | 'private';
 
-export interface NotificationPrefs {
-  likes: boolean;
-  comments: boolean;
-  follows: boolean;
-  messages: boolean;
-  stories: boolean;
-}
-
 /** Apariencia de la app. El oscuro es el predeterminado del producto. */
 export type Theme = 'dark' | 'light';
 
 export interface Settings {
   visibility: ProfileVisibility;
-  notifications: NotificationPrefs;
   theme: Theme;
 }
 
@@ -98,28 +89,6 @@ export interface Post {
   documentUrl?: string;
   /** ¿El usuario actual reaccionó a esta publicación? (HU28) */
   liked?: boolean;
-}
-
-/** Motivos de denuncia ofrecidos al reportar (HU55/HU56). */
-export const REPORT_REASONS = [
-  'Contenido inapropiado',
-  'Acoso o intimidación',
-  'Spam o publicidad',
-  'Suplantación de identidad',
-  'Otro',
-] as const;
-
-/**
- * Denuncia levantada por el usuario (FT11). Sin backend queda registrada en el
- * cliente; es el insumo del proceso de revisión administrativa (FT10), que se
- * atiende en la aplicación de escritorio.
- */
-export interface Report {
-  id: string;
-  targetType: 'user' | 'post';
-  targetId: string;
-  reason: string;
-  createdAt: number;
 }
 
 /**
@@ -236,13 +205,6 @@ interface AppStateValue {
   blockUser: (id: string) => void;
   /** Desbloquear (HU54). No restaura el seguimiento anterior. */
   unblockUser: (id: string) => void;
-  reports: Report[];
-  /** Reportar a un usuario (HU55). */
-  reportUser: (id: string, reason: string) => void;
-  /** Reportar una publicación (HU56). */
-  reportPost: (id: string, reason: string) => void;
-  /** ¿Ya se reportó este objetivo? Evita duplicar la denuncia. */
-  hasReported: (targetType: Report['targetType'], targetId: string) => boolean;
 }
 
 const DEFAULT_PROFILE: Profile = {
@@ -262,13 +224,6 @@ const DEFAULT_PROFILE: Profile = {
 
 const DEFAULT_SETTINGS: Settings = {
   visibility: 'public',
-  notifications: {
-    likes: true,
-    comments: true,
-    follows: true,
-    messages: true,
-    stories: false,
-  },
   theme: 'dark',
 };
 
@@ -630,7 +585,6 @@ interface PersistedState {
   stories: Story[];
   messages: Message[];
   blocked: string[];
-  reports: Report[];
 }
 
 function load(): PersistedState {
@@ -643,10 +597,6 @@ function load(): PersistedState {
         settings: {
           ...DEFAULT_SETTINGS,
           ...parsed.settings,
-          notifications: {
-            ...DEFAULT_SETTINGS.notifications,
-            ...parsed.settings?.notifications,
-          },
         },
         following: Array.isArray(parsed.following) ? parsed.following : [],
         pending: Array.isArray(parsed.pending) ? parsed.pending : [],
@@ -658,7 +608,6 @@ function load(): PersistedState {
           ? parsed.messages
           : SAMPLE_MESSAGES,
         blocked: Array.isArray(parsed.blocked) ? parsed.blocked : [],
-        reports: Array.isArray(parsed.reports) ? parsed.reports : [],
       };
     }
   } catch {
@@ -673,7 +622,6 @@ function load(): PersistedState {
     stories: sampleStories(),
     messages: SAMPLE_MESSAGES,
     blocked: [],
-    reports: [],
   };
 }
 
@@ -685,9 +633,6 @@ const nextCommentId = () => `sc-${++commentSeq}`;
 
 let messageSeq = 0;
 const nextMessageId = () => `msg-${++messageSeq}`;
-
-let reportSeq = 0;
-const nextReportId = () => `rep-${++reportSeq}`;
 
 const AppStateContext = createContext<AppStateValue | null>(null);
 
@@ -702,7 +647,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       stories,
       messages,
       blocked,
-      reports,
     },
     setState,
   ] = useState(load);
@@ -717,7 +661,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       stories,
       messages,
       blocked,
-      reports,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -746,7 +689,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     stories,
     messages,
     blocked,
-    reports,
   ]);
 
   const updateProfile = (patch: Partial<Profile>) =>
@@ -1021,39 +963,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const unblockUser = (id: string) =>
     setState((s) => ({ ...s, blocked: s.blocked.filter((x) => x !== id) }));
 
-  const addReport = (
-    targetType: Report['targetType'],
-    targetId: string,
-    reason: string,
-  ) =>
-    setState((s) =>
-      s.reports.some(
-        (r) => r.targetType === targetType && r.targetId === targetId,
-      )
-        ? s // ya reportado: no se duplica la denuncia
-        : {
-            ...s,
-            reports: [
-              ...s.reports,
-              {
-                id: nextReportId(),
-                targetType,
-                targetId,
-                reason,
-                createdAt: Date.now(),
-              },
-            ],
-          },
-    );
-
-  const reportUser = (id: string, reason: string) =>
-    addReport('user', id, reason);
-  const reportPost = (id: string, reason: string) =>
-    addReport('post', id, reason);
-
-  const hasReported = (targetType: Report['targetType'], targetId: string) =>
-    reports.some((r) => r.targetType === targetType && r.targetId === targetId);
-
   return (
     <AppStateContext.Provider
       value={{
@@ -1092,10 +1001,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         isBlocked,
         blockUser,
         unblockUser,
-        reports,
-        reportUser,
-        reportPost,
-        hasReported,
       }}
     >
       {children}
