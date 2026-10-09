@@ -61,4 +61,11 @@ export const postsApi = {
     apiRequest<void>(`/posts/${id}/save`, { method: 'DELETE' }),
   saved: (cursor: string | null) =>
     apiRequest<PostPage>(`/me/saved${toQueryString({ cursor })}`),
+  // Archivar y restaurar (spec 0008, funcionalidad 18).
+  archived: (cursor: string | null) =>
+    apiRequest<PostPage>(`/posts/archived${toQueryString({ cursor })}`),
+  archive: (id: string) =>
+    apiRequest<void>(`/posts/${id}/archive`, { method: 'POST' }),
+  restore: (id: string) =>
+    apiRequest<void>(`/posts/${id}/restore`, { method: 'POST' }),
 };

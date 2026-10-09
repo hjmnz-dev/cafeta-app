@@ -19,6 +19,8 @@ import {
   Ban,
   Check,
   Megaphone,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAppState, Post } from '../store/AppState';
@@ -26,8 +28,10 @@ import { useBlockUser } from '../store/blocks-queries';
 import { countChars, POST_CONTENT_MAX } from '../lib/posts';
 import type { ReactionType } from '../lib/reactions';
 import { CommentsPanel } from './CommentsPanel';
+import type { PostView } from '../lib/posts-api';
+import { useHasReported } from '../store/reports-queries';
 import { PostReactionButton } from './PostReactionButton';
-import { ReportDialog } from './ReportDialog';
+import { ReportTargetDialog } from './ReportTargetDialog';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -58,6 +62,8 @@ export interface LivePost {
   /** Para enlazar al perfil del autor (/u/:id), que aplica su privacidad. */
   authorId: string;
   isAnnouncement: boolean;
+  /** Estado de la publicación; solo las propias llegan archivadas o desactivadas. */
+  state?: PostView['state'];
   /** Acciones del autor contra la API (spec 0008, decisión 17); solo en las propias. */
   actions?: LiveAuthorActions;
   /** Mi reacción contra la API (spec 0009, decisión 20). */
@@ -88,6 +94,9 @@ export interface LiveAuthorActions {
   /** Resuelve true si la API guardó el cambio. */
   edit: (content: string) => Promise<boolean>;
   deactivate: () => void;
+  reactivate: () => void;
+  archive: () => void;
+  restore: () => void;
   remove: () => void;
   busy: boolean;
 }
@@ -166,8 +175,6 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     reactivatePost,
     deletePost,
     blockUser,
-    reportPost,
-    hasReported,
   } = useAppState();
   const own = live ? live.isMine : isOwnPost(post.id);
   const blockMutation = useBlockUser();
@@ -180,7 +187,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
     null,
   );
   const [reporting, setReporting] = useState(false);
-  const reported = hasReported('post', post.id);
+  const reported = useHasReported('POST', post.id);
 
   const startEdit = () => {
     setDraft(post.content);
@@ -256,19 +263,22 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                     Desactivada
                   </span>
                 )}
+                {live?.state === 'ARCHIVED' && (
+                  <span className="text-[var(--muted)] font-semibold text-[11px] bg-[var(--surface-3)] px-2 py-0.5 rounded-md">
+                    Archivada
+                  </span>
+                )}
               </div>
             </div>
 
-            {(!live || actions) && (
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label={`Opciones de la publicación de ${post.authorName}`}
-                aria-expanded={menuOpen}
-                className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
-              >
-                <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
-              </button>
-            )}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={`Opciones de la publicación de ${post.authorName}`}
+              aria-expanded={menuOpen}
+              className="w-7 h-7 -mr-1 -mt-0.5 flex-none flex items-center justify-center rounded-full hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <MoreHorizontal className="w-[18px] h-[18px] text-[var(--muted)]" />
+            </button>
           </div>
 
           {/* Contenido */}
@@ -567,21 +577,26 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
           <div className="absolute top-12 right-4 z-50 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden w-[210px]">
             {!own && (
               <>
-                <button
-                  onClick={() => {
-                    setReporting(true);
-                    setMenuOpen(false);
-                  }}
-                  disabled={reported}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
-                >
-                  {reported ? (
-                    <Check className="w-4 h-4 text-[var(--muted)]" />
-                  ) : (
-                    <Flag className="w-4 h-4 text-[var(--muted)]" />
-                  )}
-                  {reported ? 'Publicación reportada' : 'Reportar publicación'}
-                </button>
+                {/* Solo las publicaciones reales se pueden reportar (HU56). */}
+                {live && (
+                  <button
+                    onClick={() => {
+                      setReporting(true);
+                      setMenuOpen(false);
+                    }}
+                    disabled={reported}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors disabled:text-[var(--muted)]"
+                  >
+                    {reported ? (
+                      <Check className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Flag className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {reported
+                      ? 'Publicación reportada'
+                      : 'Reportar publicación'}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (live || post.authorId.includes('-')) {
@@ -599,14 +614,33 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
             )}
             {own && (
               <>
-                <button
-                  onClick={startEdit}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
-                >
-                  <Pencil className="w-4 h-4 text-[var(--muted)]" />
-                  Editar
-                </button>
-                {live || post.active ? (
+                {!(live && !post.active) && (
+                  <button
+                    onClick={startEdit}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                  >
+                    <Pencil className="w-4 h-4 text-[var(--muted)]" />
+                    Editar
+                  </button>
+                )}
+                {actions && post.active && (
+                  <button
+                    onClick={() => {
+                      if (live?.state === 'ARCHIVED') actions.restore();
+                      else actions.archive();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
+                  >
+                    {live?.state === 'ARCHIVED' ? (
+                      <ArchiveRestore className="w-4 h-4 text-[var(--muted)]" />
+                    ) : (
+                      <Archive className="w-4 h-4 text-[var(--muted)]" />
+                    )}
+                    {live?.state === 'ARCHIVED' ? 'Restaurar' : 'Archivar'}
+                  </button>
+                )}
+                {post.active ? (
                   <button
                     onClick={() => {
                       setConfirming('deactivate');
@@ -620,7 +654,8 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                 ) : (
                   <button
                     onClick={() => {
-                      reactivatePost(post.id);
+                      if (actions) actions.reactivate();
+                      else reactivatePost(post.id);
                       setMenuOpen(false);
                     }}
                     className="w-full px-4 py-3 flex items-center gap-3 text-[14px] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors border-t border-[var(--line-soft)]"
@@ -646,15 +681,13 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
       )}
 
       {/* HU56 — Reportar publicación */}
-      {reporting && (
-        <ReportDialog
+      {reporting && live && (
+        <ReportTargetDialog
+          targetType="POST"
+          targetId={post.id}
           title="Reportar publicación"
           subject={`Publicación de ${post.authorName}`}
           onClose={() => setReporting(false)}
-          onConfirm={(reason) => {
-            reportPost(post.id, reason);
-            setReporting(false);
-          }}
         />
       )}
 

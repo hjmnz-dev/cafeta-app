@@ -10,6 +10,8 @@ export const postKeys = {
   count: (userId: string) => ['posts', 'count', userId] as const,
   /** Mis guardadas (spec 0009, decisión 19). */
   saved: ['posts', 'saved'] as const,
+  /** Mis archivadas y desactivadas (solo las veo yo). */
+  archived: ['posts', 'archived'] as const,
 };
 
 /**
@@ -80,4 +82,10 @@ export const searchKeys = {
 export const commentKeys = {
   all: ['comments'] as const,
   post: (postId: string) => ['comments', 'post', postId] as const,
+};
+
+/** Reportes (decisión 30): lo ya reportado en esta sesión, para no ofrecer repetirlo. */
+export const reportKeys = {
+  sent: (targetType: string, targetId: string) =>
+    ['reports', 'sent', targetType, targetId] as const,
 };
