@@ -130,6 +130,8 @@ describe('DEF-07 · Búsqueda contra la API (live)', () => {
               avatarUrl: null,
               careerName: 'Ingeniería de Software',
               verified: true,
+              followStatus: 'NONE',
+              canFollow: true,
             },
           ],
           nextCursor: null,
@@ -194,5 +196,81 @@ describe('DEF-07 · Búsqueda contra la API (live)', () => {
     expect(
       await screen.findByText('Publicación popular destacada'),
     ).toBeInTheDocument();
+  });
+
+  it('bug 1015: Seguir desde los resultados sigue de verdad en la API y refresca el botón', async () => {
+    const JOSE = '01926f00-0000-7000-8000-000000000099';
+    let followStatus: 'NONE' | 'ACCEPTED' = 'NONE';
+    const fetchMock = signIn((url) => {
+      if (url.pathname.endsWith(`/users/${JOSE}/follow`)) {
+        followStatus = 'ACCEPTED';
+        return json(201, { id: 'f1', status: 'ACCEPTED' });
+      }
+      if (url.pathname.endsWith('/search/users')) {
+        return json(200, {
+          items: [
+            {
+              id: JOSE,
+              handle: 'josep',
+              displayName: 'José Pérez',
+              avatarUrl: null,
+              careerName: 'Ingeniería de Software',
+              verified: false,
+              followStatus,
+              canFollow: true,
+            },
+          ],
+          nextCursor: null,
+        });
+      }
+      return undefined;
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+    await type(user, 'jose');
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Seguir a José' }),
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Dejar de seguir a José' }),
+    ).toHaveTextContent('Siguiendo');
+    const follow = fetchMock.mock.calls.find(([input]) =>
+      String(input).endsWith(`/users/${JOSE}/follow`),
+    );
+    expect(follow?.[1]?.method).toBe('POST');
+  });
+
+  it('bug 1015: a un perfil privado no se le ofrece Seguir desde la búsqueda', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/search/users')
+        ? json(200, {
+            items: [
+              {
+                id: '01926f00-0000-7000-8000-000000000098',
+                handle: 'priv',
+                displayName: 'Paula Privada',
+                avatarUrl: null,
+                careerName: null,
+                verified: false,
+                followStatus: 'NONE',
+                canFollow: false,
+              },
+            ],
+            nextCursor: null,
+          })
+        : undefined,
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+    await type(user, 'paula');
+
+    expect(await screen.findByText('Paula Privada')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /seguir a paula/i }),
+    ).not.toBeInTheDocument();
   });
 });

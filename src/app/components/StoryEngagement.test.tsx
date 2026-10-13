@@ -6,7 +6,7 @@ import { signIn, TEST_USER } from '../../test/api';
 import { renderRoutes } from '../../test/utils';
 import type { CommentView } from '../lib/comments-api';
 import type { ReactionType } from '../lib/reactions';
-import type { StoryGroup, StoryView } from '../lib/stories-api';
+import type { StoryGroup, StoryReactor, StoryView } from '../lib/stories-api';
 import { StoryViewerScreen } from './StoryViewerScreen';
 import { Toaster } from './ui/sonner';
 
@@ -77,6 +77,8 @@ interface Scenario {
   reactionFails?: { status: number; code: string };
   /** Retiene la respuesta de la reacción hasta soltarla. */
   holdReaction?: boolean;
+  /** Quién reaccionó a la historia (solo la ve su autor). */
+  reactors?: StoryReactor[];
 }
 
 /** Visor de la historia `s1` con una API simulada que lleva el estado. */
@@ -125,6 +127,10 @@ function renderViewer(scenario: Scenario) {
           ? (JSON.parse(String(init?.body)) as { type: ReactionType }).type
           : null;
       return json(200, { myReaction, reactionCount: null });
+    }
+    if (path === '/stories/s1/reactions' && method === 'GET') {
+      record(url, init);
+      return json(200, { items: scenario.reactors ?? [], nextCursor: null });
     }
     if (path === '/stories/s1/comments' && method === 'GET') {
       record(url, init);
@@ -319,6 +325,70 @@ describe('HU16 · Mi historia muestra cuántas reacciones tiene', () => {
     expect(await screen.findByTestId('story-reactions')).toHaveTextContent(
       'Aún sin reacciones',
     );
+  });
+
+  it('bug 1018: tocar el conteo muestra quién reaccionó y con qué', async () => {
+    const user = userEvent.setup();
+    const { calls } = renderViewer({
+      author: ME,
+      story: { reactionCount: 2 },
+      reactors: [
+        {
+          id: 'r1',
+          type: 'HEART',
+          createdAt: new Date().toISOString(),
+          user: {
+            ...BETO,
+            avatarUrl: null,
+            careerName: null,
+            verified: false,
+          },
+        },
+        {
+          id: 'r2',
+          type: 'LAUGH',
+          createdAt: new Date().toISOString(),
+          user: {
+            id: '01926f00-0000-7000-8000-0000000000c1',
+            handle: 'carla',
+            displayName: 'Carla Peña',
+            avatarUrl: null,
+            careerName: null,
+            verified: true,
+          },
+        },
+      ],
+    });
+
+    await user.click(await screen.findByTestId('story-reactions'));
+    const sheet = within(
+      await screen.findByRole('dialog', { name: 'Reacciones de la historia' }),
+    );
+    expect(await sheet.findByText('Beto Ramírez')).toBeInTheDocument();
+    expect(sheet.getByRole('img', { name: 'Me encanta' })).toBeInTheDocument();
+    expect(sheet.getByText('Carla Peña')).toBeInTheDocument();
+    expect(sheet.getByRole('img', { name: 'Risa' })).toBeInTheDocument();
+    expect(
+      sheet.getByRole('img', { name: 'Cuenta verificada' }),
+    ).toBeInTheDocument();
+    expect(calls.map((c) => `${c.method} ${c.path}`)).toContain(
+      'GET /stories/s1/reactions',
+    );
+
+    await user.click(sheet.getByRole('button', { name: 'Cerrar reacciones' }));
+    expect(
+      screen.queryByRole('dialog', { name: 'Reacciones de la historia' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('bug 1018: sin nadie que reaccionara, la hoja lo dice', async () => {
+    const user = userEvent.setup();
+    renderViewer({ author: ME, story: { reactionCount: 0 } });
+
+    await user.click(await screen.findByTestId('story-reactions'));
+    expect(
+      await screen.findByText('Aún nadie ha reaccionado a tu historia.'),
+    ).toBeInTheDocument();
   });
 });
 

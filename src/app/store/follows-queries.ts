@@ -9,16 +9,25 @@ import {
   type QueryClient,
 } from '@tanstack/react-query';
 import { followsApi, type FollowListKind } from '../lib/follows-api';
-import { followKeys, postKeys, profileKeys } from '../lib/query-keys';
+import {
+  followKeys,
+  postKeys,
+  profileKeys,
+  searchKeys,
+} from '../lib/query-keys';
 
 const firstPage = null as string | null;
 
-/** Seguir cambia conteos, listas, solicitudes y lo que llega al feed. */
+/**
+ * Seguir cambia conteos, listas, solicitudes, lo que llega al feed y el botón
+ * de cada persona en la búsqueda (bug 1015).
+ */
 function refreshNetwork(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: followKeys.all }),
     queryClient.invalidateQueries({ queryKey: profileKeys.all }),
     queryClient.invalidateQueries({ queryKey: postKeys.all }),
+    queryClient.invalidateQueries({ queryKey: searchKeys.all }),
   ]);
 }
 

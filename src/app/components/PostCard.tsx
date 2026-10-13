@@ -32,6 +32,7 @@ import type { PostView } from '../lib/posts-api';
 import { useHasReported } from '../store/reports-queries';
 import { PostReactionButton } from './PostReactionButton';
 import { ReportTargetDialog } from './ReportTargetDialog';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -243,6 +244,7 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
                     {post.authorName}
                   </span>
                 )}
+                {post.authorVerified && <VerifiedBadge />}
                 {live?.isAnnouncement && (
                   <span className="flex items-center gap-1 text-[var(--on-brand)] font-semibold text-[11px] bg-[var(--brand)] px-2 py-0.5 rounded-md">
                     <Megaphone className="w-3 h-3" aria-hidden="true" />

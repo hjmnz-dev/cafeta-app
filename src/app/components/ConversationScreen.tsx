@@ -285,7 +285,7 @@ export function ConversationScreen() {
         <div ref={endRef} />
       </div>
 
-      <div className="bg-[var(--surface)] border-t border-[var(--line-soft)] px-5 py-4 pb-24">
+      <div className="bg-[var(--surface)] border-t border-[var(--line-soft)] px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
         {tooLong && (
           <p
             className="text-[12px] text-[var(--destructive)] mb-2"
@@ -294,7 +294,7 @@ export function ConversationScreen() {
             El mensaje pasa de {MESSAGE_CONTENT_MAX} caracteres.
           </p>
         )}
-        <div className="flex items-center gap-3 bg-[var(--app-bg)] rounded-[24px] px-4 py-3 border border-[var(--line)]">
+        <div className="flex items-center gap-2 bg-[var(--app-bg)] rounded-full pl-4 pr-1.5 py-1.5 border border-[var(--line)]">
           <input
             type="text"
             aria-label="Escribe un mensaje"

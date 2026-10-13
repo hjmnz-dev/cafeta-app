@@ -4,6 +4,7 @@
  */
 import type { components } from './api-types';
 import { apiRequest } from './http';
+import { toQueryString } from './posts-api';
 import type { ReactionType } from './reactions';
 
 type Schemas = components['schemas'];
@@ -14,6 +15,8 @@ export type StoryTray = Schemas['StoryTrayDto'];
 export type CreateStory = Schemas['CreateStoryDto'];
 export type EditStory = Schemas['EditStoryDto'];
 export type StoryReactionState = Schemas['StoryReactionStateDto'];
+export type StoryReactor = Schemas['StoryReactorDto'];
+export type StoryReactorPage = Schemas['StoryReactorPageDto'];
 
 export const storiesApi = {
   /** Historias vigentes de quienes sigo y las mías, agrupadas por autor. */
@@ -35,4 +38,9 @@ export const storiesApi = {
     apiRequest<StoryReactionState>(`/stories/${id}/reaction`, {
       method: 'DELETE',
     }),
+  /** Quién reaccionó a mi historia y con qué; solo para su autor (bug 1018). */
+  reactors: (id: string, cursor: string | null = null) =>
+    apiRequest<StoryReactorPage>(
+      `/stories/${id}/reactions${toQueryString({ cursor })}`,
+    ),
 };

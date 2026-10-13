@@ -794,6 +794,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/stories/{id}/reactions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Quién reaccionó a mi historia y con qué; solo para su autor. */
+    get: operations['StoryReactorsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/stories/{id}/comments': {
     parameters: {
       query?: never;
@@ -1680,6 +1697,23 @@ export interface components {
       /** Format: date-time */
       blockedAt: string;
     };
+    SearchUserViewDto: {
+      /** Format: uuid */
+      id: string;
+      handle: string;
+      displayName: string;
+      avatarUrl: string | null;
+      careerName: string | null;
+      verified: boolean;
+      /** @description Seguimiento de quien busca hacia esta persona. */
+      followStatus: components['schemas']['FollowState'];
+      /** @description false en los perfiles PRIVATE: no se muestra el botón Seguir. */
+      canFollow: boolean;
+    };
+    SearchUserPageDto: {
+      items: components['schemas']['SearchUserViewDto'][];
+      nextCursor: string | null;
+    };
     DeactivateAccountDto: {
       /** @description La contraseña actual: confirma que quien desactiva es el dueño de la cuenta. */
       password: string;
@@ -1739,6 +1773,18 @@ export interface components {
       myReaction: components['schemas']['ReactionType'] | null;
       /** @description Reacciones activas de usuarios activos; solo para el autor, null para los demás. */
       reactionCount: number | null;
+    };
+    StoryReactorDto: {
+      /** Format: uuid */
+      id: string;
+      type: components['schemas']['ReactionType'];
+      /** Format: date-time */
+      createdAt: string;
+      user: components['schemas']['FollowUserViewDto'];
+    };
+    StoryReactorPageDto: {
+      items: components['schemas']['StoryReactorDto'][];
+      nextCursor: string | null;
     };
     CommentAuthorDto: {
       /** @description Enlace de lectura de la foto, o null si no tiene. */
@@ -2032,10 +2078,11 @@ export interface components {
       /** @description Obligatoria al sancionar (3 a 500 caracteres); opcional al desestimar. */
       note?: string;
       /**
-       * @description DISMISS cierra solo este reporte; DEACTIVATE_TARGET sanciona al objetivo.
+       * @description DISMISS cierra solo este reporte; DEACTIVATE_TARGET sanciona al objetivo;
+       *     DEACTIVATE_AUTHOR (solo reportes de publicación) desactiva la cuenta del autor.
        * @enum {string}
        */
-      action: 'DISMISS' | 'DEACTIVATE_TARGET';
+      action: 'DISMISS' | 'DEACTIVATE_TARGET' | 'DEACTIVATE_AUTHOR';
     };
   };
   responses: never;
@@ -3104,7 +3151,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['FollowUserPageDto'];
+          'application/json': components['schemas']['SearchUserPageDto'];
         };
       };
     };
@@ -3308,6 +3355,32 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['StoryReactionStateDto'];
+        };
+      };
+    };
+  };
+  StoryReactorsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StoryReactorPageDto'];
         };
       };
     };
