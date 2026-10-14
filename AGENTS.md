@@ -2,7 +2,7 @@
 
 ## Overview
 
-App web del estudiante de Cafeta, nacida como prototipo exportado de Figma Make. Todas las pantallas funcionan con datos de ejemplo guardados en `localStorage`; cada funcionalidad del scope reemplaza su parte simulada por la API real (`cafeta-api`), sin cambiar la forma de los datos. Este `AGENTS.md` es un resumen ligero; corre `/audit Cafeta` para el escaneo completo cuando empieces a conectar pantallas.
+App web del estudiante de Cafeta, nacida como prototipo exportado de Figma Make. Todas las pantallas funcionan con datos de ejemplo guardados en `localStorage`; cada funcionalidad del scope reemplaza su parte simulada por la API real (`cafeta-api`), sin cambiar la forma de los datos. Este `AGENTS.md` es un resumen ligero; corre `/audit Cafeta` para el escaneo completo cuando empieces a conectar pantallas. Hoy casi todo el contenido ya viene de la API real; `AppState` solo conserva lo que ninguna funcionalidad ha reemplazado (las tarjetas sin `live`, `UserProfileScreen` y los datos de demostración) y debe seguir encogiendo.
 
 ## Stack
 
@@ -44,6 +44,9 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 | `src/app/lib/http.ts`                 | Cliente HTTP único (`apiRequest`): agrega el Bearer, traduce el `code` con `error-messages.ts` y ante un 401 borra la sesión y emite `cafeta:session-ended`                                            |
 | `src/app/lib/api-types.ts`            | Tipos generados desde OpenAPI con `npm run api:types`; se commitea y nunca se edita a mano                                                                                                             |
 | `src/app/lib/auth-api.ts`             | Llamadas de auth y carreras, con sus tipos tomados de `api-types.ts`                                                                                                                                   |
+| `src/app/store/RealtimeProvider.tsx`  | Un solo socket de Socket.io mientras hay sesión (mismo JWT); vuelca mensajes y notificaciones nuevos en la caché de TanStack Query, sin dibujar nada                                                   |
+| `src/app/lib/monitoring.ts`           | Borde con Sentry (spec 0007): sin `VITE_SENTRY_DSN` no inicia nada; `monitoring-filters.ts` limpia datos personales y limita eventos                                                                   |
+| `src/app/lib/legal.ts`                | `TERMS_VERSION` (la misma cadena que guarda la API al registrarse) y los textos de `/terms` y `/privacy`                                                                                               |
 | `src/app/store/SessionStore.tsx`      | Sesión real (`useSession()`): token en `localStorage` con "Recordarme", en `sessionStorage` sin él                                                                                                     |
 | `src/app/components/RequireAuth.tsx`  | Guardia de las rutas protegidas en `routes.tsx`                                                                                                                                                        |
 | `src/styles/theme.css`                | Tokens de color y tema (oscuro por defecto), foco visible con teclado y movimiento reducido                                                                                                            |
@@ -57,7 +60,7 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 - Pantallas en `components/`, lógica pura en `lib/`, estado en `store/`: se mantiene esta estructura.
 - Al conectar una pantalla a la API, la llamada va por el cliente HTTP común (que traduce el `code` de error), nunca `fetch` suelto dentro del componente.
 - Nuevos componentes base se agregan como componentes shadcn en `components/ui/`.
-- Toda ruta nueva va dentro de `RequireAuth` en `routes.tsx`; las únicas públicas son `/`, `/login`, `/register` y `/forgot-password`.
+- Toda ruta nueva va dentro de `RequireAuth` en `routes.tsx`; las únicas públicas son `/`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/terms` y `/privacy`.
 - Las pantallas muestran el `userMessage` de `ApiError`, nunca el `message` de la API; un `code` nuevo se suma al mapa de `lib/error-messages.ts`.
 - Los datos de la API se leen con hooks de TanStack Query en `store/<dominio>-queries.ts`, con claves de `lib/query-keys.ts` y llamadas de `lib/<dominio>-api.ts`; al escribir se invalida la clave raíz del dominio. Nunca se guardan en `AppState` ni en `localStorage`.
 - Una publicación de la API se dibuja con `<PostCard live={…} />` (convierte con `toCardPost` de `lib/posts.ts`); sin `live`, la tarjeta sigue en modo `AppState` para las pantallas aún no conectadas.
@@ -72,7 +75,7 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 - `localStorage` guarda unos 5 MB en total; por eso las imágenes se reducen antes de guardarse (`lib/image.ts`). Deja de importar cuando la pantalla usa la API.
 - La URL de la API sale de `VITE_API_URL` (ver `.env.example`); sin ella usa `http://localhost:3000/api/v1`.
 - `package.json` todavía se llama `@figma/my-make-file` y trae un bloque `pnpm` que no aplica: el repo usa npm.
-- Hay un archivo suelto `src/app/components/ProfileScreen.tsx.tmp` y `guidelines/Guidelines.md` está vacío.
+- `guidelines/Guidelines.md` está vacío.
 - El scroll infinito observa el contenedor con scroll de cada pantalla (el marco del teléfono), no la ventana. jsdom no trae `IntersectionObserver`: las pruebas lo simulan (ver `InfiniteListFooter.test.tsx`).
 - TanStack Query pausa los reintentos mientras la pestaña está oculta; en una verificación en navegador, el panel tiene que estar visible para ver los estados de error.
 - `deploy/server.mjs` es el mismo archivo que en `Cafeta-Admin`: un cambio va en los dos. Si un build nuevo emite una extensión que no está en su tabla de tipos, súmala ahí.
