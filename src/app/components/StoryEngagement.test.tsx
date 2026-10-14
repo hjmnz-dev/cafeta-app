@@ -202,7 +202,7 @@ describe('HU16 · Reaccionar a la historia de otra persona', () => {
     }
   });
 
-  it('tocar una manda PUT con el tipo y la deja marcada', async () => {
+  it('HU16 E1: tocar una manda PUT con el tipo y la deja marcada', async () => {
     const user = userEvent.setup();
     const api = renderViewer({ author: BETO });
 
@@ -257,7 +257,7 @@ describe('HU16 · Reaccionar a la historia de otra persona', () => {
     ]);
   });
 
-  it('cambiar de expresión reemplaza la mía con un PUT', async () => {
+  it('HU16 E2: cambiar de expresión reemplaza la mía con un PUT', async () => {
     const user = userEvent.setup();
     const api = renderViewer({ author: BETO, story: { myReaction: 'HEART' } });
 
@@ -422,7 +422,7 @@ describe('HU17 a HU19 · Comentarios de la historia', () => {
     });
   });
 
-  it('comentar manda el texto recortado a la historia y sube el conteo', async () => {
+  it('HU17 E1: comentar manda el texto recortado a la historia y sube el conteo', async () => {
     const user = userEvent.setup();
     const api = renderViewer({ author: BETO });
     const sheet = await openSheet(user);
@@ -446,7 +446,7 @@ describe('HU17 a HU19 · Comentarios de la historia', () => {
     ).toBeInTheDocument();
   });
 
-  it('editar y desactivar un comentario propio usan las rutas de la historia', async () => {
+  it('HU18 E1: editar y desactivar un comentario propio usan las rutas de la historia', async () => {
     const user = userEvent.setup();
     const api = renderViewer({
       author: BETO,

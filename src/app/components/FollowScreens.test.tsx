@@ -53,7 +53,7 @@ const withToasts = (element: React.ReactElement) => (
 );
 
 describe('HU26 y HU27 · Seguir desde el perfil', () => {
-  it('HU26 E1 — seguir un perfil público lo sigue al instante', async () => {
+  it('HU26 E1: seguir un perfil público lo sigue al instante', async () => {
     const user = userEvent.setup();
     let state: ProfileView['followStatus'] = 'NONE';
     const fetchMock = signIn((url) => {
@@ -85,7 +85,7 @@ describe('HU26 y HU27 · Seguir desde el perfil', () => {
     expect(call?.[1]?.method).toBe('POST');
   });
 
-  it('HU26 E2 — seguir un perfil "Solo seguidores" deja una solicitud pendiente', async () => {
+  it('HU26 E2: seguir un perfil "Solo seguidores" deja una solicitud pendiente', async () => {
     const user = userEvent.setup();
     let state: ProfileView['followStatus'] = 'NONE';
     signIn((url) => {
@@ -128,7 +128,7 @@ describe('HU26 y HU27 · Seguir desde el perfil', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU27 E1 — dejar de seguir manda DELETE y vuelve a Seguir', async () => {
+  it('HU27 E1: dejar de seguir manda DELETE y vuelve a Seguir', async () => {
     const user = userEvent.setup();
     let state: ProfileView['followStatus'] = 'ACCEPTED';
     const fetchMock = signIn((url) => {
@@ -184,14 +184,14 @@ describe('HU32 · Listas de seguidores', () => {
     );
   }
 
-  it('HU32 E1 — muestra quién sigue a la persona, con enlace a su perfil', async () => {
+  it('HU32 E1: muestra quién sigue a la persona, con enlace a su perfil', async () => {
     renderList([juan]);
 
     const link = await screen.findByRole('link', { name: /juan pérez/i });
     expect(link).toHaveAttribute('href', `/u/${juan.id}`);
   });
 
-  it('HU32 E2 — sin seguidores muestra el estado vacío', async () => {
+  it('HU32 E2: sin seguidores muestra el estado vacío', async () => {
     renderList([]);
 
     expect(

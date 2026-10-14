@@ -48,7 +48,7 @@ describe('HU04 · Cerrar sesión', () => {
     return fetchMock;
   }
 
-  it('AC-8: revoca la sesión en la API, borra la guardada y va al login', async () => {
+  it('HU04 E1: revoca la sesión en la API, borra la guardada y va al login', async () => {
     const user = userEvent.setup();
     const fetchMock = signedIn(() => new Response(null, { status: 204 }));
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
@@ -95,14 +95,14 @@ const renderSettingsWithToasts = () =>
   );
 
 describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
-  it('HU06 — muestra las tres áreas: cuenta, privacidad y notificaciones', () => {
+  it('HU06 E1: muestra las tres áreas: cuenta, privacidad y notificaciones', () => {
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
     expect(screen.getByText('Cuenta')).toBeInTheDocument();
     expect(screen.getByText(/privacidad del perfil/i)).toBeInTheDocument();
     expect(screen.getByText('Notificaciones')).toBeInTheDocument();
   });
 
-  it('HU07 E1 — cambiar la privacidad la guarda en la API y marca la opción', async () => {
+  it('HU07 E1: cambiar la privacidad la guarda en la API y marca la opción', async () => {
     const user = userEvent.setup();
     let saved = 'PUBLIC';
     const fetchMock = signIn((url, init) => {
@@ -142,7 +142,7 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU07 E2 — al volver a entrar se muestra la opción guardada en la API', async () => {
+  it('HU07 E2: al volver a entrar se muestra la opción guardada en la API', async () => {
     signIn((url) =>
       url.pathname.endsWith('/me/privacy')
         ? json(200, { visibility: 'PRIVATE' })
@@ -155,7 +155,7 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     ).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('HU07 — si la API falla al guardar, avisa y deja la opción anterior', async () => {
+  it('HU07 E1: si la API falla al guardar, avisa y deja la opción anterior', async () => {
     const user = userEvent.setup();
     signIn((url, init) => {
       if (!url.pathname.endsWith('/me/privacy')) return undefined;
@@ -177,7 +177,7 @@ describe('DEF-03 · HU06/07/08 — Configuración de cuenta', () => {
     );
   });
 
-  it('HU08 E1 — apagar "Comentarios" lo guarda en la API y deja los demás encendidos', async () => {
+  it('HU08 E1: apagar "Comentarios" lo guarda en la API y deja los demás encendidos', async () => {
     const user = userEvent.setup();
     let saved = {
       reactions: true,
@@ -272,7 +272,7 @@ describe('Apariencia — modo oscuro por defecto', () => {
 
 // HU05 y HU06 contra la API con fetch simulado (spec 0009, decisión 11).
 describe('HU06 · Datos de la cuenta y accesos', () => {
-  it('E1 — muestra los datos de la cuenta y los accesos a legal, cerrar sesión y desactivar', async () => {
+  it('HU06 E1: muestra los datos de la cuenta y los accesos a legal, cerrar sesión y desactivar', async () => {
     signIn();
     renderWithProviders(<SettingsScreen />, { route: '/settings' });
 
@@ -312,7 +312,7 @@ describe('HU05 · Desactivar cuenta', () => {
     return screen.findByRole('alertdialog');
   };
 
-  it('E2 — pide confirmación y no desactiva nada hasta que se escribe la contraseña y se confirma', async () => {
+  it('HU05 E2: pide confirmación y no desactiva nada hasta que se escribe la contraseña y se confirma', async () => {
     const user = userEvent.setup();
     const fetchMock = signIn();
     renderSettingsWithToasts();
@@ -332,7 +332,7 @@ describe('HU05 · Desactivar cuenta', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/settings');
   });
 
-  it('E1 — con la contraseña la desactiva en la API, cierra la sesión y va al login', async () => {
+  it('HU05 E1: con la contraseña la desactiva en la API, cierra la sesión y va al login', async () => {
     const user = userEvent.setup();
     const fetchMock = signIn((url, init) => {
       if (url.pathname.endsWith('/me/deactivate'))

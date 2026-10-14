@@ -83,7 +83,7 @@ const pickAndSend = async (user: ReturnType<typeof userEvent.setup>) => {
 };
 
 describe('HU55 — Reportar a un usuario desde su perfil', () => {
-  it('E1: envía POST /reports con el id del usuario y el motivo, y avisa', async () => {
+  it('HU55 E1: envía POST /reports con el id del usuario y el motivo, y avisa', async () => {
     const user = userEvent.setup();
     const calls = renderProfile();
 
@@ -112,7 +112,7 @@ describe('HU55 — Reportar a un usuario desde su perfil', () => {
     ).toBeDisabled();
   });
 
-  it('E2: un duplicado dice que ya hay un reporte activo y apaga la opción', async () => {
+  it('HU55 E2: un duplicado dice que ya hay un reporte activo y apaga la opción', async () => {
     const user = userEvent.setup();
     renderProfile(() =>
       json(409, {

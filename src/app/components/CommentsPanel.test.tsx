@@ -164,7 +164,7 @@ describe('HU22 · Leer los comentarios', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('los comentarios ajenos no traen menú; los míos sí', async () => {
+  it('HU30 E2: los comentarios ajenos no traen menú; los míos sí', async () => {
     renderPanel(() =>
       commentsPage([comment('c1'), mine('c2', { content: 'El mío' })]),
     );
@@ -181,7 +181,7 @@ describe('HU21 · Comentar', () => {
     screen.getByRole('textbox', { name: 'Escribe un comentario' });
   const send = () => screen.getByRole('button', { name: 'Enviar comentario' });
 
-  it('Enviar queda apagado con el campo vacío o con más de 500 caracteres', async () => {
+  it('HU29 E2: Enviar queda apagado con el campo vacío o con más de 500 caracteres', async () => {
     const user = userEvent.setup();
     renderPanel(() => commentsPage([]), undefined, 0);
     await screen.findByText(/aún no hay comentarios/i);
@@ -199,7 +199,7 @@ describe('HU21 · Comentar', () => {
     expect(send()).toBeEnabled();
   });
 
-  it('manda el texto recortado, vacía el campo y vuelve a pedir la lista', async () => {
+  it('HU29 E1: manda el texto recortado, vacía el campo y vuelve a pedir la lista', async () => {
     const user = userEvent.setup();
     let items: CommentView[] = [];
     const sent = renderPanel(
@@ -246,7 +246,7 @@ describe('HU21 · Comentar', () => {
 });
 
 describe('HU23 · Editar mi comentario', () => {
-  it('el campo trae el texto actual, Guardar espera un cambio y manda el texto recortado', async () => {
+  it('HU30 E1: el campo trae el texto actual, Guardar espera un cambio y manda el texto recortado', async () => {
     const user = userEvent.setup();
     let current = mine('c1', { content: 'Original' });
     const sent = renderPanel(
@@ -319,7 +319,7 @@ describe('HU24 · Desactivar mi comentario', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('confirmar lo desactiva y desaparece de la lista', async () => {
+  it('HU31 E1: confirmar lo desactiva y desaparece de la lista', async () => {
     const user = userEvent.setup();
     let items = [mine('c1', { content: 'Se va' })];
     const sent = renderPanel(

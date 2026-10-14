@@ -13,7 +13,7 @@ function renderUser(userId: string) {
 }
 
 describe('DEF-05 · HU26/HU27 — Seguir / dejar de seguir', () => {
-  it('HU26 — seguir a un perfil público registra la relación y suma un seguidor', async () => {
+  it('HU26 E1: seguir a un perfil público registra la relación y suma un seguidor', async () => {
     const user = userEvent.setup();
     renderUser('maria'); // pública, 842 seguidores
 
@@ -31,7 +31,7 @@ describe('DEF-05 · HU26/HU27 — Seguir / dejar de seguir', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU27 — dejar de seguir elimina la relación y descuenta el seguidor', async () => {
+  it('HU27 E1: dejar de seguir elimina la relación y descuenta el seguidor', async () => {
     const user = userEvent.setup();
     renderUser('maria');
 
@@ -46,7 +46,7 @@ describe('DEF-05 · HU26/HU27 — Seguir / dejar de seguir', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU26 — seguir a un perfil privado crea una solicitud pendiente y no revela el contenido', async () => {
+  it('HU26 E2: seguir a un perfil privado crea una solicitud pendiente y no revela el contenido', async () => {
     const user = userEvent.setup();
     renderUser('laura'); // privada
 

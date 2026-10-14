@@ -111,7 +111,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
     ).toEqual(['Me encanta', 'Fuego', 'Aplauso', 'Risa', 'Asombro']);
   });
 
-  it('reaccionar manda PUT con el tipo y suma uno al conteo', async () => {
+  it('HU28 E1: reaccionar manda PUT con el tipo y suma uno al conteo', async () => {
     const user = userEvent.setup();
     const api = fakeApi({ count: 4 });
     const card = await renderFeed();
@@ -145,7 +145,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
     await waitFor(() => expect(api.calls).toHaveLength(1));
   });
 
-  it('repetir la misma reacción la quita con DELETE y baja el conteo', async () => {
+  it('HU28 E2: repetir la misma reacción la quita con DELETE y baja el conteo', async () => {
     const user = userEvent.setup();
     const api = fakeApi({ mine: 'HEART', count: 4 });
     const card = await renderFeed();

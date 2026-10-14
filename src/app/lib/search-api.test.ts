@@ -9,7 +9,7 @@ const lastCall = () => {
 };
 
 describe('searchApi', () => {
-  it('AC-1 (HU41): buscar usuarios manda GET /search/users con la consulta', async () => {
+  it('HU41 E1: buscar usuarios manda GET /search/users con la consulta', async () => {
     await searchApi.users('jose').catch(() => undefined);
     const { url } = lastCall();
     expect(url).toBe(`${API_URL}/search/users?q=jose`);
@@ -21,7 +21,7 @@ describe('searchApi', () => {
     expect(url).toBe(`${API_URL}/search/users?q=jose&cursor=u10&limit=15`);
   });
 
-  it('AC-6 (HU42): buscar publicaciones manda GET /search/posts con el texto', async () => {
+  it('HU42 E1: buscar publicaciones manda GET /search/posts con el texto', async () => {
     await searchApi.posts('calculo').catch(() => undefined);
     const { url } = lastCall();
     expect(url).toBe(`${API_URL}/search/posts?q=calculo`);
@@ -33,7 +33,7 @@ describe('searchApi', () => {
     expect(url).toBe(`${API_URL}/search/posts?q=calculo&cursor=p10&limit=20`);
   });
 
-  it('AC-9 (HU40): explorar manda GET /explore/posts', async () => {
+  it('HU40 E1: explorar manda GET /explore/posts', async () => {
     await searchApi.explore().catch(() => undefined);
     const { url } = lastCall();
     expect(url).toBe(`${API_URL}/explore/posts`);

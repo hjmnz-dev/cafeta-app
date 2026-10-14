@@ -108,7 +108,7 @@ describe('Spec 0008 decisión 17 — Acciones del autor en la tarjeta', () => {
     expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled();
   });
 
-  it('con adjuntos sí deja guardar el texto vacío (HU20 E2)', async () => {
+  it('HU20 E2: con adjuntos sí deja guardar el texto vacío', async () => {
     const user = userEvent.setup();
     const calls = fakeApi();
     renderCard(
@@ -196,7 +196,7 @@ describe('Spec 0008 decisión 17 — Acciones del autor en la tarjeta', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU22 E2 y HU23 E2: en una publicación ajena no hay acciones de autor, solo reportar', async () => {
+  it('HU22 E2: en una publicación ajena no hay acciones de autor, solo reportar', async () => {
     const user = userEvent.setup();
     fakeApi();
     renderCard(
@@ -217,7 +217,7 @@ describe('Spec 0008 decisión 17 — Acciones del autor en la tarjeta', () => {
 
 // Archivar y restaurar desde la tarjeta (HU21; spec 0008, funcionalidad 18).
 describe('HU21 — Archivar, restaurar y reactivar desde la tarjeta', () => {
-  it('E1: Archivar llama a /archive sin pedir confirmar y avisa', async () => {
+  it('HU21 E1: Archivar llama a /archive sin pedir confirmar y avisa', async () => {
     const user = userEvent.setup();
     const calls = fakeApi();
     renderCard(mine());
@@ -233,7 +233,7 @@ describe('HU21 — Archivar, restaurar y reactivar desde la tarjeta', () => {
     expect(await screen.findByText('Publicación archivada.')).toBeVisible();
   });
 
-  it('E2: una archivada ofrece Restaurar (no Archivar) y llama a /restore', async () => {
+  it('HU21 E2: una archivada ofrece Restaurar (no Archivar) y llama a /restore', async () => {
     const user = userEvent.setup();
     const calls = fakeApi();
     renderCard(mine({ state: 'ARCHIVED' }));

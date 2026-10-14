@@ -34,7 +34,7 @@ const perfilYPantallas = (id: string, extra: React.ReactElement) =>
   );
 
 describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
-  it('HU53 — bloquear oculta el perfil y ofrece revertirlo', async () => {
+  it('HU53 E1: bloquear oculta el perfil y ofrece revertirlo', async () => {
     const user = userEvent.setup();
     perfilDe('maria');
 
@@ -54,7 +54,7 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU53 — bloquear a alguien a quien seguías corta el seguimiento', async () => {
+  it('HU53 E1: bloquear a alguien a quien seguías corta el seguimiento', async () => {
     const user = userEvent.setup();
     perfilDe('maria');
 
@@ -77,7 +77,7 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
 
   // El feed ya viene de la API (spec 0005); ocultar a los bloqueados en él
   // llega con la funcionalidad 29. Aquí queda la búsqueda, que sigue en AppState.
-  it('HU53 — el contenido del bloqueado desaparece de la búsqueda', async () => {
+  it('HU53 E1: el contenido del bloqueado desaparece de la búsqueda', async () => {
     const user = userEvent.setup();
     perfilYPantallas('juan', <SearchScreen />);
 
@@ -95,7 +95,7 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU53 — el bloqueado sale del directorio de Descubrir', async () => {
+  it('HU53 E1: el bloqueado sale del directorio de Descubrir', async () => {
     const user = userEvent.setup();
     perfilYPantallas('pedro', <PeopleScreen />);
 
@@ -114,7 +114,7 @@ describe('DEF-12 · HU53/HU54 — Bloquear y desbloquear usuario', () => {
     ).toBeNull();
   });
 
-  it('HU54 — la cuenta bloqueada se puede recuperar desde Configuración', async () => {
+  it('HU54 E1: la cuenta bloqueada se puede recuperar desde Configuración', async () => {
     const user = userEvent.setup();
     perfilYPantallas(
       'pedro',

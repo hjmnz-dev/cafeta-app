@@ -46,7 +46,7 @@ const storeSession = () =>
   );
 
 describe('RequireAuth', () => {
-  it('AC-9: sin sesión manda al login recordando la ruta pedida', () => {
+  it('HU04 E2: sin sesión manda al login recordando la ruta pedida', () => {
     renderAt('/messages');
     expect(screen.getByText('login, venía de /messages')).toBeInTheDocument();
     expect(screen.queryByText('mensajes privados')).not.toBeInTheDocument();

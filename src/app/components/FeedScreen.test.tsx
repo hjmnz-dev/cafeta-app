@@ -10,7 +10,7 @@ import { json, TEST_CAREERS } from '../../test/setup';
 const [SOFTWARE, MEDICINA] = TEST_CAREERS;
 
 describe('Spec 0005 — Feed', () => {
-  it('AC-9 y AC-8: muestra esqueletos y luego las publicaciones de la API', async () => {
+  it('HU11 E1: muestra esqueletos y luego las publicaciones de la API', async () => {
     signIn((url) =>
       url.pathname.endsWith('/posts/feed')
         ? page([
@@ -33,7 +33,7 @@ describe('Spec 0005 — Feed', () => {
     ).toHaveAttribute('href', '/profile');
   });
 
-  it('AC-7: "Para ti" vacío invita a descubrir estudiantes', async () => {
+  it('HU11 E2: "Para ti" vacío invita a descubrir estudiantes', async () => {
     signIn();
     renderWithProviders(<FeedScreen />, { route: '/home' });
 

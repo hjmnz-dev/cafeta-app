@@ -68,7 +68,7 @@ describe('Decisión 14 · HU10 — Editar perfil', () => {
     expect(screen.getByText('React')).toBeInTheDocument();
   });
 
-  it('no permite guardar con el nombre vacío y no llama a la API', async () => {
+  it('HU10 E2: no permite guardar con el nombre vacío y no llama a la API', async () => {
     const user = userEvent.setup();
     const { patches } = profileApi();
     renderEdit();
@@ -81,7 +81,7 @@ describe('Decisión 14 · HU10 — Editar perfil', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/profile/edit');
   });
 
-  it('guarda los cambios y se reflejan de inmediato en el perfil', async () => {
+  it('HU10 E1: guarda los cambios y se reflejan de inmediato en el perfil', async () => {
     const user = userEvent.setup();
     const { patches } = profileApi();
     renderEdit();

@@ -60,7 +60,7 @@ const trayOf =
     isTrayRequest(url, init) ? json(200, { groups: groups() }) : undefined;
 
 describe('HU13 · Tira de historias del feed', () => {
-  it('muestra a quienes sigo con su historia vigente, y cada uno abre la suya', async () => {
+  it('HU13 E1: muestra a quienes sigo con su historia vigente, y cada uno abre la suya', async () => {
     signIn(trayOf(() => [group(BETO, [story('b1'), story('b2')])]));
     renderWithProviders(<StoriesStrip />, { route: '/home' });
 
@@ -202,7 +202,7 @@ describe('HU13 · Ver una historia', () => {
     ).toBeInTheDocument();
   });
 
-  it('una historia que ya no está en la bandeja (vencida o desactivada) no se muestra', async () => {
+  it('HU13 E2: una historia que ya no está en la bandeja (vencida o desactivada) no se muestra', async () => {
     renderViewer([group(BETO, [story('b2')])], '/stories/b1');
 
     expect(
@@ -390,7 +390,7 @@ describe('HU12 · Crear una historia', () => {
     expect(publishButton()).toBeDisabled();
   });
 
-  it('al elegir una imagen la sube, muestra la vista previa y permite publicar con su clave y el texto', async () => {
+  it('HU12 E1: al elegir una imagen la sube, muestra la vista previa y permite publicar con su clave y el texto', async () => {
     const user = userEvent.setup();
     const { sent } = renderCreate((url, init) =>
       isStoryCreate(url, init) ? json(201, story('nueva')) : undefined,
@@ -464,7 +464,7 @@ describe('HU12 · Crear una historia', () => {
     ).toBe(false);
   });
 
-  it('un PDF no es una historia: dice que lleva imagen o video', async () => {
+  it('HU12 E2: un PDF no es una historia: dice que lleva imagen o video', async () => {
     const user = userEvent.setup({ applyAccept: false });
     renderCreate();
 

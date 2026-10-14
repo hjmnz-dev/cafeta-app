@@ -73,7 +73,7 @@ const renderFeed = async () => {
 };
 
 describe('HU25 — Guardar una publicación desde la tarjeta', () => {
-  it('guardar manda PUT y deja el marcador presionado', async () => {
+  it('HU25 E1: guardar manda PUT y deja el marcador presionado', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
     const card = await renderFeed();
@@ -87,7 +87,7 @@ describe('HU25 — Guardar una publicación desde la tarjeta', () => {
     expect(api.calls).toEqual([{ method: 'PUT', path: '/posts/p1/save' }]);
   });
 
-  it('una ya guardada llega marcada y quitarla manda DELETE', async () => {
+  it('HU25 E2: una ya guardada llega marcada y quitarla manda DELETE', async () => {
     const user = userEvent.setup();
     const api = fakeApi({ saved: true });
     const card = await renderFeed();
