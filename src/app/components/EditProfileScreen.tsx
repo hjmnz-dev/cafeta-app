@@ -337,6 +337,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
               return (
                 <span
                   key={`${t.category}:${t.label}`}
+                  title={cat.label}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-semibold border"
                   style={{
                     background: cat.bg,
@@ -344,6 +345,7 @@ function EditProfileForm({ profile }: { profile: ProfileView }) {
                     borderColor: cat.border,
                   }}
                 >
+                  <span className="sr-only">{cat.label}: </span>
                   {t.label}
                   <button
                     onClick={() => removeTag(t)}

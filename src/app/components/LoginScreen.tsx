@@ -96,10 +96,14 @@ export function LoginScreen() {
         <div className="w-full flex flex-col gap-4">
           {/* Email Field */}
           <div>
-            <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+            <label
+              htmlFor="login-email"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
               Correo Electrónico
             </label>
             <input
+              id="login-email"
               type="email"
               placeholder="tu@est.intec.edu.do"
               value={email}
@@ -121,11 +125,15 @@ export function LoginScreen() {
 
           {/* Password Field */}
           <div>
-            <label className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]">
+            <label
+              htmlFor="login-password"
+              className="block text-[14px] font-semibold text-[var(--ink)] mb-2 font-['DM_Sans',sans-serif]"
+            >
               Contraseña
             </label>
             <div className="relative">
               <input
+                id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}

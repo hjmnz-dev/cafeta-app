@@ -11,7 +11,7 @@
   --brand-sand: #efebe8; /* fondo cálido */
   --brand-sand-soft: #fbf8f7; /* pozo de tarjeta */
   --brand-line: #e3ddd9; /* bordes */
-  --brand-muted: #8a807c; /* texto tenue */
+  --brand-muted: #6b625e; /* texto tenue */
   --brand-muted-strong: #4a4340;
   --font-brand: 'Space Grotesk', system-ui, sans-serif;
   --font-ui: 'DM Sans', system-ui, sans-serif;
@@ -29,7 +29,7 @@
   --secondary: #ffe9e6;
   --secondary-foreground: #7e1418;
   --muted: #efebe8;
-  --muted-foreground: #8a807c;
+  --muted-foreground: #6b625e;
   --accent: #ffe9e6;
   --accent-foreground: #7e1418;
   --destructive: #d62828;
@@ -214,9 +214,9 @@
   --line-soft: #f0ebe8; /* separadores internos */
   --ink: #171313; /* texto principal */
   --ink-2: #4a4340; /* texto secundario */
-  --muted: #8a807c; /* texto tenue e iconos inactivos */
+  --muted: #6b625e; /* texto tenue e iconos inactivos (5:1 o más sobre las superficies claras) */
   --tint: #ffe9e6; /* superficie de acento (rosa de marca) */
-  --brand: #d62828; /* rojo Cafeta */
+  --brand: #c42222; /* rojo Cafeta para texto y controles (AA sobre fondo, tarjeta y acento) */
   --brand-strong: #7e1418; /* estado presionado / hover */
   --brand-bright: #ff4a46; /* acento vivo */
   --on-brand: #ffffff; /* texto sobre rojo */
@@ -227,13 +227,13 @@
 
   /* Etiquetas del perfil por categoría (DEF-10) */
   --tag-carrera-bg: #ffe9e6;
-  --tag-carrera-ink: #d62828;
+  --tag-carrera-ink: #c42222;
   --tag-carrera-line: rgba(214, 40, 40, 0.15);
   --tag-habilidad-bg: #efebe8;
   --tag-habilidad-ink: #4a4340;
   --tag-habilidad-line: #e3ddd9;
   --tag-interes-bg: #fbf8f7;
-  --tag-interes-ink: #8a807c;
+  --tag-interes-ink: #6b625e;
   --tag-interes-line: #e3ddd9;
 }
 
@@ -261,7 +261,7 @@
   --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.6);
   --story-ring: linear-gradient(to top right, #ff5a52, #ffa38c);
 
-  --tag-carrera-bg: rgba(255, 90, 82, 0.16);
+  --tag-carrera-bg: #412320; /* el rojo de marca al 16 % sobre la superficie, ya mezclado */
   --tag-carrera-ink: #ff8078;
   --tag-carrera-line: rgba(255, 90, 82, 0.32);
   --tag-habilidad-bg: #2b2422;
@@ -298,4 +298,34 @@ body {
 input[type='password']::-ms-reveal,
 input[type='password']::-ms-clear {
   display: none;
+}
+
+/* ── Accesibilidad ───────────────────────────────────────────────────────────
+   Foco visible con teclado en todo control. Va fuera de las capas para ganarle
+   a las utilidades `outline-none` que traen las pantallas; el ratón no lo
+   dispara porque `:focus-visible` solo aplica a navegación con teclado. */
+:where(
+  a,
+  button,
+  summary,
+  select,
+  textarea,
+  input,
+  [role='button'],
+  [tabindex]
+):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Quien pide menos movimiento no ve animaciones ni transiciones largas. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
