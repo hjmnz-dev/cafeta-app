@@ -118,8 +118,94 @@ describe('HU33 — Bandeja de mensajes', () => {
       await screen.findByText('Aún no tienes conversaciones'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /buscar personas/i }),
+      screen.getByRole('button', { name: /iniciar una conversación/i }),
     ).toBeInTheDocument();
+  });
+
+  it('bug 1019: desde la bandeja se elige a alguien y se abre la conversación', async () => {
+    const fetchMock = signIn((url, init) => {
+      if (url.pathname.endsWith('/conversations') && init?.method === 'POST') {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith('/conversations')) return page([]);
+      if (url.pathname.endsWith('/search/users')) {
+        return page([
+          {
+            id: BETO,
+            handle: 'beto',
+            displayName: 'Beto Díaz',
+            avatarUrl: null,
+            careerName: 'Medicina',
+            verified: true,
+            followStatus: 'NONE',
+            canFollow: true,
+          },
+        ]);
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}`)) {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/messages`)) {
+        return page([]);
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/read`)) {
+        return new Response(null, { status: 204 });
+      }
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<Screens />, { route: '/messages' });
+
+    await user.click(
+      await screen.findByRole('button', { name: /iniciar una conversación/i }),
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Nueva conversación' });
+    expect(dialog).toBeInTheDocument();
+    await user.type(
+      screen.getByRole('textbox', {
+        name: /buscar personas para escribirles/i,
+      }),
+      'beto',
+    );
+    expect(
+      await screen.findByRole('img', { name: 'Cuenta verificada' }),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Escribirle a Beto Díaz' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        `/messages/${CONV}`,
+      ),
+    );
+    const post = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'POST',
+    );
+    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ userId: BETO });
+  });
+
+  it('bug 1019: con conversaciones, el botón del encabezado también abre el selector', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/conversations')
+        ? page([conversation({ id: 'c1' })])
+        : undefined,
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<MessagesScreen />, { route: '/messages' });
+
+    await screen.findByText('Beto Díaz');
+    await user.click(
+      screen.getByRole('button', { name: 'Nueva conversación' }),
+    );
+    expect(
+      screen.getByRole('dialog', { name: 'Nueva conversación' }),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Cerrar nueva conversación' }),
+    );
+    expect(
+      screen.queryByRole('dialog', { name: 'Nueva conversación' }),
+    ).not.toBeInTheDocument();
   });
 
   it('si la bandeja falla, muestra el mensaje traducido y deja reintentar', async () => {

@@ -7,8 +7,8 @@ import { apiRequest } from './http';
 import { toQueryString } from './posts-api';
 
 type Schemas = components['schemas'];
-export type SearchUserView = Schemas['FollowUserViewDto'];
-export type SearchUserPage = Schemas['FollowUserPageDto'];
+export type SearchUserView = Schemas['SearchUserViewDto'];
+export type SearchUserPage = Schemas['SearchUserPageDto'];
 export type SearchPostView = Schemas['PostViewDto'];
 export type SearchPostPage = Schemas['PostPageDto'];
 

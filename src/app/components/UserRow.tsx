@@ -1,12 +1,17 @@
 import { useNavigate } from 'react-router';
 import { Lock, UserCheck, UserPlus, Clock } from 'lucide-react';
+import type { ProfileView } from '../lib/profiles-api';
 import { useAppState, DirectoryUser } from '../store/AppState';
+import { FollowButton } from './FollowButton';
 
 /**
  * Fila de usuario del directorio, con su botón de seguimiento (DEF-05).
  *
  * La comparten "Descubrir" y la búsqueda global (DEF-07) para que seguir a
  * alguien se vea y se comporte igual desde ambas pantallas.
+ *
+ * Con `follow` (personas que vienen de la API) el botón es el mismo del perfil
+ * y sigue de verdad (bug 1015); sin él, la fila es del directorio de ejemplo.
  */
 export interface UserRowData {
   id: string;
@@ -19,7 +24,13 @@ export interface UserRowData {
   followers?: number;
 }
 
-export function UserRow({ user }: { user: UserRowData | DirectoryUser }) {
+export function UserRow({
+  user,
+  follow,
+}: {
+  user: UserRowData | DirectoryUser;
+  follow?: Pick<ProfileView, 'followStatus' | 'canFollow'>;
+}) {
   const navigate = useNavigate();
   const { followState, followUser, unfollowUser } = useAppState();
 
@@ -67,40 +78,47 @@ export function UserRow({ user }: { user: UserRowData | DirectoryUser }) {
           </p>
         </div>
       </button>
-      <button
-        onClick={() =>
-          state === 'none' ? followUser(user.id) : unfollowUser(user.id)
-        }
-        aria-label={
-          following
-            ? `Dejar de seguir a ${user.name}`
-            : pending
-              ? `Cancelar solicitud a ${user.name}`
-              : `Seguir a ${user.name}`
-        }
-        className={
-          'h-[34px] px-4 rounded-full text-[13px] font-semibold flex items-center gap-1.5 flex-none transition-colors ' +
-          (following
-            ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-3)]'
-            : pending
-              ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--muted)] hover:bg-[var(--surface-3)]'
-              : 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]')
-        }
-      >
-        {following ? (
-          <>
-            <UserCheck className="w-4 h-4" /> Siguiendo
-          </>
-        ) : pending ? (
-          <>
-            <Clock className="w-4 h-4" /> Solicitado
-          </>
-        ) : (
-          <>
-            <UserPlus className="w-4 h-4" /> Seguir
-          </>
-        )}
-      </button>
+      {follow ? (
+        <FollowButton
+          compact
+          profile={{ id: user.id, displayName: user.name, ...follow }}
+        />
+      ) : (
+        <button
+          onClick={() =>
+            state === 'none' ? followUser(user.id) : unfollowUser(user.id)
+          }
+          aria-label={
+            following
+              ? `Dejar de seguir a ${user.name}`
+              : pending
+                ? `Cancelar solicitud a ${user.name}`
+                : `Seguir a ${user.name}`
+          }
+          className={
+            'h-[34px] px-4 rounded-full text-[13px] font-semibold flex items-center gap-1.5 flex-none transition-colors ' +
+            (following
+              ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-3)]'
+              : pending
+                ? 'bg-[var(--surface)] border-2 border-[var(--line)] text-[var(--muted)] hover:bg-[var(--surface-3)]'
+                : 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]')
+          }
+        >
+          {following ? (
+            <>
+              <UserCheck className="w-4 h-4" /> Siguiendo
+            </>
+          ) : pending ? (
+            <>
+              <Clock className="w-4 h-4" /> Solicitado
+            </>
+          ) : (
+            <>
+              <UserPlus className="w-4 h-4" /> Seguir
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }

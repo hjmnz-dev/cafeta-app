@@ -19,6 +19,7 @@ import { useStoryTray } from '../store/stories-queries';
 import { StoryAvatar } from './StoryAvatar';
 import { StoryCommentsSheet } from './StoryCommentsSheet';
 import { StoryEngagement } from './StoryEngagement';
+import { StoryReactionsSheet } from './StoryReactionsSheet';
 import { StoryOwnerMenu } from './StoryOwnerMenu';
 
 /**
@@ -60,6 +61,15 @@ export function StoryViewerScreen() {
   const toggleComments = (storyId: string) => {
     if (commentsFor === storyId) setRestart((count) => count + 1);
     setCommentsFor(commentsFor === storyId ? null : storyId);
+    setReactionsFor(null);
+  };
+
+  // El detalle de reacciones (bug 1018) pausa igual que los comentarios.
+  const [reactionsFor, setReactionsFor] = useState<string | null>(null);
+  const toggleReactions = (storyId: string) => {
+    if (reactionsFor === storyId) setRestart((count) => count + 1);
+    setReactionsFor(reactionsFor === storyId ? null : storyId);
+    setCommentsFor(null);
   };
 
   /**
@@ -78,7 +88,8 @@ export function StoryViewerScreen() {
   const next = queue[index + 1];
   const nextId = next?.story.id ?? null;
   const commentsOpen = entry !== undefined && commentsFor === entry.story.id;
-  const paused = menuBusy || commentsOpen;
+  const reactionsOpen = entry !== undefined && reactionsFor === entry.story.id;
+  const paused = menuBusy || commentsOpen || reactionsOpen;
 
   useEffect(() => {
     if (!entry || paused) return;
@@ -257,6 +268,8 @@ export function StoryViewerScreen() {
         isMine={user?.id === author.id}
         commentsOpen={commentsOpen}
         onToggleComments={() => toggleComments(story.id)}
+        reactionsOpen={reactionsOpen}
+        onToggleReactions={() => toggleReactions(story.id)}
       />
 
       {/* Navegación entre historias vigentes */}
@@ -285,6 +298,13 @@ export function StoryViewerScreen() {
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
+
+      {reactionsOpen && (
+        <StoryReactionsSheet
+          story={story}
+          onClose={() => toggleReactions(story.id)}
+        />
+      )}
 
       {commentsOpen && (
         <StoryCommentsSheet

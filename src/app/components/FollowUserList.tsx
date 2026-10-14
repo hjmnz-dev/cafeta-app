@@ -1,6 +1,5 @@
 import { useCallback, type ReactNode, type RefObject } from 'react';
 import { Link } from 'react-router';
-import { BadgeCheck } from 'lucide-react';
 import type {
   InfiniteData,
   UseInfiniteQueryResult,
@@ -8,6 +7,7 @@ import type {
 import type { FollowUser } from '../lib/follows-api';
 import { userMessageOf } from '../lib/http';
 import { InfiniteListFooter } from './InfiniteListFooter';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /** Inicial de la persona mientras no hay foto (la foto llega con la 14). */
 function Initial({ user }: { user: Pick<FollowUser, 'displayName'> }) {
@@ -41,12 +41,7 @@ export function FollowUserRow({
         <div className="flex-1 min-w-0">
           <p className="flex items-center gap-1 font-semibold text-[15px] text-[var(--ink)] truncate">
             {user.displayName}
-            {user.verified && (
-              <BadgeCheck
-                className="w-4 h-4 text-[var(--brand)] flex-none"
-                aria-label="Cuenta verificada"
-              />
-            )}
+            {user.verified && <VerifiedBadge />}
           </p>
           <p className="text-[13px] text-[var(--muted)] truncate">
             @{user.handle}

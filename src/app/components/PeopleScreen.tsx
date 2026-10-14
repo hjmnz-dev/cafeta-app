@@ -69,6 +69,10 @@ export function PeopleScreen() {
                   career: u.careerName,
                   avatar: u.avatarUrl,
                 }}
+                follow={{
+                  followStatus: u.followStatus,
+                  canFollow: u.canFollow,
+                }}
               />
             ))
           : localResults.map((u) => <UserRow key={u.id} user={u} />)}

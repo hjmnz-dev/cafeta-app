@@ -62,6 +62,8 @@ export interface Post {
   id: string;
   authorId: string; // 'me' = publicación propia (habilita editar/eliminar)
   authorName: string;
+  /** HU50: el autor tiene la insignia de cuenta verificada. */
+  authorVerified?: boolean;
   authorAvatar: string;
   career: string;
   time: string;

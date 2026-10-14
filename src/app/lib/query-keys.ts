@@ -88,6 +88,7 @@ export const reportKeys = {
 export const storyKeys = {
   all: ['stories'] as const,
   tray: ['stories', 'tray'] as const,
+  reactors: (id: string) => ['stories', 'reactors', id] as const,
 };
 
 /** Comentarios (spec 0009, decisiones 21 y 24): los de cada publicación o historia. */

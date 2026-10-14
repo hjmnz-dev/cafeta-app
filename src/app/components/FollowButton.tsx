@@ -11,11 +11,14 @@ import { useFollow, useUnfollow } from '../store/follows-queries';
  */
 export function FollowButton({
   profile,
+  compact = false,
 }: {
   profile: Pick<
     ProfileView,
     'id' | 'displayName' | 'followStatus' | 'canFollow'
   >;
+  /** Versión chica para las filas de búsqueda y Descubrir. */
+  compact?: boolean;
 }) {
   const follow = useFollow();
   const unfollow = useUnfollow();
@@ -65,7 +68,10 @@ export function FollowButton({
             : `Seguir a ${name}`
       }
       className={
-        'h-[40px] px-5 rounded-full font-semibold text-[14px] flex items-center gap-1.5 shadow-sm transition-colors disabled:opacity-60 ' +
+        'rounded-full font-semibold flex items-center gap-1.5 flex-none transition-colors disabled:opacity-60 ' +
+        (compact
+          ? 'h-[34px] px-4 text-[13px] '
+          : 'h-[40px] px-5 text-[14px] shadow-sm ') +
         (state === 'NONE'
           ? 'bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-strong)]'
           : 'bg-[var(--surface)] border-2 border-[var(--line)] hover:bg-[var(--surface-3)] ' +

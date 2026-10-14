@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { MessageCircle, Search } from 'lucide-react';
+import { MessageCircle, Search, SquarePen } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ConversationView } from '../lib/conversations-api';
 import { userMessageOf } from '../lib/http';
@@ -9,6 +9,7 @@ import { relativeTime } from '../lib/posts';
 import { useInbox, useOpenConversation } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
 import { InfiniteListFooter } from './InfiniteListFooter';
+import { NewConversationPanel } from './NewConversationPanel';
 
 /**
  * Bandeja de mensajes (HU33, spec 0008 decisión 25). Lista real de la API,
@@ -24,6 +25,7 @@ export function MessagesScreen() {
   const to = searchParams.get('to');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [picking, setPicking] = useState(false);
   const inbox = useInbox();
   const open = useOpenConversation();
   const { user } = useSession();
@@ -57,11 +59,29 @@ export function MessagesScreen() {
     : null;
 
   return (
-    <div className="w-full h-full bg-[var(--app-bg)] flex flex-col pb-[100px]">
+    <div className="relative w-full h-full bg-[var(--app-bg)] flex flex-col pb-[100px]">
+      {picking && (
+        <NewConversationPanel
+          onClose={() => setPicking(false)}
+          onPick={(userId) => {
+            setPicking(false);
+            navigate(`/messages?to=${userId}`);
+          }}
+        />
+      )}
       <div className="bg-[var(--surface)] border-b border-[var(--line-soft)] px-5 py-4 pt-16">
-        <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">
-          Mensajes
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)]">
+            Mensajes
+          </h1>
+          <button
+            onClick={() => setPicking(true)}
+            aria-label="Nueva conversación"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--ink)] hover:bg-[var(--surface-3)] transition-colors"
+          >
+            <SquarePen className="w-5 h-5" />
+          </button>
+        </div>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
           <input
@@ -101,13 +121,13 @@ export function MessagesScreen() {
               Aún no tienes conversaciones
             </h2>
             <p className="text-[14px] text-[var(--muted)]">
-              Busca a alguien de tu comunidad y escríbele desde su perfil.
+              Busca a alguien de tu comunidad y empieza a escribirle.
             </p>
             <button
-              onClick={() => navigate('/search')}
+              onClick={() => setPicking(true)}
               className="mt-1 px-5 py-2.5 rounded-full text-[14px] font-semibold bg-[var(--brand)] text-[var(--on-brand)]"
             >
-              Buscar personas
+              Iniciar una conversación
             </button>
           </div>
         )}

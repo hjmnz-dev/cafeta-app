@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import {
   ArrowLeft,
   GraduationCap,
@@ -16,15 +16,18 @@ import {
   tagCategoryOf,
   VISIBILITY_LABEL,
 } from '../lib/profiles';
+import { groupOf } from '../lib/stories';
 import { TAG_CATEGORIES, useAppState } from '../store/AppState';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
 import { useBlockUser } from '../store/blocks-queries';
 import { useSession } from '../store/SessionStore';
+import { useStoryTray } from '../store/stories-queries';
 import { FollowButton } from './FollowButton';
 import { LivePostList } from './LivePostList';
 import { ProfileAvatar } from './ProfileAvatar';
 import { ProfileOptionsMenu } from './ProfileOptionsMenu';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /**
  * Perfil de otro usuario desde la API (decisión 15, HU07 E2 y HU09). La API
@@ -156,6 +159,10 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const notice = restrictedNotice(profile);
   const blockMutation = useBlockUser();
   const { blockUser } = useAppState();
+  // Sus historias vigentes que ya me llegan en la tira (bug 1017): la foto las abre.
+  const tray = useStoryTray();
+  const { pathname: from } = useLocation();
+  const firstStory = groupOf(tray.data?.groups ?? [], profile.id)?.stories[0];
 
   return (
     <div
@@ -170,13 +177,31 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
 
       <div className="px-5 pb-4">
         <div className="flex justify-between items-end -mt-9 mb-4 relative z-10">
-          <ProfileAvatar
-            url={profile.avatarUrl}
-            name={profile.displayName}
-            size={78}
-            radius={24}
-            className="border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)]"
-          />
+          {firstStory ? (
+            <Link
+              to={`/stories/${firstStory.id}`}
+              state={{ from }}
+              aria-label={`Ver historia de ${profile.displayName}`}
+              className="block rounded-[28px] p-[3px]"
+              style={{ background: 'var(--story-ring)' }}
+            >
+              <ProfileAvatar
+                url={profile.avatarUrl}
+                name={profile.displayName}
+                size={78}
+                radius={24}
+                className="border-[3px] border-[var(--app-bg)]"
+              />
+            </Link>
+          ) : (
+            <ProfileAvatar
+              url={profile.avatarUrl}
+              name={profile.displayName}
+              size={78}
+              radius={24}
+              className="border-[4px] border-[var(--app-bg)] shadow-[0_4px_16px_rgba(23,19,19,0.2)]"
+            />
+          )}
           <div className="flex items-center gap-2 relative">
             <button
               onClick={() => navigate(`/messages?to=${profile.id}`)}
@@ -204,6 +229,7 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
             <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[22px] text-[var(--ink)] leading-tight">
               {profile.displayName}
             </h1>
+            {profile.verified && <VerifiedBadge className="w-5 h-5" />}
             {profile.visibility !== 'PUBLIC' && (
               <span
                 className="flex items-center gap-1 text-[11px] font-semibold text-[var(--muted)] bg-[var(--surface-3)] px-2 py-0.5 rounded-md"

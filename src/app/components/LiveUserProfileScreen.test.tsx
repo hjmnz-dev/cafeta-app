@@ -7,6 +7,7 @@ import { renderRoutes } from '../../test/utils';
 import { page, postView, signIn, TEST_USER } from '../../test/api';
 import { json } from '../../test/setup';
 import type { ProfileView } from '../lib/profiles-api';
+import type { StoryTray } from '../lib/stories-api';
 
 // Perfil ajeno desde la API (decisión 15, HU07 E2 y HU09) con fetch simulado.
 const OTHER = '01926f00-0000-7000-8000-0000000000bb';
@@ -41,8 +42,12 @@ function MessagesSearch() {
 function renderProfile(
   profile: ProfileView | Response,
   postsCalls: string[] = [],
+  options: { tray?: StoryTray; authorVerified?: boolean } = {},
 ) {
   signIn((url) => {
+    if (options.tray && url.pathname.endsWith('/stories')) {
+      return json(200, options.tray);
+    }
     if (url.pathname.endsWith(`/users/${OTHER}/profile`)) {
       return profile instanceof Response ? profile : json(200, profile);
     }
@@ -52,7 +57,11 @@ function renderProfile(
         postView({
           id: '01926f00-0000-7000-8000-000000000100',
           content: 'Repaso de anatomía hoy',
-          author: { id: OTHER, displayName: 'María Rodríguez' },
+          author: {
+            id: OTHER,
+            displayName: 'María Rodríguez',
+            verified: options.authorVerified ?? false,
+          },
         }),
       ]);
     }
@@ -63,6 +72,7 @@ function renderProfile(
       { path: '/u/:userId', element: <UserProfileScreen /> },
       { path: '/profile', element: <p>Mi perfil</p> },
       { path: '/messages', element: <MessagesSearch /> },
+      { path: '/stories/:storyId', element: <p>Visor de historias</p> },
     ],
     { route: `/u/${OTHER}` },
   );
@@ -194,5 +204,77 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
     );
 
     expect(await screen.findByText('Mi perfil')).toBeInTheDocument();
+  });
+
+  it('bug 1021 — una cuenta verificada muestra la insignia en el perfil y en sus publicaciones', async () => {
+    renderProfile(profileView({ verified: true }), [], {
+      authorVerified: true,
+    });
+
+    // Una en el encabezado del perfil y otra en su publicación.
+    await screen.findByText('Repaso de anatomía hoy');
+    expect(
+      screen.getAllByRole('img', { name: 'Cuenta verificada' }),
+    ).toHaveLength(2);
+  });
+
+  it('bug 1021 — sin verificar no hay insignia', async () => {
+    renderProfile(profileView());
+
+    await screen.findByText('Repaso de anatomía hoy');
+    expect(
+      screen.queryByRole('img', { name: 'Cuenta verificada' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('bug 1017 — con una historia vigente, su foto abre la historia', async () => {
+    const user = userEvent.setup();
+    renderProfile(profileView(), [], {
+      tray: {
+        groups: [
+          {
+            author: {
+              id: OTHER,
+              handle: 'mrodriguez',
+              displayName: 'María Rodríguez',
+              avatarUrl: null,
+            },
+            stories: [
+              {
+                id: 's9',
+                text: null,
+                editedAt: null,
+                myReaction: null,
+                reactionCount: null,
+                commentCount: 0,
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+                media: {
+                  mediaType: 'IMAGE',
+                  url: 'https://blob.test/s9.jpg',
+                  mimeType: 'image/jpeg',
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    await user.click(
+      await screen.findByRole('link', {
+        name: 'Ver historia de María Rodríguez',
+      }),
+    );
+    expect(await screen.findByText('Visor de historias')).toBeInTheDocument();
+  });
+
+  it('bug 1017 — sin historias la foto no es un enlace', async () => {
+    renderProfile(profileView(), [], { tray: { groups: [] } });
+
+    await screen.findByRole('heading', { name: 'María Rodríguez' });
+    expect(
+      screen.queryByRole('link', { name: /ver historia/i }),
+    ).not.toBeInTheDocument();
   });
 });

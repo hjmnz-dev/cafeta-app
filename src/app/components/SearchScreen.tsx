@@ -194,6 +194,10 @@ export function SearchScreen() {
                       career: u.careerName,
                       avatar: u.avatarUrl,
                     }}
+                    follow={{
+                      followStatus: u.followStatus,
+                      canFollow: u.canFollow,
+                    }}
                   />
                 ))}
                 <InfiniteListFooter

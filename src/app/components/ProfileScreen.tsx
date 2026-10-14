@@ -23,6 +23,7 @@ import { useUserPostCount, useUserPosts } from '../store/posts-queries';
 import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
 import { MyStoryAvatar } from './MyStoryAvatar';
+import { VerifiedBadge } from './VerifiedBadge';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -162,8 +163,9 @@ export function ProfileScreen() {
 
         {/* Name and Handle */}
         <div className="mb-4">
-          <h1 className="font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] leading-tight mb-1">
+          <h1 className="flex items-center gap-1.5 font-['Space Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] leading-tight mb-1">
             {me?.displayName ?? user?.profile.displayName}
+            {me?.verified && <VerifiedBadge className="w-5 h-5" />}
           </h1>
           <p className="text-[var(--muted)] text-[15px] font-medium">
             @{me?.handle ?? user?.profile.handle}

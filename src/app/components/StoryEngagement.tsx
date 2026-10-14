@@ -10,8 +10,9 @@ import { useReactToStory } from '../store/stories-queries';
  *
  * En la historia de otra persona hay una fila con las cinco reacciones: tocar
  * una la pone o la cambia, y tocar la que ya tengo la quita. En la propia solo
- * se ve cuántas reacciones tiene (la API no da ese conteo a los demás). El
- * botón de comentarios abre la hoja con el panel; aquí no se pide nada.
+ * se ve cuántas reacciones tiene (la API no da ese conteo a los demás) y
+ * tocarlo abre quién reaccionó y con qué (bug 1018). El botón de comentarios
+ * abre la hoja con el panel; aquí no se pide nada.
  */
 
 function countLabel(count: number): string {
@@ -24,11 +25,15 @@ export function StoryEngagement({
   isMine,
   commentsOpen,
   onToggleComments,
+  reactionsOpen,
+  onToggleReactions,
 }: {
   story: StoryView;
   isMine: boolean;
   commentsOpen: boolean;
   onToggleComments: () => void;
+  reactionsOpen: boolean;
+  onToggleReactions: () => void;
 }) {
   const react = useReactToStory();
 
@@ -45,9 +50,16 @@ export function StoryEngagement({
   return (
     <div className="relative px-3 pb-2 flex items-center justify-between gap-2">
       {isMine ? (
-        <p className="text-white/80 text-[13px]" data-testid="story-reactions">
+        <button
+          type="button"
+          onClick={onToggleReactions}
+          aria-expanded={reactionsOpen}
+          aria-label={`Ver reacciones: ${countLabel(story.reactionCount ?? 0)}`}
+          className="h-9 px-3 -ml-3 rounded-full text-white/80 text-[13px] hover:bg-white/15 transition-colors"
+          data-testid="story-reactions"
+        >
           {countLabel(story.reactionCount ?? 0)}
-        </p>
+        </button>
       ) : (
         <div
           role="group"

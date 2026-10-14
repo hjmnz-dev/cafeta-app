@@ -63,6 +63,7 @@ export function toCardPost(view: PostView, now: Date): Post {
     id: view.id,
     authorId: view.author.id,
     authorName: view.author.displayName,
+    authorVerified: view.author.verified,
     authorAvatar: '',
     career: view.author.careerName ?? '',
     time: relativeTime(view.createdAt, now),

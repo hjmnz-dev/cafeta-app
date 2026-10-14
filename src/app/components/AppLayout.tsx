@@ -126,7 +126,9 @@ export function AppLayout() {
     path === '/profile/edit' ||
     path === '/search' ||
     path === '/create-story' ||
-    path.startsWith('/stories/');
+    path.startsWith('/stories/') ||
+    // Dentro de un chat el campo de mensaje ocupa el pie (bug 1020).
+    path.startsWith('/messages/');
   const showBottomNav = !isSplash && !isAuthScreen && !hasOwnHeader;
   // Perfiles (propio y de terceros) tienen cover rojo → barra de estado clara
   const isProfile = path === '/profile' || path.startsWith('/u/');

@@ -2,7 +2,12 @@
  * Hooks de historias (decisión 22). La red queda en stories-api.ts y la caché
  * en TanStack Query.
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { storyKeys } from '../lib/query-keys';
 import type { ReactionType } from '../lib/reactions';
 import { mapStoryInTray, withStoryReaction } from '../lib/stories';
@@ -11,6 +16,16 @@ import {
   type StoryReactionState,
   type StoryTray,
 } from '../lib/stories-api';
+
+/** Quién reaccionó a mi historia (bug 1018); se pide al abrir el detalle. */
+export function useStoryReactors(storyId: string) {
+  return useInfiniteQuery({
+    queryKey: storyKeys.reactors(storyId),
+    queryFn: ({ pageParam }) => storiesApi.reactors(storyId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (page) => page.nextCursor,
+  });
+}
 
 export function useStoryTray(enabled = true) {
   return useQuery({
