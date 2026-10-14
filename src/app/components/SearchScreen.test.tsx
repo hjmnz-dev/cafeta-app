@@ -13,7 +13,7 @@ const type = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
 };
 
 describe('DEF-07 · HU41 — Buscar usuarios', () => {
-  it('Escenario 1 — el nombre de un usuario existente muestra su perfil', async () => {
+  it('HU41 E1: el nombre de un usuario existente muestra su perfil', async () => {
     const user = userEvent.setup();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
@@ -34,7 +34,7 @@ describe('DEF-07 · HU41 — Buscar usuarios', () => {
     expect(screen.getByText('Laura Batista')).toBeInTheDocument();
   });
 
-  it('Escenario 2 — sin coincidencias, avisa que no hay resultados', async () => {
+  it('HU41 E2: sin coincidencias, avisa que no hay resultados', async () => {
     const user = userEvent.setup();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
@@ -57,7 +57,7 @@ describe('DEF-07 · HU41 — Buscar usuarios', () => {
 });
 
 describe('DEF-07 · HU42 — Buscar contenido', () => {
-  it('Escenario 1 — una palabra clave muestra las publicaciones relacionadas', async () => {
+  it('HU42 E1: una palabra clave muestra las publicaciones relacionadas', async () => {
     const user = userEvent.setup();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
@@ -68,7 +68,7 @@ describe('DEF-07 · HU42 — Buscar contenido', () => {
     expect(screen.queryByTestId('post-p1')).not.toBeInTheDocument();
   });
 
-  it('Escenario 2 — sin coincidencias, avisa que no hay resultados', async () => {
+  it('HU42 E2: sin coincidencias, avisa que no hay resultados', async () => {
     const user = userEvent.setup();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
@@ -118,7 +118,7 @@ describe('DEF-07 — Comportamiento de la pantalla de búsqueda', () => {
 });
 
 describe('DEF-07 · Búsqueda contra la API (live)', () => {
-  it('AC-1 (HU41): con sesión activa busca usuarios en la API /search/users', async () => {
+  it('HU41 E1: con sesión activa busca usuarios en la API /search/users', async () => {
     signIn((url) => {
       if (url.pathname.endsWith('/search/users')) {
         return json(200, {
@@ -148,7 +148,7 @@ describe('DEF-07 · Búsqueda contra la API (live)', () => {
     expect(await screen.findByText('José Pérez')).toBeInTheDocument();
   });
 
-  it('AC-6 (HU42): con sesión activa busca publicaciones en la API /search/posts', async () => {
+  it('HU42 E1: con sesión activa busca publicaciones en la API /search/posts', async () => {
     signIn((url) => {
       if (url.pathname.endsWith('/search/posts')) {
         return json(200, {
@@ -175,7 +175,7 @@ describe('DEF-07 · Búsqueda contra la API (live)', () => {
     ).toBeInTheDocument();
   });
 
-  it('AC-9 (HU40): con sesión activa y sin texto muestra explorar desde /explore/posts', async () => {
+  it('HU40 E1: con sesión activa y sin texto muestra explorar desde /explore/posts', async () => {
     signIn((url) => {
       if (url.pathname.endsWith('/explore/posts')) {
         return json(200, {
@@ -272,5 +272,22 @@ describe('DEF-07 · Búsqueda contra la API (live)', () => {
     expect(
       screen.queryByRole('button', { name: /seguir a paula/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('HU40 · Explorar sin contenido', () => {
+  it('HU40 E2: sin contenido que recomendar muestra que no hay publicaciones para explorar', async () => {
+    signIn((url) => {
+      if (url.pathname.endsWith('/explore/posts')) {
+        return json(200, { items: [], nextCursor: null });
+      }
+      return undefined;
+    });
+
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+
+    expect(
+      await screen.findByText('No hay publicaciones recientes para explorar.'),
+    ).toBeInTheDocument();
   });
 });

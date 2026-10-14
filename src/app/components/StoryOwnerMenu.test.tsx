@@ -91,7 +91,7 @@ const openMenu = async (user: ReturnType<typeof userEvent.setup>) =>
   );
 
 describe('HU14 y HU15 · El menú de mi historia', () => {
-  it('solo aparece en la historia propia, no en la de otra persona', async () => {
+  it('HU15 E2: solo aparece en la historia propia, no en la de otra persona', async () => {
     renderViewer(
       () => [group(ME, [story('m1')]), group(BETO, [story('b1')])],
       '/stories/b1',
@@ -116,7 +116,7 @@ describe('HU14 y HU15 · El menú de mi historia', () => {
     ).toBeInTheDocument();
   });
 
-  it('editar manda solo el texto nuevo y el visor lo muestra como editada', async () => {
+  it('HU14 E1: editar manda solo el texto nuevo y el visor lo muestra como editada', async () => {
     const user = userEvent.setup();
     let current = story('m1');
     const sent = renderViewer(
@@ -229,7 +229,7 @@ describe('HU14 y HU15 · El menú de mi historia', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('confirmar desactiva la historia y vuelve a la pantalla de origen', async () => {
+  it('HU15 E1: confirmar desactiva la historia y vuelve a la pantalla de origen', async () => {
     const user = userEvent.setup();
     let active = true;
     const sent = renderViewer(

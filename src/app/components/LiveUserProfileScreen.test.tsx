@@ -79,7 +79,7 @@ function renderProfile(
 }
 
 describe('Decisión 15 · Perfil ajeno desde la API', () => {
-  it('HU09 E1 — un perfil público muestra su información, Seguir y sus publicaciones', async () => {
+  it('HU09 E1: un perfil público muestra su información, Seguir y sus publicaciones', async () => {
     renderProfile(profileView());
 
     expect(
@@ -99,7 +99,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
     ).toBeInTheDocument();
   });
 
-  it('HU07 E2 y HU09 E2 — con "Solo seguidores" muestra el perfil limitado y no pide sus publicaciones', async () => {
+  it('HU09 E2: con "Solo seguidores" muestra el perfil limitado y no pide sus publicaciones', async () => {
     const postsCalls: string[] = [];
     renderProfile(
       profileView({

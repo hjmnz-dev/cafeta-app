@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router';
@@ -61,7 +61,7 @@ function Screens() {
 }
 
 describe('HU33 — Bandeja de mensajes', () => {
-  it('E1: muestra las conversaciones en el orden de la API y marca las no leídas', async () => {
+  it('HU33 E1: muestra las conversaciones en el orden de la API y marca las no leídas', async () => {
     signIn((url) => {
       if (url.pathname.endsWith('/conversations')) {
         return page([
@@ -108,7 +108,7 @@ describe('HU33 — Bandeja de mensajes', () => {
     expect(screen.getAllByTestId('unread-dot')).toHaveLength(1);
   });
 
-  it('E2: sin conversaciones muestra el estado vacío que invita a escribir', async () => {
+  it('HU33 E2: sin conversaciones muestra el estado vacío que invita a escribir', async () => {
     signIn((url) =>
       url.pathname.endsWith('/conversations') ? page([]) : undefined,
     );
@@ -376,5 +376,108 @@ describe('HU34, HU35 y HU38 — Ver una conversación y enviar', () => {
     expect(
       await screen.findByText('Esta conversación ya no está disponible.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('HU36 y HU37 · Editar y desactivar mensajes', () => {
+  const threadApi = (extra?: Parameters<typeof signIn>[0]) =>
+    signIn(async (url, init) => {
+      const custom = await extra?.(url, init);
+      if (custom) return custom;
+      if (url.pathname.endsWith(`/conversations/${CONV}`)) {
+        return json(200, conversation({ id: CONV }));
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/messages`)) {
+        return page([
+          message({ id: 'm3', senderId: TEST_USER.id, content: 'Dale' }),
+          message({ id: 'm2', content: '¿Mañana a las 3?' }),
+        ]);
+      }
+      if (url.pathname.endsWith(`/conversations/${CONV}/read`)) {
+        return new Response(null, { status: 204 });
+      }
+    });
+
+  it('HU36 E1: el autor edita su mensaje, se manda el texto nuevo y queda marcado como editado', async () => {
+    const user = userEvent.setup();
+    const fetchMock = threadApi((url, init) => {
+      if (
+        url.pathname.endsWith(`/conversations/${CONV}/messages/m3`) &&
+        init?.method === 'PATCH'
+      ) {
+        return json(
+          200,
+          message({
+            id: 'm3',
+            senderId: TEST_USER.id,
+            content: 'Dale, nos vemos',
+            editedAt: '2026-10-06T12:05:00.000Z',
+          }),
+        );
+      }
+    });
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('Dale');
+
+    await user.click(screen.getByRole('button', { name: 'Editar mensaje' }));
+    const input = screen.getByRole('textbox', { name: 'Editar mensaje' });
+    await user.clear(input);
+    await user.type(input, 'Dale, nos vemos');
+    await user.click(screen.getByRole('button', { name: 'Guardar mensaje' }));
+
+    expect(await screen.findByText('Dale, nos vemos')).toBeInTheDocument();
+    const patch = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'PATCH',
+    );
+    expect(JSON.parse(String(patch?.[1]?.body))).toEqual({
+      content: 'Dale, nos vemos',
+    });
+  });
+
+  it('HU36 E2: el mensaje de la otra persona no ofrece editar', async () => {
+    threadApi();
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('¿Mañana a las 3?');
+
+    // Solo el mensaje propio ("Dale") trae el botón.
+    expect(
+      screen.getAllByRole('button', { name: 'Editar mensaje' }),
+    ).toHaveLength(1);
+  });
+
+  it('HU37 E1: el autor elimina su mensaje tras confirmar y desaparece de la conversación', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fetchMock = threadApi((url, init) => {
+      if (
+        url.pathname.endsWith(
+          `/conversations/${CONV}/messages/m3/deactivate`,
+        ) &&
+        init?.method === 'POST'
+      ) {
+        return new Response(null, { status: 204 });
+      }
+    });
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('Dale');
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar mensaje' }));
+
+    await waitFor(() => expect(screen.queryByText('Dale')).toBeNull());
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).endsWith(`/messages/m3/deactivate`),
+      ),
+    ).toBe(true);
+  });
+
+  it('HU37 E2: el mensaje de la otra persona no ofrece eliminar', async () => {
+    threadApi();
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+    await screen.findByText('¿Mañana a las 3?');
+
+    expect(
+      screen.getAllByRole('button', { name: 'Eliminar mensaje' }),
+    ).toHaveLength(1);
   });
 });

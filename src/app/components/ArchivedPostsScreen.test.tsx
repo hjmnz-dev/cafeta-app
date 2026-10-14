@@ -44,7 +44,7 @@ describe('HU21 — Pantalla de publicaciones archivadas', () => {
     expect(screen.getByText('Desactivada')).toBeInTheDocument();
   });
 
-  it('E2: Restaurar llama a /restore y vuelve a pedir la lista', async () => {
+  it('HU21 E2: Restaurar llama a /restore y vuelve a pedir la lista', async () => {
     const user = userEvent.setup();
     let restored = false;
     const calls: string[] = [];

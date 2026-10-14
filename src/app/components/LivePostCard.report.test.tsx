@@ -57,7 +57,7 @@ const sendReport = async (
 };
 
 describe('HU56 — Reportar una publicación real', () => {
-  it('E1: envía POST /reports con el id de la publicación y el motivo, y avisa', async () => {
+  it('HU56 E1: envía POST /reports con el id de la publicación y el motivo, y avisa', async () => {
     const user = userEvent.setup();
     const calls = fakeApi();
     renderCard(theirs());
@@ -114,7 +114,7 @@ describe('HU56 — Reportar una publicación real', () => {
     ).toBeDisabled();
   });
 
-  it('E2: si ya había un reporte pendiente, lo dice, cierra y apaga el botón', async () => {
+  it('HU56 E2: si ya había un reporte pendiente, lo dice, cierra y apaga el botón', async () => {
     const user = userEvent.setup();
     fakeApi(() =>
       json(409, {

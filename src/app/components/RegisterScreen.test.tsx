@@ -149,7 +149,7 @@ describe('Registro: textos legales (spec 0009, decisión 12)', () => {
 });
 
 describe('Registro contra la API', () => {
-  it('AC-1: un registro válido manda los datos normalizados, guarda la sesión y va al feed', async () => {
+  it('HU01 E1: un registro válido manda los datos normalizados, guarda la sesión y va al feed', async () => {
     const user = userEvent.setup();
     const fetchMock = registerResponds(() => json(201, AUTH_RESPONSE));
     renderWithProviders(<RegisterScreen />, { route: '/register' });
@@ -312,5 +312,45 @@ describe('Registro: validación antes de llamar a la API', () => {
     ]) {
       expect(screen.getByText(message)).toBeInTheDocument();
     }
+  });
+});
+
+describe('HU01 · Mensajes de error al registrarse', () => {
+  it('HU01 E2: un correo que no es institucional se rechaza y pide usar el de INTEC', async () => {
+    const user = userEvent.setup();
+    registerResponds(() =>
+      json(400, {
+        statusCode: 400,
+        message: 'texto interno',
+        code: 'EMAIL_NOT_INSTITUTIONAL',
+      }),
+    );
+    renderWithProviders(<RegisterScreen />, { route: '/register' });
+
+    await fillAndSubmit(user, { email: 'carlos@gmail.com' });
+
+    expect(
+      await screen.findByText('Usa tu correo institucional de INTEC.'),
+    ).toBeInTheDocument();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('HU01 E3: un correo ya registrado se rechaza y dice que la cuenta ya existe', async () => {
+    const user = userEvent.setup();
+    registerResponds(() =>
+      json(409, {
+        statusCode: 409,
+        message: 'texto interno',
+        code: 'EMAIL_TAKEN',
+      }),
+    );
+    renderWithProviders(<RegisterScreen />, { route: '/register' });
+
+    await fillAndSubmit(user);
+
+    expect(
+      await screen.findByText('Ya existe una cuenta con ese correo.'),
+    ).toBeInTheDocument();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
   });
 });

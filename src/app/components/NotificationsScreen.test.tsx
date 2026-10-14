@@ -29,7 +29,7 @@ const page = (items: NotificationView[], nextCursor: string | null = null) =>
   json(200, { items, nextCursor });
 
 describe('HU39 — Ver notificaciones', () => {
-  it('E1: muestra los avisos en el orden de la API y marca los no leídos', async () => {
+  it('HU39 E1: muestra los avisos en el orden de la API y marca los no leídos', async () => {
     signIn((url) =>
       url.pathname.endsWith('/notifications')
         ? page([
@@ -56,7 +56,7 @@ describe('HU39 — Ver notificaciones', () => {
     ).toBeInTheDocument();
   });
 
-  it('E2: sin avisos muestra el estado vacío, sin indicadores de novedad', async () => {
+  it('HU39 E2: sin avisos muestra el estado vacío, sin indicadores de novedad', async () => {
     signIn((url) =>
       url.pathname.endsWith('/notifications') ? page([]) : undefined,
     );

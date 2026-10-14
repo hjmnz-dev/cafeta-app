@@ -66,7 +66,7 @@ async function fillAndSubmit(
 }
 
 describe('Login contra la API', () => {
-  it('AC-5: credenciales correctas guardan la sesión en sessionStorage y van al feed', async () => {
+  it('HU02 E1: credenciales correctas guardan la sesión en sessionStorage y van al feed', async () => {
     const user = userEvent.setup();
     const fetchMock = loginResponds(() => json(200, AUTH_RESPONSE));
     renderWithProviders(<LoginScreen />, { route: '/login' });
@@ -268,5 +268,46 @@ describe('Casillas de verificación de los formularios', () => {
 
     await user.click(casilla);
     expect(casilla).toBeChecked();
+  });
+});
+
+describe('HU02 · Mensajes de error al iniciar sesión', () => {
+  it('HU02 E2: una contraseña incorrecta muestra un mensaje genérico, sin decir qué dato falló', async () => {
+    const user = userEvent.setup();
+    loginResponds(() =>
+      json(401, {
+        statusCode: 401,
+        message: 'texto interno de la API',
+        code: 'INVALID_CREDENTIALS',
+      }),
+    );
+    renderWithProviders(<LoginScreen />, { route: '/login' });
+
+    await fillAndSubmit(user);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Correo o contraseña incorrectos.');
+    expect(alert).not.toHaveTextContent(/la contraseña es incorrecta/i);
+    expect(screen.queryByText('texto interno de la API')).toBeNull();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('HU02 E3: una cuenta desactivada ve que su cuenta no está activa y no entra', async () => {
+    const user = userEvent.setup();
+    loginResponds(() =>
+      json(403, {
+        statusCode: 403,
+        message: 'texto interno de la API',
+        code: 'ACCOUNT_INACTIVE',
+      }),
+    );
+    renderWithProviders(<LoginScreen />, { route: '/login' });
+
+    await fillAndSubmit(user);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tu cuenta no está activa.',
+    );
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
   });
 });
