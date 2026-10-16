@@ -567,3 +567,28 @@ describe('Bug 1058 · Cerrar una historia vuelve atrás sin bucle', () => {
     );
   });
 });
+
+describe('Bug 1063 · Del visor al perfil del autor', () => {
+  it('la foto y el nombre del autor llevan a su perfil, y la propia a /profile', async () => {
+    const user = userEvent.setup();
+    signIn(
+      trayOf(() => [group(BETO, [story('b1')]), group(ME, [story('m1')])]),
+    );
+    renderRoutes(
+      [
+        { path: '/stories/:storyId', element: <StoryViewerScreen /> },
+        { path: '/u/:userId', element: <p>Perfil ajeno</p> },
+      ],
+      { route: '/stories/b1' },
+    );
+
+    expect(
+      await screen.findByRole('link', {
+        name: 'Ver el perfil de Beto Ramírez',
+      }),
+    ).toHaveAttribute('href', `/u/${BETO.id}`);
+    await user.click(screen.getByRole('link', { name: 'Beto Ramírez' }));
+    expect(await screen.findByText('Perfil ajeno')).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent(`/u/${BETO.id}`);
+  });
+});
