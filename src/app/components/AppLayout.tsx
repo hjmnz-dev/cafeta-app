@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { hasUnreadConversation } from '../lib/messages';
+import { useInbox } from '../store/conversations-queries';
+import { useSession } from '../store/SessionStore';
+import { MessageAlerts } from './MessageAlerts';
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -19,6 +23,11 @@ export function cn(...inputs: (string | undefined | null | false)[]) {
 const BottomNav = () => {
   const location = useLocation();
   const path = location.pathname;
+  // Bug 1024: la bandeja la mantiene al día el socket; con algo sin leer,
+  // «Mensajes» lleva un punto.
+  const { status } = useSession();
+  const inbox = useInbox(status === 'authenticated');
+  const unreadMessages = hasUnreadConversation(inbox.data?.pages ?? []);
 
   return (
     <div className="absolute bottom-0 w-full h-[76px] bg-[var(--surface)] border-t border-[var(--line-soft)] flex items-center justify-around px-2 z-50 rounded-b-[40px] md:rounded-b-[40px]">
@@ -49,6 +58,8 @@ const BottomNav = () => {
         label="Mensajes"
         to="/messages"
         isActive={path === '/messages'}
+        dot={unreadMessages}
+        dotLabel="tienes mensajes sin leer"
       />
       <NavItem
         icon={User}
@@ -65,22 +76,36 @@ const NavItem = ({
   label,
   to,
   isActive,
+  dot = false,
+  dotLabel,
 }: {
   icon: any;
   label: string;
   to: string;
   isActive: boolean;
+  /** Punto de "hay algo nuevo"; `dotLabel` lo dice con palabras. */
+  dot?: boolean;
+  dotLabel?: string;
 }) => (
   <Link
     to={to}
+    aria-label={dot && dotLabel ? `${label}, ${dotLabel}` : undefined}
     className="flex flex-col items-center justify-center w-16 gap-1"
   >
-    <Icon
-      className={cn(
-        'w-6 h-6 transition-colors',
-        isActive ? 'text-[var(--brand)]' : 'text-[var(--muted)]',
+    <span className="relative">
+      <Icon
+        className={cn(
+          'w-6 h-6 transition-colors',
+          isActive ? 'text-[var(--brand)]' : 'text-[var(--muted)]',
+        )}
+      />
+      {dot && (
+        <span
+          data-testid={`nav-dot-${to.slice(1)}`}
+          className="absolute -top-0.5 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--brand)] border-2 border-[var(--surface)]"
+        />
       )}
-    />
+    </span>
     <span
       className={cn(
         'text-[10px] font-medium transition-colors',
@@ -156,6 +181,7 @@ export function AppLayout() {
         </div>
 
         {showBottomNav && <BottomNav />}
+        <MessageAlerts />
       </div>
     </div>
   );

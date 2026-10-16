@@ -3,6 +3,7 @@ import type { NotificationView } from './notifications-api';
 import {
   badgeText,
   flattenNotifications,
+  messageAlert,
   notificationLink,
   notificationText,
 } from './notifications';
@@ -70,5 +71,28 @@ describe('notifications', () => {
     ).toEqual(['a', 'b']);
     expect(badgeText(3)).toBe('3');
     expect(badgeText(12)).toBe('9+');
+  });
+});
+
+describe('messageAlert (bug 1024)', () => {
+  const mensaje = notification({ type: 'MESSAGE', conversationId: 'c1' });
+
+  it('un mensaje nuevo avisa quién escribió y lleva a la conversación', () => {
+    expect(messageAlert(mensaje, '/home')).toEqual({
+      text: 'Ana Díaz te envió un mensaje',
+      link: '/messages/c1',
+    });
+  });
+
+  it('dentro de esa misma conversación no avisa', () => {
+    expect(messageAlert(mensaje, '/messages/c1')).toBeNull();
+  });
+
+  it('en otra conversación sí avisa', () => {
+    expect(messageAlert(mensaje, '/messages/c2')).not.toBeNull();
+  });
+
+  it('los demás avisos no salen como emergentes', () => {
+    expect(messageAlert(notification({ type: 'FOLLOW' }), '/home')).toBeNull();
   });
 });

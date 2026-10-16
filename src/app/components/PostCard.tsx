@@ -33,6 +33,7 @@ import { useHasReported } from '../store/reports-queries';
 import { PostReactionButton } from './PostReactionButton';
 import { ReportTargetDialog } from './ReportTargetDialog';
 import { VerifiedBadge } from './VerifiedBadge';
+import { ImageViewer } from './ImageViewer';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -182,6 +183,8 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  // Bug 1025: la imagen abierta en el visor; null con el visor cerrado.
+  const [viewing, setViewing] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [confirming, setConfirming] = useState<null | 'deactivate' | 'delete'>(
@@ -336,18 +339,31 @@ export function PostCard({ post, live }: { post: Post; live?: LivePost }) {
               }
             >
               {images.map((src, i) => (
-                <img
+                <button
                   key={i}
-                  src={src}
-                  alt={'Imagen ' + (i + 1) + ' de la publicación'}
-                  className={
-                    'w-full object-cover bg-[var(--surface-3)] ' +
-                    (images.length === 1 ? 'max-h-[440px]' : 'aspect-square')
-                  }
-                />
+                  type="button"
+                  onClick={() => setViewing(i)}
+                  aria-label={`Ampliar imagen ${i + 1} de la publicación`}
+                  className="block w-full cursor-zoom-in"
+                >
+                  <img
+                    src={src}
+                    alt={'Imagen ' + (i + 1) + ' de la publicación'}
+                    className={
+                      'w-full object-cover bg-[var(--surface-3)] ' +
+                      (images.length === 1 ? 'max-h-[440px]' : 'aspect-square')
+                    }
+                  />
+                </button>
               ))}
             </div>
           )}
+          <ImageViewer
+            images={images}
+            index={viewing}
+            onIndexChange={setViewing}
+            onClose={() => setViewing(null)}
+          />
 
           {post.videoUrl && (
             <video

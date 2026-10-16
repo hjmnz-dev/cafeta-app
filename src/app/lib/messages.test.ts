@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import type { MessagePage, MessageView } from './conversations-api';
+import type {
+  ConversationPage,
+  MessagePage,
+  MessageView,
+} from './conversations-api';
 import {
   chronological,
+  hasUnreadConversation,
   initialsOf,
   socketUrl,
   withIncomingMessage,
@@ -95,5 +100,34 @@ describe('initialsOf', () => {
     expect(initialsOf('Carlos Gómez')).toBe('CG');
     expect(initialsOf('ana')).toBe('A');
     expect(initialsOf('  María José Peña ')).toBe('MJ');
+  });
+});
+
+describe('hasUnreadConversation (bug 1024)', () => {
+  const inbox = (...unread: boolean[]): ConversationPage => ({
+    items: unread.map((u, i) => ({
+      id: `c${i}`,
+      otherUser: {
+        id: `u${i}`,
+        handle: `u${i}`,
+        displayName: `Persona ${i}`,
+        careerName: null,
+        verified: false,
+      },
+      lastMessage: null,
+      unread: u,
+    })),
+    nextCursor: null,
+  });
+
+  it('con alguna conversación sin leer en cualquier página, sí', () => {
+    expect(hasUnreadConversation([inbox(false), inbox(false, true)])).toBe(
+      true,
+    );
+  });
+
+  it('sin nada sin leer o sin bandeja todavía, no', () => {
+    expect(hasUnreadConversation([inbox(false, false)])).toBe(false);
+    expect(hasUnreadConversation([])).toBe(false);
   });
 });

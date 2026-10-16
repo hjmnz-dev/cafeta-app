@@ -3,9 +3,24 @@
  * para dibujarlo, cómo entra un mensaje que llega por el socket a la caché y
  * de dónde sale la URL del socket.
  */
-import type { MessagePage, MessageView } from './conversations-api';
+import type {
+  ConversationPage,
+  MessagePage,
+  MessageView,
+} from './conversations-api';
 
 export const MESSAGE_CONTENT_MAX = 2000;
+
+/**
+ * Bug 1024 · El punto de «Mensajes» en la barra inferior: alguna conversación
+ * de la bandeja tiene algo sin leer. Basta lo ya cargado, porque la bandeja va
+ * de la conversación más reciente a la más antigua.
+ */
+export function hasUnreadConversation(
+  pages: readonly ConversationPage[],
+): boolean {
+  return pages.some((page) => page.items.some((c) => c.unread));
+}
 
 /** Forma de la caché de una lista infinita de TanStack Query. */
 export interface Pages<T> {

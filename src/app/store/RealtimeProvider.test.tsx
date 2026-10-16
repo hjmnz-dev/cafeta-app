@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RealtimeProvider } from './RealtimeProvider';
+import { RealtimeProvider, useNotificationListener } from './RealtimeProvider';
 import { SessionProvider } from './SessionStore';
 import { signIn } from '../../test/api';
 import { API_URL } from '../lib/http';
@@ -79,5 +79,47 @@ describe('RealtimeProvider', () => {
 
     view.unmount();
     expect(socket.disconnect).toHaveBeenCalled();
+  });
+});
+
+describe('useNotificationListener (bug 1024)', () => {
+  function Listener({
+    onNotification,
+  }: {
+    onNotification: (n: unknown) => void;
+  }) {
+    useNotificationListener(onNotification);
+    return null;
+  }
+
+  it('reparte cada aviso del socket a quien escucha, y deja de hacerlo al desmontarse', async () => {
+    signIn();
+    const heard = vi.fn();
+    const view = render(
+      <SessionProvider>
+        <QueryClientProvider client={new QueryClient()}>
+          <RealtimeProvider>
+            <Listener onNotification={heard} />
+          </RealtimeProvider>
+        </QueryClientProvider>
+      </SessionProvider>,
+    );
+    await waitFor(() => expect(ioMock).toHaveBeenCalledTimes(1));
+
+    const aviso = { id: 'n1', type: 'MESSAGE', conversationId: 'c1' };
+    socket.handlers.get('notification:new')?.(aviso);
+    expect(heard).toHaveBeenCalledWith(aviso);
+
+    view.rerender(
+      <SessionProvider>
+        <QueryClientProvider client={new QueryClient()}>
+          <RealtimeProvider>
+            <p>sin oyente</p>
+          </RealtimeProvider>
+        </QueryClientProvider>
+      </SessionProvider>,
+    );
+    socket.handlers.get('notification:new')?.({ id: 'n2', type: 'FOLLOW' });
+    expect(heard).toHaveBeenCalledTimes(1);
   });
 });

@@ -48,6 +48,20 @@ export function notificationLink(n: NotificationView): string {
   }
 }
 
+/**
+ * Bug 1024 · El aviso emergente de un mensaje que llega con la sesión abierta.
+ * Nada si no es un mensaje o si ya estoy dentro de esa conversación.
+ */
+export function messageAlert(
+  n: NotificationView,
+  pathname: string,
+): { text: string; link: string } | null {
+  if (n.type !== 'MESSAGE') return null;
+  const link = notificationLink(n);
+  if (pathname === link) return null;
+  return { text: notificationText(n), link };
+}
+
 /** Todas las páginas en una sola lista, del más reciente al más antiguo. */
 export function flattenNotifications(
   pages: readonly NotificationPage[],
