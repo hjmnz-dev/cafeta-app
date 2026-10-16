@@ -7,6 +7,7 @@ import { renderRoutes } from '../../test/utils';
 import { myProfileView, signIn, TEST_USER } from '../../test/api';
 import { json, TEST_CAREERS } from '../../test/setup';
 import type { ProfileView } from '../lib/profiles-api';
+import { useSession } from '../store/SessionStore';
 
 // Decisión 14, HU10: editar el perfil propio contra la API.
 const PROFILE_PATH = `/users/${TEST_USER.id}/profile`;
@@ -210,5 +211,64 @@ describe('Decisión 14 · HU10 — Editar perfil', () => {
     expect(
       await screen.findByRole('button', { name: /reintentar/i }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Cambiar de carrera actualiza la sesión sin recargar', () => {
+  function SessionCareer() {
+    const { user } = useSession();
+    return <p data-testid="session-career">{user?.profile.careerId}</p>;
+  }
+
+  it('al guardar otra carrera se vuelve a pedir /auth/me y la sesión la usa', async () => {
+    const user = userEvent.setup();
+    let current = myProfileView();
+    let meCalls = 0;
+    signIn(async (url, init) => {
+      if (url.pathname.endsWith('/me/profile') && init?.method === 'PATCH') {
+        const body = JSON.parse(String(init.body)) as { careerId?: string };
+        current = { ...current, careerId: body.careerId ?? current.careerId };
+        return json(200, current);
+      }
+      if (url.pathname.endsWith(PROFILE_PATH)) return json(200, current);
+      if (url.pathname.endsWith('/auth/me')) {
+        meCalls += 1;
+        return json(200, {
+          ...TEST_USER,
+          profile: { ...TEST_USER.profile, careerId: current.careerId },
+        });
+      }
+      return undefined;
+    });
+    renderRoutes(
+      [
+        {
+          path: '/profile/edit',
+          element: (
+            <>
+              <EditProfileScreen />
+              <SessionCareer />
+            </>
+          ),
+        },
+        { path: '/profile', element: <SessionCareer /> },
+      ],
+      { route: '/profile/edit' },
+    );
+
+    await screen.findByDisplayValue('Carlos Gómez');
+    expect(screen.getByTestId('session-career')).toHaveTextContent(
+      TEST_CAREERS[0].id,
+    );
+    await screen.findByRole('option', { name: 'Medicina' });
+    await user.selectOptions(screen.getByLabelText('Carrera'), 'Medicina');
+    await user.click(screen.getByRole('button', { name: /guardar/i }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('session-career')).toHaveTextContent(
+        TEST_CAREERS[1].id,
+      ),
+    );
+    expect(meCalls).toBeGreaterThanOrEqual(2);
   });
 });
