@@ -6,6 +6,12 @@ import { twMerge } from 'tailwind-merge';
 import { CafetaAppIcon } from './Logo';
 import { LivePostList } from './LivePostList';
 import { StoriesStrip } from './StoriesStrip';
+import {
+  headerAfterScroll,
+  HEADER_SETTLE_MS,
+  INITIAL_HEADER_SCROLL,
+  type HeaderScroll,
+} from '../lib/header-scroll';
 import { orderCareerTabs } from '../lib/posts';
 import { useCareers, useFeed } from '../store/posts-queries';
 import { useExplorePosts } from '../store/search-queries';
@@ -38,7 +44,6 @@ export function FeedScreen() {
   );
 
   const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLAnchorElement>(null);
@@ -60,30 +65,35 @@ export function FeedScreen() {
 
   // La marca y los accesos se recogen al bajar y vuelven al subir, para que la
   // lectura del feed gane alto; las pestañas de carrera se quedan siempre.
+  // Bug 1053: la decisión vive en headerAfterScroll (umbral, ancla y una
+  // pausa tras cada cambio) y el estado del scroll en un ref, para no volver
+  // a suscribirse en cada evento.
+  const headerScroll = useRef<HeaderScroll>(INITIAL_HEADER_SCROLL);
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      const currentScrollY = container.scrollTop;
-
-      if (currentScrollY <= 10) {
-        setShowHeader(true);
-      } else if (currentScrollY > lastScrollY + 4) {
-        setShowHeader(false);
-      } else if (currentScrollY < lastScrollY - 4) {
-        setShowHeader(true);
-      }
-
-      setLastScrollY(currentScrollY);
+      const next = headerAfterScroll(
+        headerScroll.current,
+        container.scrollTop,
+        performance.now(),
+      );
+      headerScroll.current = next;
+      setShowHeader(next.shown);
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   /** Abrir un panel devuelve la cabecera a su sitio: cuelga de ella. */
   const openPanel = () => {
+    headerScroll.current = {
+      ...headerScroll.current,
+      shown: true,
+      settledAt: performance.now() + HEADER_SETTLE_MS,
+    };
     setShowHeader(true);
     setShowSuggestions(!showSuggestions);
   };
@@ -96,7 +106,7 @@ export function FeedScreen() {
   return (
     <div
       ref={scrollContainerRef}
-      className="w-full h-full bg-[var(--surface)] pb-[100px] overflow-y-auto no-scrollbar relative"
+      className="w-full h-full bg-[var(--surface)] pb-[100px] overflow-y-auto no-scrollbar relative [overflow-anchor:none]"
     >
       {/*
         Cabecera pegajosa DENTRO del contenedor con scroll: antes iba `fixed`
