@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ChevronUp, Heart } from 'lucide-react';
 import {
   nextReaction,
   optionOf,
   REACTIONS,
+  tapReaction,
   type ReactionType,
 } from '../lib/reactions';
 
@@ -12,12 +13,17 @@ function compact(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', '')}k` : String(n);
 }
 
+/** Cuánto hay que mantener pulsado para abrir las demás reacciones. */
+export const LONG_PRESS_MS = 450;
+
 /**
- * HU28 — Reaccionar a una publicación (spec 0009, decisión 20).
+ * HU28 — Reaccionar a una publicación (spec 0009, decisión 20; bug 1026).
  *
- * Tocar el botón abre las cinco expresiones; tocar una la pone o reemplaza mi
- * reacción, y tocar la que ya tengo la quita. Todo se decide aquí con datos que
- * llegan por props: la red y la caché viven en `useReactToPost`.
+ * Un toque corto pone ❤️, o quita mi reacción si ya tengo una. Mantener
+ * pulsado (o clic derecho) abre las cinco expresiones; con teclado o en
+ * escritorio, el botón «Más reacciones» las abre. Tocar una la pone o la
+ * reemplaza, y tocar la que ya tengo la quita. La red y la caché viven en
+ * `useReactToPost`.
  */
 export function PostReactionButton({
   count,
@@ -33,11 +39,36 @@ export function PostReactionButton({
   onSelect: (type: ReactionType | null) => void;
 }) {
   const [open, setOpen] = useState(false);
+  // El temporizador del toque largo y si ya abrió el selector (para que el
+  // clic que llega al soltar no reaccione además).
+  const pressTimer = useRef<number | null>(null);
+  const openedByPress = useRef(false);
+
   const noun = count === 1 ? 'reacción' : 'reacciones';
   const label = mine
-    ? `Tu reacción: ${optionOf(mine).label}. ${count} ${noun}`
-    : `Reaccionar. ${count} ${noun}`;
+    ? `Quitar tu reacción: ${optionOf(mine).label}. ${count} ${noun}`
+    : `Me encanta. ${count} ${noun}`;
 
+  const cancelPress = () => {
+    if (pressTimer.current !== null) window.clearTimeout(pressTimer.current);
+    pressTimer.current = null;
+  };
+  const startPress = () => {
+    openedByPress.current = false;
+    cancelPress();
+    pressTimer.current = window.setTimeout(() => {
+      openedByPress.current = true;
+      setOpen(true);
+    }, LONG_PRESS_MS);
+  };
+  const tap = () => {
+    cancelPress();
+    if (openedByPress.current) {
+      openedByPress.current = false;
+      return;
+    }
+    if (!busy) onSelect(tapReaction(mine));
+  };
   const choose = (type: ReactionType) => {
     setOpen(false);
     onSelect(nextReaction(mine, type));
@@ -45,18 +76,26 @@ export function PostReactionButton({
 
   return (
     <div
-      className="relative"
+      className="relative flex items-center"
       onKeyDown={(e) => {
         if (e.key === 'Escape') setOpen(false);
       }}
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={tap}
+        onPointerDown={startPress}
+        onPointerUp={cancelPress}
+        onPointerLeave={cancelPress}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          cancelPress();
+          setOpen(true);
+        }}
         aria-label={label}
-        aria-haspopup="true"
-        aria-expanded={open}
-        className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group"
+        aria-pressed={mine !== null}
+        disabled={busy}
+        className="flex items-center gap-1.5 px-1.5 py-1 rounded-full group select-none touch-manipulation disabled:opacity-60"
       >
         {mine ? (
           <span className="text-[17px] leading-none" aria-hidden="true">
@@ -77,6 +116,16 @@ export function PostReactionButton({
         >
           {compact(count)}
         </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Más reacciones"
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="w-6 h-6 -ml-1 rounded-full flex items-center justify-center text-[var(--muted)] hover:text-[var(--brand)] hover:bg-[var(--surface-3)] transition-colors"
+      >
+        <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" />
       </button>
 
       {open && (

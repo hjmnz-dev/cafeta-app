@@ -9,6 +9,7 @@ import {
   conversationKeys,
   postKeys,
   profileKeys,
+  searchKeys,
 } from '../lib/query-keys';
 
 export function useBlockedUsers(cursor?: string) {
@@ -27,6 +28,8 @@ export function useBlockUser() {
       void queryClient.invalidateQueries({ queryKey: profileKeys.all });
       void queryClient.invalidateQueries({ queryKey: postKeys.all });
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+      // El bloqueado deja de aparecer en la búsqueda y en Descubrir.
+      void queryClient.invalidateQueries({ queryKey: searchKeys.all });
     },
   });
 }
@@ -40,6 +43,8 @@ export function useUnblockUser() {
       void queryClient.invalidateQueries({ queryKey: profileKeys.all });
       void queryClient.invalidateQueries({ queryKey: postKeys.all });
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+      // El bloqueado deja de aparecer en la búsqueda y en Descubrir.
+      void queryClient.invalidateQueries({ queryKey: searchKeys.all });
     },
   });
 }

@@ -28,6 +28,7 @@ import {
   useSendMessage,
 } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
+import { StoryRing } from './StoryRing';
 
 /**
  * Una conversación (HU34, HU35 y HU38, spec 0008 decisión 25 y 26). El historial
@@ -128,6 +129,7 @@ export function ConversationScreen() {
         title={other?.displayName ?? ''}
         subtitle={other ? `@${other.handle}` : undefined}
         initials={other ? initialsOf(other.displayName) : undefined}
+        userId={other?.id}
         onBack={() => navigate('/messages')}
       />
 
@@ -323,11 +325,14 @@ function Header({
   title,
   subtitle,
   initials,
+  userId,
   onBack,
 }: {
   title: string;
   subtitle?: string;
   initials?: string;
+  /** La otra persona: con historia vigente, su foto la abre (bug 1047). */
+  userId?: string;
   onBack: () => void;
 }) {
   return (
@@ -339,10 +344,12 @@ function Header({
       >
         <ArrowLeft className="w-6 h-6" />
       </button>
-      {initials && (
-        <div className="w-10 h-10 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-sm shadow-sm">
-          {initials}
-        </div>
+      {initials && userId && (
+        <StoryRing userId={userId} name={title}>
+          <div className="w-10 h-10 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-sm shadow-sm">
+            {initials}
+          </div>
+        </StoryRing>
       )}
       <div className="flex-1 min-w-0">
         <h2 className="font-['Space Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)] truncate">

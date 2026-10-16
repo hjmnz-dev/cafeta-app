@@ -165,12 +165,51 @@ describe('DEF-08 — La información del perfil refleja el estado real', () => {
     ).toBeInTheDocument();
   });
 
-  it('Recursos muestra un vacío explicado, no fotos de relleno', async () => {
+  it('bug 1029: Recursos pide a la API mis publicaciones con PDF y las muestra', async () => {
     const user = userEvent.setup();
+    const asked: string[] = [];
+    signIn((url) => {
+      if (url.pathname.endsWith(`/users/${TEST_USER.id}/posts`)) {
+        const resources = url.searchParams.get('resources') === 'true';
+        asked.push(resources ? 'recursos' : 'todas');
+        return page(
+          resources
+            ? [
+                postView({
+                  id: 'pdf1',
+                  content: 'Pensum de Software',
+                  author: { id: TEST_USER.id },
+                  media: [
+                    {
+                      url: 'https://blob.test/pensum.pdf',
+                      mediaType: 'DOCUMENT',
+                      mimeType: 'application/pdf',
+                    },
+                  ],
+                }),
+              ]
+            : [],
+        );
+      }
+      return undefined;
+    });
     renderWithProviders(<ProfileScreen />, { route: '/profile' });
 
-    await user.click(screen.getByRole('button', { name: /recursos/i }));
-    expect(screen.getByText(/no has compartido recursos/i)).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /recursos/i }));
+
+    expect(await screen.findByText('Pensum de Software')).toBeInTheDocument();
+    expect(asked).toContain('recursos');
+  });
+
+  it('Recursos sin PDF publicados muestra un vacío explicado', async () => {
+    const user = userEvent.setup();
+    signIn();
+    renderWithProviders(<ProfileScreen />, { route: '/profile' });
+
+    await user.click(await screen.findByRole('button', { name: /recursos/i }));
+    expect(
+      await screen.findByText(/no has compartido recursos/i),
+    ).toBeInTheDocument();
   });
 
   it('decisión 19 — Guardados abre su propia pantalla en /profile/saved', async () => {

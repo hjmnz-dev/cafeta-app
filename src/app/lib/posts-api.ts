@@ -35,6 +35,11 @@ export const postsApi = {
     apiRequest<PostPage>(`/posts/feed${toQueryString({ careerId, cursor })}`),
   byUser: (userId: string, cursor: string | null) =>
     apiRequest<PostPage>(`/users/${userId}/posts${toQueryString({ cursor })}`),
+  /** Solo las que llevan un PDF: los Recursos del perfil (bug 1029). */
+  resourcesByUser: (userId: string, cursor: string | null) =>
+    apiRequest<PostPage>(
+      `/users/${userId}/posts${toQueryString({ cursor, resources: 'true' })}`,
+    ),
   countByUser: (userId: string) =>
     apiRequest<PostCount>(`/users/${userId}/posts/count`),
   // Acciones del autor (spec 0008, decisión 17).

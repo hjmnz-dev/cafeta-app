@@ -11,15 +11,13 @@ import {
 import { useNavigate } from 'react-router';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import {
-  useAppState,
-  TAG_CATEGORIES,
-  CURRENT_USER_ID,
-} from '../store/AppState';
-import { tagCategoryOf } from '../lib/profiles';
-import { PostCard } from './PostCard';
+import { TAG_CATEGORIES, tagCategoryOf } from '../lib/profiles';
 import { LivePostList } from './LivePostList';
-import { useUserPostCount, useUserPosts } from '../store/posts-queries';
+import {
+  useUserPostCount,
+  useUserPosts,
+  useUserResources,
+} from '../store/posts-queries';
 import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
 import { MyStoryAvatar } from './MyStoryAvatar';
@@ -62,12 +60,10 @@ function EmptyTab({
 export function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<'posts' | 'resources'>('posts');
   const navigate = useNavigate();
-  const { posts } = useAppState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Mis publicaciones y su conteo vienen de la API (spec 0005); cabecera,
-  // y recursos siguen con AppState hasta sus funcionalidades. Los guardados
-  // viven en su propia pantalla (/profile/saved).
+  // Todo viene de la API: publicaciones, conteo y recursos (bug 1029). Los
+  // guardados viven en su propia pantalla (/profile/saved).
   const { user } = useSession();
   const myLivePosts = useUserPosts(user?.id);
   const postCount = useUserPostCount(user?.id);
@@ -75,12 +71,8 @@ export function ProfileScreen() {
   const myProfile = useProfile(user?.id ?? '', Boolean(user));
   const me = myProfile.data;
   const counts = me?.counts;
-  const myPosts = posts.filter((p) => p.authorId === CURRENT_USER_ID);
-
-  // Recursos: publicaciones propias que aportan material de estudio.
-  const myResources = myPosts.filter(
-    (p) => p.active && (p.type === 'pdf' || p.type === 'study-notes'),
-  );
+  // Recursos: mis publicaciones con un PDF; se piden al abrir la pestaña.
+  const myResources = useUserResources(user?.id, activeTab === 'resources');
 
   return (
     <div
@@ -307,24 +299,27 @@ export function ProfileScreen() {
           </div>
         )}
 
-        {/* Recursos: material propio real (PDF y apuntes), no fotos de relleno */}
-        {activeTab === 'resources' &&
-          (myResources.length === 0 ? (
-            <EmptyTab
-              title="No has compartido recursos"
-              detail="Los apuntes y PDF que publiques aparecerán aquí."
-              action={{
-                label: 'Compartir un recurso',
-                onClick: () => navigate('/create-post'),
-              }}
+        {/* Recursos: mis publicaciones con un PDF adjunto (bug 1029) */}
+        {activeTab === 'resources' && (
+          <div className="-mx-5 border-t border-[var(--line-soft)]">
+            <LivePostList
+              query={myResources}
+              scrollRootRef={scrollRef}
+              empty={
+                <div className="px-5">
+                  <EmptyTab
+                    title="No has compartido recursos"
+                    detail="Las publicaciones con un PDF adjunto aparecerán aquí."
+                    action={{
+                      label: 'Compartir un recurso',
+                      onClick: () => navigate('/create-post'),
+                    }}
+                  />
+                </div>
+              }
             />
-          ) : (
-            <div className="-mx-5 border-t border-[var(--line-soft)]">
-              {myResources.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          ))}
+          </div>
+        )}
       </div>
     </div>
   );

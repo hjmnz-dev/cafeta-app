@@ -78,6 +78,7 @@ export function postView(
       handle: 'jperez',
       displayName: 'Juan Pérez',
       careerName: 'Medicina',
+      avatarUrl: null,
       verified: false,
       ...author,
     },

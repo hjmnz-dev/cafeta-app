@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Users,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { ApiError, userMessageOf } from '../lib/http';
 import type { ProfileView } from '../lib/profiles-api';
 import {
@@ -15,9 +16,9 @@ import {
   restrictedNotice,
   tagCategoryOf,
   VISIBILITY_LABEL,
+  TAG_CATEGORIES,
 } from '../lib/profiles';
 import { groupOf } from '../lib/stories';
-import { TAG_CATEGORIES, useAppState } from '../store/AppState';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
 import { useBlockUser } from '../store/blocks-queries';
@@ -40,10 +41,12 @@ export function LiveUserProfileScreen({ userId }: { userId: string }) {
 
   if (me?.id === userId) return <Navigate to="/profile" replace />;
   if (profile.isPending) return <ProfileShell loading />;
-  if (!profile.data) {
-    const notFound =
-      profile.error instanceof ApiError &&
-      profile.error.code === 'USER_NOT_FOUND';
+  // Un 404 gana sobre lo que había en caché: por ejemplo, justo después de
+  // bloquear a la persona, que deja de existir para mí (HU53).
+  const notFound =
+    profile.error instanceof ApiError &&
+    profile.error.code === 'USER_NOT_FOUND';
+  if (!profile.data || notFound) {
     return (
       <ProfileShell>
         <p className="text-[15px] text-[var(--ink)]">
@@ -114,6 +117,15 @@ function ProfileShell({
   );
 }
 
+/** Un /u/:id que no es de la API (por ejemplo un enlace viejo de la demo). */
+export function MissingUserProfileScreen() {
+  return (
+    <ProfileShell>
+      <p className="text-[15px] text-[var(--ink)]">Usuario no encontrado</p>
+    </ProfileShell>
+  );
+}
+
 /** Un conteo; con `to` lleva a su lista (HU32). */
 function Stat({
   value,
@@ -158,7 +170,6 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   const posts = useUserPosts(profile.id, profile.canSeeContent);
   const notice = restrictedNotice(profile);
   const blockMutation = useBlockUser();
-  const { blockUser } = useAppState();
   // Sus historias vigentes que ya me llegan en la tira (bug 1017): la foto las abre.
   const tray = useStoryTray();
   const { pathname: from } = useLocation();
@@ -215,10 +226,15 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
               displayName={profile.displayName}
               handle={profile.handle}
               firstName={firstNameOf(profile.displayName)}
-              onBlock={() => {
-                blockMutation.mutate(profile.id);
-                blockUser(profile.id);
-              }}
+              onBlock={() =>
+                blockMutation.mutate(profile.id, {
+                  onSuccess: () =>
+                    toast.success(
+                      `Bloqueaste a ${profile.displayName}. Puedes desbloquearle desde Configuración.`,
+                    ),
+                  onError: (error) => toast.error(userMessageOf(error)),
+                })
+              }
             />
             <FollowButton profile={profile} />
           </div>

@@ -3,7 +3,7 @@ import { RouterProvider } from 'react-router';
 import { ErrorScreen } from './components/ErrorScreen';
 import { Toaster } from './components/ui/sonner';
 import { router } from './routes';
-import { AppStateProvider } from './store/AppState';
+import { ThemeProvider } from './store/ThemeStore';
 import { QueryProvider } from './store/QueryProvider';
 import { RealtimeProvider } from './store/RealtimeProvider';
 import { SessionProvider } from './store/SessionStore';
@@ -27,10 +27,10 @@ function App() {
       <SessionProvider>
         <QueryProvider>
           <RealtimeProvider>
-            <AppStateProvider>
+            <ThemeProvider>
               <RouterProvider router={router} />
               <Toaster position="top-center" />
-            </AppStateProvider>
+            </ThemeProvider>
           </RealtimeProvider>
         </QueryProvider>
       </SessionProvider>

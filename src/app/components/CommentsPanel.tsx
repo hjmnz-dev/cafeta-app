@@ -18,9 +18,15 @@ import { CommentItem } from './CommentItem';
 export function CommentsPanel({
   target,
   count,
+  readOnly = false,
 }: {
   target: CommentTarget;
   count: number;
+  /**
+   * Solo leer: una publicación archivada muestra sus comentarios a su dueño
+   * (bug 1038), pero nadie comenta en ella hasta restaurarla.
+   */
+  readOnly?: boolean;
 }) {
   const [now] = useState(() => new Date());
   const [draft, setDraft] = useState('');
@@ -97,32 +103,39 @@ export function CommentsPanel({
         </button>
       )}
 
-      <div className="mt-2">
-        <textarea
-          aria-label="Escribe un comentario"
-          placeholder="Escribe un comentario"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          className="w-full min-h-[56px] resize-none text-[14px] text-[var(--ink)] placeholder:text-[var(--muted)] bg-[var(--surface-2)] rounded-xl p-2.5 outline-none"
-        />
-        <div className="flex items-center justify-between mt-1">
-          <span
-            className={
-              'text-[12px] ' +
-              (tooLong ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
-            }
-          >
-            {used}/{COMMENT_MAX}
-          </span>
-          <button
-            onClick={send}
-            disabled={empty || tooLong || createComment.isPending}
-            className="px-4 py-1.5 rounded-full text-[13px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] disabled:opacity-40"
-          >
-            Enviar comentario
-          </button>
+      {readOnly ? (
+        <p className="mt-2 text-[13px] text-[var(--muted)]">
+          Esta publicación está archivada: restáurala para volver a recibir
+          comentarios.
+        </p>
+      ) : (
+        <div className="mt-2">
+          <textarea
+            aria-label="Escribe un comentario"
+            placeholder="Escribe un comentario"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="w-full min-h-[56px] resize-none text-[14px] text-[var(--ink)] placeholder:text-[var(--muted)] bg-[var(--surface-2)] rounded-xl p-2.5 outline-none"
+          />
+          <div className="flex items-center justify-between mt-1">
+            <span
+              className={
+                'text-[12px] ' +
+                (tooLong ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
+              }
+            >
+              {used}/{COMMENT_MAX}
+            </span>
+            <button
+              onClick={send}
+              disabled={empty || tooLong || createComment.isPending}
+              className="px-4 py-1.5 rounded-full text-[13px] font-semibold text-[var(--on-brand)] bg-[var(--brand)] disabled:opacity-40"
+            >
+              Enviar comentario
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

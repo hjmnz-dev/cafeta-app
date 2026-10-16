@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, LogOut, Ban, Moon, Sun } from 'lucide-react';
-import { useAppState, Theme } from '../store/AppState';
+import { useTheme, type Theme } from '../store/ThemeStore';
 import { useSession } from '../store/SessionStore';
 import { useBlockedUsers, useUnblockUser } from '../store/blocks-queries';
 import { AccountInfo } from './AccountInfo';
@@ -43,32 +43,18 @@ const THEME_OPTIONS: {
 export function SettingsScreen() {
   const navigate = useNavigate();
   const { user: sessionUser, logout } = useSession();
-  const { settings, updateSettings, users, blockedIds, unblockUser } =
-    useAppState();
+  const { theme, setTheme } = useTheme();
 
   const apiBlocked = useBlockedUsers();
   const unblockMutation = useUnblockUser();
 
-  const isLive = Boolean(sessionUser);
-  const blockedUsers =
-    isLive && apiBlocked.data
-      ? apiBlocked.data.items.map((b) => ({
-          id: b.id,
-          name: b.displayName,
-          handle: `@${b.handle.replace(/^@/, '')}`,
-        }))
-      : users
-          .filter((u) => blockedIds.includes(u.id))
-          .map((u) => ({ id: u.id, name: u.name, handle: u.handle }));
+  const blockedUsers = (apiBlocked.data?.items ?? []).map((b) => ({
+    id: b.id,
+    name: b.displayName,
+    handle: `@${b.handle.replace(/^@/, '')}`,
+  }));
 
-  const handleUnblock = (userId: string) => {
-    if (isLive) {
-      unblockMutation.mutate(userId);
-    }
-    unblockUser(userId);
-  };
-
-  const setTheme = (theme: Theme) => updateSettings({ theme });
+  const handleUnblock = (userId: string) => unblockMutation.mutate(userId);
 
   const sectionTitle =
     "text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider font-['IBM_Plex_Mono',monospace] mb-3 px-1";
@@ -108,7 +94,7 @@ export function SettingsScreen() {
           <div className={card}>
             {THEME_OPTIONS.map((opt, i) => {
               const Icon = opt.icon;
-              const active = settings.theme === opt.value;
+              const active = theme === opt.value;
               return (
                 <button
                   key={opt.value}

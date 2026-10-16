@@ -40,6 +40,14 @@ export function nextReaction(
   return current === tapped ? null : tapped;
 }
 
+/**
+ * Bug 1026 · Un toque corto: sin reacción pone ❤️ (la más usada); con una
+ * reacción, la quita. Las demás se eligen manteniendo pulsado.
+ */
+export function tapReaction(current: ReactionType | null): ReactionType | null {
+  return current === null ? 'HEART' : null;
+}
+
 /** La publicación como queda con mi reacción `next`; el conteo nunca baja de 0. */
 export function withReaction(
   view: PostView,

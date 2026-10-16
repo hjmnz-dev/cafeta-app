@@ -31,6 +31,10 @@ export const searchApi = {
       })}`,
     ),
 
+  /** Personas sugeridas para Descubrir (primero las de mi carrera). */
+  discoverPeople: (cursor: string | null = null) =>
+    apiRequest<SearchUserPage>(`/discover/people${toQueryString({ cursor })}`),
+
   explore: (cursor: string | null = null, limit?: number) =>
     apiRequest<SearchPostPage>(
       `/explore/posts${toQueryString({

@@ -33,6 +33,17 @@ export function useSearchPosts(query: string, enabled = true) {
   });
 }
 
+/** Personas sugeridas en Descubrir (bugs 1031 y 1033). */
+export function useDiscoverPeople(enabled = true) {
+  return useInfiniteQuery({
+    queryKey: searchKeys.discoverPeople,
+    queryFn: ({ pageParam }) => searchApi.discoverPeople(pageParam),
+    initialPageParam: firstPage,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled,
+  });
+}
+
 /** Explorar publicaciones recientes y populares de otros usuarios. */
 export function useExplorePosts(enabled = true) {
   return useInfiniteQuery({
