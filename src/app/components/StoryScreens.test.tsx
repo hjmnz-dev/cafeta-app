@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { json } from '../../test/setup';
 import { signIn, TEST_USER, type Handler } from '../../test/api';
 import { renderRoutes, renderWithProviders } from '../../test/utils';
@@ -509,5 +509,61 @@ describe('HU12 · Crear una historia', () => {
       await screen.findByText('Una historia lleva una imagen o un video.'),
     ).toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent('/create-story');
+  });
+});
+
+describe('Bug 1058 · Cerrar una historia vuelve atrás sin bucle', () => {
+  function BackButton() {
+    const navigate = useNavigate();
+    return (
+      <button onClick={() => navigate(-1)} aria-label="Atrás">
+        Atrás
+      </button>
+    );
+  }
+
+  it('Inicio → Buscar → historia → cerrar → Atrás llega a Inicio', async () => {
+    const user = userEvent.setup();
+    signIn(trayOf(() => [group(BETO, [story('b1'), story('b2')])]));
+    renderRoutes(
+      [
+        {
+          path: '/home',
+          element: <Link to="/search">Ir a buscar</Link>,
+        },
+        {
+          path: '/search',
+          element: (
+            <>
+              <BackButton />
+              <Link to="/stories/b1" state={{ from: '/search' }}>
+                Ver historia
+              </Link>
+            </>
+          ),
+        },
+        { path: '/stories/:storyId', element: <StoryViewerScreen /> },
+      ],
+      { route: '/home' },
+    );
+
+    await user.click(screen.getByRole('link', { name: 'Ir a buscar' }));
+    await user.click(screen.getByRole('link', { name: 'Ver historia' }));
+    // Pasar a la siguiente historia no suma entradas al historial.
+    await user.click(
+      await screen.findByRole('button', { name: 'Historia siguiente' }),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/stories/b2'),
+    );
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/search'),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Atrás' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/home'),
+    );
   });
 });
