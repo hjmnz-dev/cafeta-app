@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { signIn } from '../../test/api';
@@ -77,7 +82,6 @@ const llega = (n: NotificationView) =>
 
 describe('HU35 · Bug 1024 — aviso de mensaje con la sesión abierta', () => {
   it('estando en Home, un mensaje nuevo avisa y "Ver" abre la conversación', async () => {
-    const user = userEvent.setup();
     await renderAt('/home');
 
     llega(aviso());
@@ -85,7 +89,9 @@ describe('HU35 · Bug 1024 — aviso de mensaje con la sesión abierta', () => {
     expect(
       await screen.findByText('Beto Díaz te envió un mensaje'),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Ver' }));
+    // Clic sin eventos de puntero: el aviso de sonner usa setPointerCapture
+    // al deslizarlo, y jsdom no lo trae.
+    fireEvent.click(screen.getByRole('button', { name: 'Ver' }));
     expect(screen.getByTestId('where')).toHaveTextContent('/messages/c1');
   });
 
