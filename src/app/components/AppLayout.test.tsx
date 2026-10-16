@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { signIn } from '../../test/api';
+import { json } from '../../test/setup';
 import { renderWithProviders } from '../../test/utils';
 import { AppLayout } from './AppLayout';
 
@@ -19,5 +21,56 @@ describe('AppLayout: navegación inferior', () => {
     renderWithProviders(<AppLayout />, { route: '/home' });
 
     expect(screen.getByText('Discover')).toBeInTheDocument();
+  });
+});
+
+describe('AppLayout: punto de mensajes sin leer (bug 1024)', () => {
+  const inboxWith = (unread: boolean) =>
+    signIn((url) =>
+      url.pathname.endsWith('/conversations')
+        ? json(200, {
+            items: [
+              {
+                id: 'c1',
+                otherUser: {
+                  id: 'u2',
+                  handle: 'beto',
+                  displayName: 'Beto Díaz',
+                  careerName: null,
+                  verified: false,
+                },
+                lastMessage: null,
+                unread,
+              },
+            ],
+            nextCursor: null,
+          })
+        : undefined,
+    );
+
+  it('con una conversación sin leer, «Mensajes» lleva el punto y lo dice', async () => {
+    inboxWith(true);
+    renderWithProviders(<AppLayout />, { route: '/home' });
+
+    expect(await screen.findByTestId('nav-dot-messages')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Mensajes, tienes mensajes sin leer' }),
+    ).toHaveAttribute('href', '/messages');
+  });
+
+  it('con todo leído no hay punto', async () => {
+    const fetchMock = inboxWith(false);
+    renderWithProviders(<AppLayout />, { route: '/home' });
+
+    // Espera a que se pida la bandeja antes de afirmar que no hay punto.
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([input]) =>
+          String(input).endsWith('/conversations'),
+        ),
+      ).toBe(true),
+    );
+    await screen.findByText('Discover');
+    expect(screen.queryByTestId('nav-dot-messages')).not.toBeInTheDocument();
   });
 });

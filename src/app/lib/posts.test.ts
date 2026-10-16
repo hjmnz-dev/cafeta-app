@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { countChars, orderCareerTabs, relativeTime, toCardPost } from './posts';
+import {
+  countChars,
+  orderCareerTabs,
+  relativeTime,
+  stepIndex,
+  toCardPost,
+} from './posts';
 import { postView } from '../../test/api';
 
 // Lógica pura de publicaciones (spec 0005).
@@ -245,5 +251,17 @@ describe('countChars · bordes', () => {
   it('cuenta vacío como 0 y los saltos de línea como caracteres', () => {
     expect(countChars('')).toBe(0);
     expect(countChars('a' + String.fromCharCode(10) + 'b')).toBe(3);
+  });
+});
+
+describe('stepIndex (bug 1025)', () => {
+  it('avanza y retrocede dando la vuelta en los extremos', () => {
+    expect(stepIndex(0, 1, 4)).toBe(1);
+    expect(stepIndex(3, 1, 4)).toBe(0);
+    expect(stepIndex(0, -1, 4)).toBe(3);
+  });
+
+  it('sin imágenes queda en 0', () => {
+    expect(stepIndex(0, 1, 0)).toBe(0);
   });
 });

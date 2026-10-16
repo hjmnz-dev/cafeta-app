@@ -5,8 +5,19 @@
  * cliente HTTP, y vuelca cada evento en la caché de TanStack Query. No dibuja
  * nada ni guarda nada a nivel de módulo: el socket vive dentro del efecto y se
  * cierra al cerrar sesión.
+ *
+ * Los avisos nuevos también se reparten a quien los escuche con
+ * useNotificationListener (bug 1024): así una pantalla dentro del router puede
+ * mostrar el aviso emergente sin abrir otro socket.
  */
-import { useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 import type { MessageView } from '../lib/conversations-api';
@@ -22,9 +33,24 @@ import {
 import { refreshNotifications } from './notifications-queries';
 import { useSession } from './SessionStore';
 
+type NotificationListener = (notification: NotificationView) => void;
+type Subscribe = (listener: NotificationListener) => () => void;
+
+const NotificationsChannel = createContext<Subscribe>(() => () => undefined);
+
 export function RealtimeProvider({ children }: { children: ReactNode }) {
   const { status } = useSession();
   const queryClient = useQueryClient();
+  // Quienes escuchan los avisos; se reemplaza el conjunto, nunca se muta.
+  const listeners = useRef<ReadonlySet<NotificationListener>>(new Set());
+  const subscribe = useCallback<Subscribe>((listener) => {
+    listeners.current = new Set([...listeners.current, listener]);
+    return () => {
+      listeners.current = new Set(
+        [...listeners.current].filter((l) => l !== listener),
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -50,8 +76,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
         ),
     );
     // Un aviso nuevo: la lista y el punto del ícono se piden de nuevo.
-    socket.on('notification:new', (_notification: NotificationView) => {
+    socket.on('notification:new', (notification: NotificationView) => {
       void refreshNotifications(queryClient);
+      listeners.current.forEach((listener) => listener(notification));
     });
     // Al reconectar pudo llegar algo mientras no había socket: se vuelve a pedir.
     socket.io.on('reconnect', () => {
@@ -63,5 +90,22 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, [status, queryClient]);
 
-  return <>{children}</>;
+  return (
+    <NotificationsChannel.Provider value={subscribe}>
+      {children}
+    </NotificationsChannel.Provider>
+  );
+}
+
+/** Llama a `listener` con cada aviso que llega por el socket mientras el componente vive. */
+export function useNotificationListener(listener: NotificationListener) {
+  const subscribe = useContext(NotificationsChannel);
+  const latest = useRef(listener);
+  useEffect(() => {
+    latest.current = listener;
+  });
+  useEffect(
+    () => subscribe((notification) => latest.current(notification)),
+    [subscribe],
+  );
 }

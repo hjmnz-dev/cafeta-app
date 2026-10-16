@@ -25,12 +25,13 @@ import { conversationKeys } from '../lib/query-keys';
 
 const firstPage = null as string | null;
 
-export function useInbox() {
+export function useInbox(enabled = true) {
   return useInfiniteQuery({
     queryKey: conversationKeys.inbox,
     queryFn: ({ pageParam }) => conversationsApi.inbox(pageParam),
     initialPageParam: firstPage,
     getNextPageParam: (page) => page.nextCursor,
+    enabled,
   });
 }
 

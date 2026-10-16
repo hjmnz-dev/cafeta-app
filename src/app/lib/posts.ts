@@ -105,3 +105,16 @@ export function orderCareerTabs(
 export function countChars(text: string): number {
   return [...text].length;
 }
+
+/**
+ * Bug 1025 · Pasar de una imagen a otra en el visor: da la vuelta al llegar a
+ * la última o a la primera.
+ */
+export function stepIndex(
+  index: number,
+  delta: number,
+  length: number,
+): number {
+  if (length <= 0) return 0;
+  return (((index + delta) % length) + length) % length;
+}

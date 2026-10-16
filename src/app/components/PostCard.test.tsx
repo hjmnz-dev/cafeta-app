@@ -263,6 +263,70 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
     ).toBeInTheDocument();
   });
 
+  it('bug 1025: tocar una imagen la abre ampliada y se puede pasar a las demás', async () => {
+    const user = userEvent.setup();
+    seedConImagenes([
+      'data:image/jpeg;base64,AAAA',
+      'data:image/jpeg;base64,BBBB',
+      'data:image/jpeg;base64,CCCC',
+    ]);
+    cards();
+
+    await user.click(
+      within(screen.getByTestId('post-img1')).getByRole('button', {
+        name: 'Ampliar imagen 2 de la publicación',
+      }),
+    );
+    const viewer = within(
+      screen.getByRole('dialog', { name: 'Imagen 2 de 3' }),
+    );
+    expect(viewer.getByRole('img')).toHaveAttribute(
+      'src',
+      'data:image/jpeg;base64,BBBB',
+    );
+
+    await user.click(viewer.getByRole('button', { name: 'Imagen siguiente' }));
+    expect(
+      screen.getByRole('dialog', { name: 'Imagen 3 de 3' }),
+    ).toBeInTheDocument();
+    await user.keyboard('{ArrowRight}');
+    expect(
+      screen.getByRole('dialog', { name: 'Imagen 1 de 3' }),
+    ).toBeInTheDocument();
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Imagen anterior',
+      }),
+    );
+    expect(
+      screen.getByRole('dialog', { name: 'Imagen 3 de 3' }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar imagen' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('bug 1025: con una sola imagen no hay flechas y Escape la cierra', async () => {
+    const user = userEvent.setup();
+    seedConImagenes(['data:image/jpeg;base64,AAAA']);
+    cards();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Ampliar imagen 1 de la publicación',
+      }),
+    );
+    expect(
+      screen.getByRole('dialog', { name: 'Imagen de la publicación' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Imagen siguiente' }),
+    ).not.toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('editar el texto no pierde las imágenes', async () => {
     const user = userEvent.setup();
     seedConImagenes(['data:image/jpeg;base64,AAAA']);
