@@ -12,71 +12,107 @@ const type = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
   await user.type(screen.getByRole('textbox', { name: /buscar/i }), text);
 };
 
+/** API de búsqueda con resultados fijos; guarda cada consulta que llega. */
+function searchApi({
+  people = [] as { id: string; displayName: string; handle: string }[],
+  posts = [] as Parameters<typeof postView>[0][],
+} = {}) {
+  const asked: string[] = [];
+  signIn((url) => {
+    const path = url.pathname.replace(/^.*\/api\/v1/, '');
+    if (path === '/search/users') {
+      asked.push(`users:${url.searchParams.get('q')}`);
+      return json(200, {
+        items: people.map((u) => ({
+          avatarUrl: null,
+          careerName: 'Medicina',
+          verified: false,
+          followStatus: 'NONE',
+          canFollow: true,
+          ...u,
+        })),
+        nextCursor: null,
+      });
+    }
+    if (path === '/search/posts') {
+      asked.push(`posts:${url.searchParams.get('q')}`);
+      return json(200, { items: posts.map(postView), nextCursor: null });
+    }
+    return undefined;
+  });
+  return asked;
+}
+
+const MARIA = {
+  id: '01926f00-0000-7000-8000-0000000000a2',
+  displayName: 'María Rodríguez',
+  handle: 'mrodriguez',
+};
+
 describe('DEF-07 · HU41 — Buscar usuarios', () => {
   it('HU41 E1: el nombre de un usuario existente muestra su perfil', async () => {
     const user = userEvent.setup();
+    const asked = searchApi({ people: [MARIA] });
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
     await type(user, 'maria');
 
-    expect(screen.getByText('María Rodríguez')).toBeInTheDocument();
-    expect(screen.queryByText('Juan Pérez')).not.toBeInTheDocument();
-  });
-
-  it('Escenario 1 — encuentra igual sin tildes y por carrera', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<SearchScreen />, { route: '/search' });
-
-    await type(user, 'perez');
-    expect(screen.getByText('Juan Pérez')).toBeInTheDocument();
-
-    await type(user, 'ing. software');
-    expect(screen.getByText('Laura Batista')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('link', { name: /María Rodríguez/ }),
+    ).toHaveAttribute('href', `/u/${MARIA.id}`);
+    expect(asked).toContain('users:maria');
   });
 
   it('HU41 E2: sin coincidencias, avisa que no hay resultados', async () => {
     const user = userEvent.setup();
+    searchApi();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
-    await type(user, 'zzzzz');
-
-    expect(screen.getByText(/no encontramos personas/i)).toBeInTheDocument();
-  });
-
-  it('se puede seguir a alguien desde los resultados, sin salir de la búsqueda', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<SearchScreen />, { route: '/search' });
-
-    await type(user, 'maria');
-    await user.click(screen.getByRole('button', { name: /seguir a maría/i }));
+    await type(user, 'zzzz');
 
     expect(
-      screen.getByRole('button', { name: /dejar de seguir a maría/i }),
+      await screen.findByText(/no encontramos personas para “zzzz”/i),
     ).toBeInTheDocument();
+  });
+
+  it('con una sola letra pide escribir otra, sin preguntar a la API', async () => {
+    const user = userEvent.setup();
+    const asked = searchApi();
+    renderWithProviders(<SearchScreen />, { route: '/search' });
+
+    await type(user, 'm');
+
+    expect(
+      screen.getByText('Escribe al menos 2 letras para buscar.'),
+    ).toBeInTheDocument();
+    expect(asked).toEqual([]);
   });
 });
 
 describe('DEF-07 · HU42 — Buscar contenido', () => {
   it('HU42 E1: una palabra clave muestra las publicaciones relacionadas', async () => {
     const user = userEvent.setup();
+    searchApi({ posts: [{ id: 'p1', content: 'Repaso de cálculo hoy' }] });
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
-    await user.click(screen.getByRole('tab', { name: /publicaciones/i }));
     await type(user, 'calculo');
+    await user.click(screen.getByRole('tab', { name: /publicaciones/i }));
 
-    expect(screen.getByTestId('post-p2')).toBeInTheDocument();
-    expect(screen.queryByTestId('post-p1')).not.toBeInTheDocument();
+    expect(
+      await screen.findByText('Repaso de cálculo hoy'),
+    ).toBeInTheDocument();
   });
 
   it('HU42 E2: sin coincidencias, avisa que no hay resultados', async () => {
     const user = userEvent.setup();
+    searchApi();
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
+    await type(user, 'zzzz');
     await user.click(screen.getByRole('tab', { name: /publicaciones/i }));
-    await type(user, 'zzzzz');
 
     expect(
-      screen.getByText(/no encontramos publicaciones/i),
+      await screen.findByText(/no encontramos publicaciones para “zzzz”/i),
     ).toBeInTheDocument();
   });
 });
@@ -84,27 +120,41 @@ describe('DEF-07 · HU42 — Buscar contenido', () => {
 describe('DEF-07 — Comportamiento de la pantalla de búsqueda', () => {
   it('cada pestaña lleva su conteo, para no perder resultados de la otra', async () => {
     const user = userEvent.setup();
+    searchApi({
+      people: [MARIA],
+      posts: [{ id: 'p1', content: 'Grupo de anatomía' }],
+    });
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
-    await type(user, 'laura'); // usuaria Laura Batista + su publicación de grupo
+    await type(user, 'maria');
 
     expect(
-      screen.getByRole('tab', { name: /personas \(1\)/i }),
+      await screen.findByRole('tab', { name: /personas \(1\)/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('tab', { name: /publicaciones \(1\)/i }),
+      await screen.findByRole('tab', { name: /publicaciones \(1\)/i }),
     ).toBeInTheDocument();
   });
 
-  it('sin consulta ofrece sugerencias del propio directorio en vez de un vacío', async () => {
+  it('bug 1037: los accesos rápidos son las carreras reales y buscan con su nombre completo', async () => {
     const user = userEvent.setup();
+    const asked = searchApi({ people: [MARIA] });
     renderWithProviders(<SearchScreen />, { route: '/search' });
 
     expect(screen.queryByText(/no encontramos/i)).not.toBeInTheDocument();
+    await user.click(
+      await screen.findByRole('button', { name: 'Ingeniería de Software' }),
+    );
 
-    await user.click(screen.getByRole('button', { name: 'Medicina' }));
-
-    expect(screen.getByText('María Rodríguez')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /buscar/i })).toHaveValue(
+      'Ingeniería de Software',
+    );
+    expect(await screen.findByText('María Rodríguez')).toBeInTheDocument();
+    expect(asked).toContain('users:Ingeniería de Software');
+    // Ya no hay accesos inventados como "Ing. Software" o "Anatomía".
+    expect(
+      screen.queryByRole('button', { name: 'Ing. Software' }),
+    ).not.toBeInTheDocument();
   });
 
   it('el feed ofrece la entrada a la búsqueda global', () => {

@@ -1,18 +1,8 @@
 /**
- * Búsqueda global (DEF-07 · HU41/HU42).
- *
- * Sin backend, la búsqueda corre sobre el directorio y las publicaciones que ya
- * viven en el store. Dos decisiones que conviene no perder:
- *
- * - Se normaliza el texto (minúsculas y sin tildes) porque nadie escribe
- *   "Gómez" con tilde en un buscador: "gomez" tiene que encontrar a Gómez.
- * - Se exige que *todas* las palabras de la consulta aparezcan en algún campo,
- *   no una cualquiera, para que "maria medicina" no devuelva a toda Medicina.
- *
- * Con backend real esto se sustituye por una consulta al servidor manteniendo
- * la misma firma.
+ * Lógica pura de la búsqueda (DEF-07 · HU41/HU42). La búsqueda la hace la API
+ * (spec 0008, decisión 28); aquí queda lo que la pantalla necesita para
+ * explicar sus resultados.
  */
-import { DirectoryUser, Post } from '../store/AppState';
 
 /** Minúsculas y sin diacríticos, para comparar como escribe la gente. */
 export function normalize(text: string): string {
@@ -34,58 +24,17 @@ export function queryTerms(query: string): string[] {
     .filter(Boolean);
 }
 
-function matchesAllTerms(
-  fields: (string | undefined)[],
-  terms: string[],
-): boolean {
-  const haystack = normalize(fields.filter(Boolean).join(' '));
-  return terms.every((term) => haystack.includes(term));
-}
-
-/** HU41 — Buscar usuarios por nombre, usuario, carrera, bio o etiquetas. */
-export function searchUsers(
-  users: DirectoryUser[],
-  query: string,
-): DirectoryUser[] {
-  const terms = queryTerms(query);
-  if (terms.length === 0) return [];
-  return users.filter((user) =>
-    matchesAllTerms(
-      [
-        user.name,
-        user.handle,
-        user.career,
-        user.bio,
-        ...user.tags.map((t) => t.label),
-      ],
-      terms,
-    ),
-  );
-}
-
 /**
- * HU42 — Buscar contenido por palabra clave o etiqueta.
- *
- * Solo publicaciones activas: una publicación dada de baja (HU23) desaparece
- * para todos, y la búsqueda no puede ser la puerta trasera que la reviva.
+ * Bug 1031 · La búsqueda nunca devuelve a quien busca. Si la consulta es su
+ * propio nombre o usuario, la pantalla lo dice en vez de quedar en blanco.
  */
-export function searchPosts(posts: Post[], query: string): Post[] {
+export function matchesOwnAccount(
+  query: string,
+  me: { displayName: string; handle: string } | null | undefined,
+): boolean {
+  if (!me) return false;
   const terms = queryTerms(query);
-  if (terms.length === 0) return [];
-  return posts.filter(
-    (post) =>
-      post.active &&
-      matchesAllTerms(
-        [
-          post.content,
-          post.authorName,
-          post.career,
-          post.resourceTitle,
-          post.groupName,
-          post.eventLocation,
-          post.location,
-        ],
-        terms,
-      ),
-  );
+  if (terms.length === 0) return false;
+  const haystack = normalize(`${me.displayName} ${me.handle}`);
+  return terms.every((term) => haystack.includes(term));
 }

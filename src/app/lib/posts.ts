@@ -5,7 +5,44 @@
  */
 import type { Career } from './auth-api';
 import type { PostView } from './posts-api';
-import type { Post, PostType } from '../store/AppState';
+
+/** Tipo de tarjeta que dibuja <PostCard />. */
+export type PostType =
+  'text' | 'study-notes' | 'pdf' | 'event' | 'code' | 'study-group';
+
+/** Una publicación de la API lista para <PostCard /> (ver toCardPost). */
+export interface Post {
+  id: string;
+  authorId: string;
+  authorName: string;
+  /** HU50: el autor tiene la insignia de cuenta verificada. */
+  authorVerified?: boolean;
+  authorAvatar: string;
+  career: string;
+  time: string;
+  type: PostType;
+  content: string;
+  likes: number;
+  comments: number;
+  active: boolean; // baja lógica (HU23: "Desactivar")
+  edited: boolean; // marca de "Editado" (HU22)
+  // Campos por tipo (opcionales)
+  resourceTitle?: string;
+  resourceSize?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  codeSnippet?: string;
+  groupName?: string;
+  spotsAvailable?: number;
+  /** Ubicación opcional en el campus (HU21). */
+  location?: string;
+  /** Imágenes adjuntas: enlaces de lectura de Blob. */
+  images?: string[];
+  /** Video adjunto (enlace de Blob, spec 0008 decisión 13). */
+  videoUrl?: string;
+  /** PDF adjunto (enlace de Blob, spec 0008 decisión 13). */
+  documentUrl?: string;
+}
 
 export const POST_CONTENT_MAX = 2000;
 

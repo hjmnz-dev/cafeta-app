@@ -693,6 +693,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/discover/people': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Personas sugeridas para Descubrir: primero las de mi carrera. */
+    get: operations['SearchController_people'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/explore/posts': {
     parameters: {
       query?: never;
@@ -2420,6 +2437,8 @@ export interface operations {
         cursor?: string;
         /** @description De 1 a 50; 20 si no se envía. */
         limit: number;
+        /** @description true: solo publicaciones con un documento adjunto. */
+        resources?: boolean;
       };
       header?: never;
       path: {
@@ -3178,6 +3197,30 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PostPageDto'];
+        };
+      };
+    };
+  };
+  SearchController_people: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SearchUserPageDto'];
         };
       };
     };

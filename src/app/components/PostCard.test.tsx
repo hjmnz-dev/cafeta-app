@@ -2,278 +2,64 @@ import { describe, it, expect } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostCard } from './PostCard';
-import { AppStatePosts, renderWithProviders } from '../../test/utils';
+import { renderWithProviders } from '../../test/utils';
 import { postView } from '../../test/api';
 import { toCardPost } from '../lib/posts';
 
 /**
- * DEF-09 · HU22/HU23 — La tarjeta sin `live`: editar, desactivar y eliminar,
- * siempre validando la autoría. Es el modo que siguen usando las pantallas
- * que aún leen AppState; el feed y el perfil ya usan `live` (spec 0005).
- *
- * Datos de partida (AppState): p1 y p5 son del usuario actual; p2 es de Juan Pérez.
+ * La tarjeta de una publicación de la API. Las acciones de autor (editar,
+ * desactivar, eliminar, archivar) se prueban contra la API simulada en
+ * LivePostCard.test.tsx.
  */
 
-const cards = () => renderWithProviders(<AppStatePosts />);
+const NOW = new Date('2026-09-26T12:00:00Z');
 
-const ownMenu = (postId: string) =>
-  within(screen.getByTestId(`post-${postId}`)).getByRole('button', {
-    name: /opciones de la publicación/i,
+/** Una publicación ajena con `images` adjuntas, como la manda la API. */
+function withImages(images: string[]) {
+  const view = postView({
+    id: 'img1',
+    content: 'Así quedó el laboratorio',
+    media: images.map((url) => ({
+      url,
+      mediaType: 'IMAGE' as const,
+      mimeType: 'image/jpeg',
+    })),
   });
+  return renderWithProviders(
+    <PostCard
+      post={toCardPost(view, NOW)}
+      live={{
+        isMine: false,
+        authorId: 'u-2',
+        isAnnouncement: false,
+        reaction: { mine: null, busy: false, select: () => undefined },
+      }}
+    />,
+  );
+}
 
-describe('DEF-09 — Validación de autoría', () => {
-  it('las publicaciones de terceros no ofrecen acciones de autor', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    // El menú existe en toda publicación, pero en las ajenas solo modera (FT11).
-    // Reportar solo se ofrece en las publicaciones reales (LivePostCard.report.test).
-    await user.click(
-      within(screen.getByTestId('post-p2')).getByRole('button', {
-        name: /opciones/i,
-      }),
-    );
-
-    expect(screen.queryByRole('button', { name: /^editar$/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /^desactivar$/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /^eliminar$/i })).toBeNull();
-    expect(
-      screen.queryByRole('button', { name: /reportar publicación/i }),
-    ).toBeNull();
-  });
-
-  it('las publicaciones propias ofrecen editar, desactivar y eliminar', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-
-    expect(
-      screen.getByRole('button', { name: /^editar$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /^desactivar$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /^eliminar$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /reportar publicación/i }),
-    ).toBeNull();
-  });
-});
-
-describe('DEF-09 · HU22 — Editar publicación propia', () => {
-  it('guarda el nuevo contenido, lo marca como editado y conserva las interacciones', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^editar$/i }));
-
-    const textarea = screen.getByLabelText(
-      /editar contenido de la publicación/i,
-    );
-    await user.clear(textarea);
-    await user.type(
-      textarea,
-      'Cambio de hora: la charla de IA es a las 5:00 PM.',
-    );
-    await user.click(
-      within(screen.getByTestId('post-p1')).getByRole('button', {
-        name: /^guardar$/i,
-      }),
-    );
-
-    const card = within(screen.getByTestId('post-p1'));
-    expect(card.getByText(/cambio de hora/i)).toBeInTheDocument();
-    expect(card.getByText(/editado/i)).toBeInTheDocument();
-    expect(card.getByLabelText('18 reacciones')).toBeInTheDocument(); // interacciones intactas
-  });
-
-  it('guardar sin cambios no la marca como editada', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^editar$/i }));
-    await user.click(
-      within(screen.getByTestId('post-p1')).getByRole('button', {
-        name: /^guardar$/i,
-      }),
-    );
-
-    expect(
-      within(screen.getByTestId('post-p1')).queryByText(/editado/i),
-    ).toBeNull();
-  });
-
-  it('cancelar deja el contenido original', async () => {
-    const user = userEvent.setup();
-    cards();
-    const original = screen.getByTestId('post-p1').textContent;
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^editar$/i }));
-    await user.type(
-      screen.getByLabelText(/editar contenido/i),
-      ' texto descartado',
-    );
-    await user.click(screen.getByRole('button', { name: /^cancelar$/i }));
-
-    expect(screen.getByTestId('post-p1').textContent).toBe(original);
-  });
-
-  it('la edición persiste al volver a montar', async () => {
-    const user = userEvent.setup();
-    const { unmount } = cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^editar$/i }));
-    await user.clear(screen.getByLabelText(/editar contenido/i));
-    await user.type(
-      screen.getByLabelText(/editar contenido/i),
-      'Contenido persistido',
-    );
-    await user.click(
-      within(screen.getByTestId('post-p1')).getByRole('button', {
-        name: /^guardar$/i,
-      }),
-    );
-    unmount();
-
-    cards();
-    expect(screen.getByText('Contenido persistido')).toBeInTheDocument();
-  });
-});
-
-describe('DEF-09 · HU23 — Desactivar, reactivar y eliminar', () => {
-  it('desactivar la marca como tal y reactivar le quita la marca', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: /^desactivar$/i,
-      }),
-    );
-    expect(
-      within(screen.getByTestId('post-p1')).getByText(/desactivada/i),
-    ).toBeInTheDocument();
-
-    // Reactivar no pide confirmación (no es destructivo).
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^reactivar$/i }));
-    expect(
-      within(screen.getByTestId('post-p1')).queryByText(/desactivada/i),
-    ).toBeNull();
-  });
-
-  it('cancelar en la confirmación no desactiva nada', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^desactivar$/i }));
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: /^cancelar$/i,
-      }),
-    );
-
-    expect(
-      within(screen.getByTestId('post-p1')).queryByText(/desactivada/i),
-    ).toBeNull();
-  });
-
-  it('una publicación activa no ofrece "Reactivar"', async () => {
-    const user = userEvent.setup();
-    cards();
-
-    await user.click(ownMenu('p1'));
-    expect(
-      screen.getByRole('button', { name: /^desactivar$/i }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^reactivar$/i })).toBeNull();
-  });
-
-  it('eliminar la borra y no vuelve al montar de nuevo', async () => {
-    const user = userEvent.setup();
-    const { unmount } = cards();
-
-    await user.click(ownMenu('p1'));
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: /^eliminar$/i,
-      }),
-    );
-
-    expect(screen.queryByTestId('post-p1')).toBeNull();
-    unmount();
-
-    cards();
-    expect(screen.queryByTestId('post-p1')).toBeNull();
-  });
-});
-
-describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
-  /** Siembra el estado persistido: evita depender de canvas para crear la imagen. */
-  function seedConImagenes(images: string[]) {
-    localStorage.setItem(
-      'cafeta.appstate.v1',
-      JSON.stringify({
-        posts: [
-          {
-            id: 'img1',
-            authorId: 'me',
-            authorName: 'Carlos Gómez',
-            authorAvatar: '',
-            career: 'Ing. Software',
-            time: 'ahora',
-            type: 'text',
-            content: 'Así quedó el laboratorio',
-            likes: 0,
-            comments: 0,
-            active: true,
-            edited: false,
-            images,
-          },
-        ],
-      }),
-    );
-  }
-
-  it('las imágenes guardadas se muestran y sobreviven a la recarga', () => {
-    seedConImagenes([
-      'data:image/jpeg;base64,AAAA',
-      'data:image/jpeg;base64,BBBB',
-    ]);
-    cards();
+describe('HU21 — Imágenes de la publicación', () => {
+  it('muestra cada imagen adjunta', () => {
+    withImages(['https://blob.test/a.jpg', 'https://blob.test/b.jpg']);
 
     const card = within(screen.getByTestId('post-img1'));
-    expect(card.getByAltText(/imagen 1 de la publicación/i)).toHaveAttribute(
+    expect(card.getByAltText('Imagen 1 de la publicación')).toHaveAttribute(
       'src',
-      'data:image/jpeg;base64,AAAA',
+      'https://blob.test/a.jpg',
     );
-    expect(
-      card.getByAltText(/imagen 2 de la publicación/i),
-    ).toBeInTheDocument();
+    expect(card.getByAltText('Imagen 2 de la publicación')).toBeInTheDocument();
   });
 
   it('bug 1025: tocar una imagen la abre ampliada y se puede pasar a las demás', async () => {
     const user = userEvent.setup();
-    seedConImagenes([
-      'data:image/jpeg;base64,AAAA',
-      'data:image/jpeg;base64,BBBB',
-      'data:image/jpeg;base64,CCCC',
+    withImages([
+      'https://blob.test/a.jpg',
+      'https://blob.test/b.jpg',
+      'https://blob.test/c.jpg',
     ]);
-    cards();
 
     await user.click(
-      within(screen.getByTestId('post-img1')).getByRole('button', {
+      screen.getByRole('button', {
         name: 'Ampliar imagen 2 de la publicación',
       }),
     );
@@ -282,7 +68,7 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
     );
     expect(viewer.getByRole('img')).toHaveAttribute(
       'src',
-      'data:image/jpeg;base64,BBBB',
+      'https://blob.test/b.jpg',
     );
 
     await user.click(viewer.getByRole('button', { name: 'Imagen siguiente' }));
@@ -308,8 +94,7 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
 
   it('bug 1025: con una sola imagen no hay flechas y Escape la cierra', async () => {
     const user = userEvent.setup();
-    seedConImagenes(['data:image/jpeg;base64,AAAA']);
-    cards();
+    withImages(['https://blob.test/a.jpg']);
 
     await user.click(
       screen.getByRole('button', {
@@ -326,35 +111,10 @@ describe('DEF-09 · HU21 — Imágenes de la publicación', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
-
-  it('editar el texto no pierde las imágenes', async () => {
-    const user = userEvent.setup();
-    seedConImagenes(['data:image/jpeg;base64,AAAA']);
-    cards();
-
-    await user.click(ownMenu('img1'));
-    await user.click(screen.getByRole('button', { name: /^editar$/i }));
-    await user.clear(screen.getByLabelText(/editar contenido/i));
-    await user.type(
-      screen.getByLabelText(/editar contenido/i),
-      'Texto corregido',
-    );
-    await user.click(
-      within(screen.getByTestId('post-img1')).getByRole('button', {
-        name: /^guardar$/i,
-      }),
-    );
-
-    const card = within(screen.getByTestId('post-img1'));
-    expect(card.getByText('Texto corregido')).toBeInTheDocument();
-    expect(
-      card.getByAltText(/imagen 1 de la publicación/i),
-    ).toBeInTheDocument();
-  });
 });
 
 describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => {
-  const now = new Date('2026-09-26T12:00:00Z');
+  const now = NOW;
   const NO_REACTION = { mine: null, busy: false, select: () => undefined };
 
   it('muestra los datos reales y ningún botón sin backend', () => {

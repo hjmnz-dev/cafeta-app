@@ -2,15 +2,45 @@
  * Lógica pura del perfil de la API (decisión 15): qué se muestra según lo que
  * la API dejó ver. Sin red ni estado.
  */
-import type { TagCategory } from '../store/AppState';
 import type { ProfileView, ProfileVisibility } from './profiles-api';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Los perfiles de la API tienen id UUID; los de la demo, un nombre corto. */
+/** Los perfiles de la API tienen id UUID; cualquier otra cosa no existe. */
 export function isApiUserId(userId: string): boolean {
   return UUID.test(userId);
 }
+
+/** Categoría de una etiqueta del perfil en la paleta de la app. */
+export type TagCategory = 'carrera' | 'habilidad' | 'interes';
+
+/** Semántica de color de las etiquetas del perfil (resuelve DEF-10). */
+export const TAG_CATEGORIES: Record<
+  TagCategory,
+  { label: string; bg: string; text: string; border: string }
+> = {
+  // Tokens del tema (ver styles/theme.css): la distinción entre categorías
+  // debe leerse igual en claro y en oscuro, así que se fija el papel de cada
+  // una, no un color concreto.
+  carrera: {
+    label: 'Carrera',
+    bg: 'var(--tag-carrera-bg)',
+    text: 'var(--tag-carrera-ink)',
+    border: 'var(--tag-carrera-line)',
+  },
+  habilidad: {
+    label: 'Habilidad',
+    bg: 'var(--tag-habilidad-bg)',
+    text: 'var(--tag-habilidad-ink)',
+    border: 'var(--tag-habilidad-line)',
+  },
+  interes: {
+    label: 'Interés',
+    bg: 'var(--tag-interes-bg)',
+    text: 'var(--tag-interes-ink)',
+    border: 'var(--tag-interes-line)',
+  },
+};
 
 const TAG_CATEGORY: Readonly<
   Record<ProfileView['tags'][number]['category'], TagCategory>

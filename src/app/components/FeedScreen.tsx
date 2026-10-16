@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, MessageSquare, Search, X } from 'lucide-react';
+import { Heart, Search, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -8,18 +8,13 @@ import { LivePostList } from './LivePostList';
 import { StoriesStrip } from './StoriesStrip';
 import { orderCareerTabs } from '../lib/posts';
 import { useCareers, useFeed } from '../store/posts-queries';
+import { useExplorePosts } from '../store/search-queries';
 import { useSession } from '../store/SessionStore';
 import { NotificationsBell } from './NotificationsBell';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
-
-const AVATARS = [
-  'https://images.unsplash.com/photo-1611695434369-a8f5d76ceb7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMG1hbiUyMHNtaWxlJTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczODg2OTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080',
-  'https://images.unsplash.com/photo-1557353425-09253747c2bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMG1hbiUyMHNtaWxlJTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczODg2OTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080',
-  'https://images.unsplash.com/photo-1570078070514-1f84a3cf1736?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwc3R1ZGVudCUyMGhpc3BhbmljfGVufDF8fHx8MTc3Mzg4Njk0Nnww&ixlib=rb-4.1.0&q=80&w=1080',
-];
 
 /**
  * Feed (spec 0005): "Para ti" y una pestaña por carrera, con la elegida en la
@@ -58,26 +53,10 @@ export function FeedScreen() {
     });
   }, [selectedId]);
 
-  // Sugerencias de publicaciones
-  const postSuggestions = [
-    {
-      id: 1,
-      user: 'Laura Fernández',
-      avatar: AVATARS[2],
-      career: 'Administración',
-      content: 'Tips para el examen final de Contabilidad 💼',
-      time: '30m',
-    },
-    {
-      id: 2,
-      user: 'Roberto Díaz',
-      avatar: AVATARS[0],
-      career: 'Ing. Software',
-      content:
-        'Nueva biblioteca de React que están usando en las empresas tech 🚀',
-      time: '2h',
-    },
-  ];
+  // Bug 1035: lo que "Podría gustarte" son publicaciones reales de otras
+  // personas (las de explorar), con reaccionar y comentar de verdad.
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const suggestions = useExplorePosts(showSuggestions);
 
   // La marca y los accesos se recogen al bajar y vuelven al subir, para que la
   // lectura del feed gane alto; las pestañas de carrera se quedan siempre.
@@ -197,51 +176,16 @@ export function FeedScreen() {
                 <X className="w-5 h-5 text-[var(--muted)]" />
               </button>
             </div>
-            <div className="max-h-[360px] overflow-y-auto">
-              {postSuggestions.map((suggestion) => (
-                <div
-                  key={suggestion.id}
-                  className="px-4 py-3 border-b border-[var(--line-soft)] last:border-0"
-                >
-                  <div className="flex items-start gap-3">
-                    <img
-                      src={suggestion.avatar}
-                      className="w-12 h-12 rounded-full object-cover"
-                      alt={suggestion.user}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold text-[14px] text-[var(--ink)]">
-                          {suggestion.user}
-                        </p>
-                        <p className="text-[11px] text-[var(--muted)]">
-                          {suggestion.time}
-                        </p>
-                      </div>
-                      <p className="text-[12px] text-[var(--muted)] mb-2">
-                        {suggestion.career}
-                      </p>
-                      <p className="text-[13px] text-[var(--ink)] leading-relaxed">
-                        {suggestion.content}
-                      </p>
-                      <div className="flex items-center gap-4 mt-3">
-                        <button className="flex items-center gap-1.5 text-[var(--brand)]">
-                          <Heart className="w-4 h-4" />
-                          <span className="text-[12px] font-medium">
-                            Me gusta
-                          </span>
-                        </button>
-                        <button className="flex items-center gap-1.5 text-[var(--muted)]">
-                          <MessageSquare className="w-4 h-4" />
-                          <span className="text-[12px] font-medium">
-                            Comentar
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div ref={suggestionsRef} className="max-h-[420px] overflow-y-auto">
+              <LivePostList
+                query={suggestions}
+                scrollRootRef={suggestionsRef}
+                empty={
+                  <p className="px-4 py-6 text-center text-[14px] text-[var(--muted)]">
+                    Aún no hay publicaciones de otras personas para sugerirte.
+                  </p>
+                }
+              />
             </div>
           </div>
         )}

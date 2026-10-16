@@ -1,11 +1,8 @@
-import { useMemo, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Search, X } from 'lucide-react';
-import { useAppState } from '../store/AppState';
-import { searchUsers, searchPosts } from '../lib/search';
 import { UserRow } from './UserRow';
-import { PostCard } from './PostCard';
-import { useSession } from '../store/SessionStore';
+import { useCareers } from '../store/posts-queries';
 import {
   useSearchUsers,
   useSearchPosts,
@@ -19,59 +16,35 @@ import { userMessageOf } from '../lib/http';
  * DEF-07 · HU41/HU42/HU40 — Búsqueda global de personas, contenido y explorar.
  *
  * Una sola caja para las dos historias, separadas en pestañas: escribir una vez
- * y ver si lo que buscabas era una persona o una publicación. Con sesión activa
- * consulta la API real (/search/users, /search/posts, /explore/posts); en modo demo
- * corre sobre el store local.
+ * y ver si lo que buscabas era una persona o una publicación. Todo sale de la
+ * API (/search/users, /search/posts, /explore/posts). Los accesos rápidos son
+ * las carreras reales, con su nombre completo (bug 1037).
  */
 
 type Tab = 'people' | 'posts';
 
 export function SearchScreen() {
   const navigate = useNavigate();
-  const { user } = useSession();
-  const { users, posts, isBlocked } = useAppState();
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<Tab>('people');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const trimmed = query.trim();
-  const isLive = Boolean(user);
+  const searching = trimmed.length >= 2;
 
-  // Queries en vivo para usuario autenticado
-  const liveUsersQuery = useSearchUsers(query, isLive);
-  const livePostsQuery = useSearchPosts(query, isLive);
-  const liveExploreQuery = useExplorePosts(isLive && !trimmed);
+  const liveUsersQuery = useSearchUsers(query);
+  const livePostsQuery = useSearchPosts(query);
+  const liveExploreQuery = useExplorePosts(!trimmed);
+  // Accesos rápidos: las carreras reales con su nombre completo, así la
+  // búsqueda las encuentra igual que escritas a mano (bug 1037).
+  const careers = useCareers();
+  const suggestions = (careers.data ?? []).map((c) => c.name);
 
-  // Datos locales para modo demo / fallback
-  const localUserResults = useMemo(
-    () => searchUsers(users, query).filter((u) => !isBlocked(u.id)),
-    [users, query, isBlocked],
-  );
-  const localPostResults = useMemo(
-    () => searchPosts(posts, query).filter((p) => !isBlocked(p.authorId)),
-    [posts, query, isBlocked],
-  );
-
-  /** Sugerencias tomadas del propio directorio, no inventadas. */
-  const suggestions = useMemo(() => {
-    const labels = users.flatMap((u) => [
-      u.career,
-      ...u.tags.map((t) => t.label),
-    ]);
-    return Array.from(new Set(labels)).slice(0, 6);
-  }, [users]);
-
-  // Conteos
   const liveUserItems =
     liveUsersQuery.data?.pages.flatMap((p) => p.items) ?? [];
-  const liveUserCount = liveUserItems.length;
-  const livePostCount =
-    livePostsQuery.data?.pages.flatMap((p) => p.items).length ?? 0;
-
-  const userCount =
-    isLive && trimmed.length >= 2 ? liveUserCount : localUserResults.length;
+  const userCount = liveUserItems.length;
   const postCount =
-    isLive && trimmed.length >= 2 ? livePostCount : localPostResults.length;
+    livePostsQuery.data?.pages.flatMap((p) => p.items).length ?? 0;
 
   return (
     <div className="w-full h-full bg-[var(--app-bg)] flex flex-col">
@@ -129,7 +102,7 @@ export function SearchScreen() {
               }
             >
               {label}
-              {trimmed ? ` (${count})` : ''}
+              {searching ? ` (${count})` : ''}
             </button>
           ))}
         </div>
@@ -140,8 +113,8 @@ export function SearchScreen() {
         {!trimmed ? (
           <div className="px-5 py-6">
             <p className="text-center text-[15px] text-[var(--muted)]">
-              Busca compañeros por nombre o carrera, y publicaciones por palabra
-              clave.
+              Busca compañeros por nombre, usuario o carrera, y publicaciones
+              por palabra clave.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {suggestions.map((s) => (
@@ -155,89 +128,62 @@ export function SearchScreen() {
               ))}
             </div>
 
-            {isLive && (
-              <div className="mt-8 border-t border-[var(--line-soft)] pt-6">
-                <h2 className="text-[14px] font-semibold text-[var(--muted)] uppercase tracking-wider mb-3">
-                  Explorar publicaciones recientes
-                </h2>
-                <LivePostList
-                  query={liveExploreQuery}
-                  empty={
-                    <p className="text-center text-[14px] text-[var(--muted)] py-6">
-                      No hay publicaciones recientes para explorar.
-                    </p>
-                  }
-                  scrollRootRef={scrollContainerRef}
-                />
-              </div>
-            )}
+            <div className="mt-8 border-t border-[var(--line-soft)] pt-6">
+              <h2 className="text-[14px] font-semibold text-[var(--muted)] uppercase tracking-wider mb-3">
+                Explorar publicaciones recientes
+              </h2>
+              <LivePostList
+                query={liveExploreQuery}
+                empty={
+                  <p className="text-center text-[14px] text-[var(--muted)] py-6">
+                    No hay publicaciones recientes para explorar.
+                  </p>
+                }
+                scrollRootRef={scrollContainerRef}
+              />
+            </div>
           </div>
-        ) : isLive && trimmed.length >= 2 ? (
-          tab === 'people' ? (
-            liveUsersQuery.isPending ? (
-              <div className="px-5 py-10 text-center text-[var(--muted)] text-[15px]">
-                Buscando personas...
-              </div>
-            ) : liveUserItems.length === 0 ? (
-              <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
-                No encontramos personas para “{trimmed}”.
-              </div>
-            ) : (
-              <>
-                {liveUserItems.map((u) => (
-                  <UserRow
-                    key={u.id}
-                    user={{
-                      id: u.id,
-                      name: u.displayName,
-                      handle: u.handle,
-                      career: u.careerName,
-                      avatar: u.avatarUrl,
-                    }}
-                    follow={{
-                      followStatus: u.followStatus,
-                      canFollow: u.canFollow,
-                    }}
-                  />
-                ))}
-                <InfiniteListFooter
-                  scrollRootRef={scrollContainerRef}
-                  hasNextPage={liveUsersQuery.hasNextPage}
-                  isFetchingNextPage={liveUsersQuery.isFetchingNextPage}
-                  errorMessage={
-                    liveUsersQuery.isFetchNextPageError
-                      ? userMessageOf(liveUsersQuery.error)
-                      : null
-                  }
-                  onLoadMore={() => void liveUsersQuery.fetchNextPage()}
-                />
-              </>
-            )
-          ) : (
-            <LivePostList
-              query={livePostsQuery}
-              empty={
-                <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
-                  No encontramos publicaciones para “{trimmed}”.
-                </div>
-              }
-              scrollRootRef={scrollContainerRef}
-            />
-          )
-        ) : (tab === 'people' ? localUserResults : localPostResults).length ===
-          0 ? (
+        ) : trimmed.length === 1 ? (
           <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
-            No encontramos {tab === 'people' ? 'personas' : 'publicaciones'}{' '}
-            para “{trimmed}”.
+            Escribe al menos 2 letras para buscar.
           </div>
         ) : tab === 'people' ? (
-          localUserResults.map((u) => <UserRow key={u.id} user={u} />)
+          liveUsersQuery.isPending ? (
+            <div className="px-5 py-10 text-center text-[var(--muted)] text-[15px]">
+              Buscando personas...
+            </div>
+          ) : liveUserItems.length === 0 ? (
+            <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
+              No encontramos personas para “{trimmed}”.
+            </div>
+          ) : (
+            <>
+              {liveUserItems.map((u) => (
+                <UserRow key={u.id} user={u} />
+              ))}
+              <InfiniteListFooter
+                scrollRootRef={scrollContainerRef}
+                hasNextPage={liveUsersQuery.hasNextPage}
+                isFetchingNextPage={liveUsersQuery.isFetchingNextPage}
+                errorMessage={
+                  liveUsersQuery.isFetchNextPageError
+                    ? userMessageOf(liveUsersQuery.error)
+                    : null
+                }
+                onLoadMore={() => void liveUsersQuery.fetchNextPage()}
+              />
+            </>
+          )
         ) : (
-          <div className="border-t border-[var(--line-soft)]">
-            {localPostResults.map((p) => (
-              <PostCard key={p.id} post={p} />
-            ))}
-          </div>
+          <LivePostList
+            query={livePostsQuery}
+            empty={
+              <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
+                No encontramos publicaciones para “{trimmed}”.
+              </div>
+            }
+            scrollRootRef={scrollContainerRef}
+          />
         )}
       </div>
     </div>

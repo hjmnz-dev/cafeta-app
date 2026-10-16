@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Camera, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { TAG_CATEGORIES } from '../store/AppState';
 import { messageForCode } from '../lib/error-messages';
 import { userMessageOf } from '../lib/http';
 import { checkMediaFile, kindOf } from '../lib/media';
 import {
+  TAG_CATEGORIES,
   API_TAG_CATEGORIES,
   BIO_MAX,
   PROFILE_TAGS_MAX,

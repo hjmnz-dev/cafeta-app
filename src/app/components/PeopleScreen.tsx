@@ -1,39 +1,46 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Search } from 'lucide-react';
-import { useAppState } from '../store/AppState';
-import { searchUsers } from '../lib/search';
-import { UserRow } from './UserRow';
+import { userMessageOf } from '../lib/http';
+import { matchesOwnAccount } from '../lib/search';
+import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
-import { useSearchUsers } from '../store/search-queries';
+import { useDiscoverPeople, useSearchUsers } from '../store/search-queries';
+import { InfiniteListFooter } from './InfiniteListFooter';
+import { UserRow } from './UserRow';
 
 /**
- * Descubrir personas — directorio de usuarios con seguir en línea (DEF-05).
- * Punto de entrada a los perfiles de terceros (/u/:id). El buscador de aquí
- * filtra el directorio; la búsqueda global de personas y contenido (HU41/HU42)
- * vive en /search (DEF-07) y comparte el mismo motor de coincidencias.
+ * Descubrir personas (DEF-05), todo desde la API (bugs 1031 y 1033). Sin
+ * escribir, sugiere estudiantes que aún no sigues, primero los de tu carrera;
+ * al escribir, busca igual que /search. Cada lista vacía dice por qué.
  */
 export function PeopleScreen() {
   const { user } = useSession();
-  const { users, profile, followingIds, isBlocked } = useAppState();
+  const me = useProfile(user?.id ?? '', Boolean(user));
   const [query, setQuery] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const trimmed = query.trim();
-  const isLive = Boolean(user) && trimmed.length >= 2;
-  const liveQuery = useSearchUsers(query, Boolean(user));
+  const searching = trimmed.length >= 2;
+  const suggestions = useDiscoverPeople(!searching);
+  const results = useSearchUsers(trimmed, searching);
+  const list = searching ? results : suggestions;
+  const people = list.data?.pages.flatMap((p) => p.items) ?? [];
+  const following = me.data?.counts.following;
+  const nextPageError = list.isFetchNextPageError
+    ? userMessageOf(list.error)
+    : null;
 
-  // Los bloqueados no aparecen en el directorio (HU53); se gestionan desde
-  // Configuración → Cuentas bloqueadas.
-  const directory = users.filter((u) => !isBlocked(u.id));
-  const localResults = trimmed ? searchUsers(directory, query) : directory;
-
-  const liveItems = liveQuery.data?.pages.flatMap((p) => p.items) ?? [];
-  const isEmpty = isLive
-    ? !liveQuery.isPending && liveItems.length === 0
-    : localResults.length === 0;
+  const message = (text: string, detail?: string) => (
+    <div className="px-6 py-14 text-center">
+      <p className="text-[15px] text-[var(--ink)]">{text}</p>
+      {detail && (
+        <p className="mt-2 text-[13px] text-[var(--muted)]">{detail}</p>
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full h-full bg-[var(--app-bg)] flex flex-col pb-[100px]">
-      {/* Header */}
       <div className="bg-[var(--surface)] border-b border-[var(--line)] px-5 py-4 pt-16">
         <h1 className="font-['Space_Grotesk',sans-serif] font-bold text-[24px] text-[var(--ink)] mb-4">
           Descubrir
@@ -42,8 +49,8 @@ export function PeopleScreen() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
           <input
             type="text"
-            aria-label="Buscar personas por nombre o carrera"
-            placeholder="Buscar personas por nombre o carrera..."
+            aria-label="Buscar personas por nombre, usuario o carrera"
+            placeholder="Buscar personas por nombre, usuario o carrera..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[var(--surface-3)] rounded-[16px] border border-[var(--line)] text-[15px] text-[var(--ink)] placeholder:text-[var(--muted)] outline-none focus:border-[var(--brand)] transition-all"
@@ -51,38 +58,60 @@ export function PeopleScreen() {
         </div>
       </div>
 
-      {/* Lista */}
-      <div className="flex-1 overflow-y-auto">
-        {isEmpty && (
-          <div className="px-5 py-16 text-center text-[var(--muted)] text-[15px]">
-            No encontramos personas para “{query}”.
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        {trimmed.length === 1 ? (
+          message('Escribe al menos 2 letras para buscar.')
+        ) : list.isPending ? (
+          message(searching ? 'Buscando…' : 'Cargando sugerencias…')
+        ) : list.isError && people.length === 0 ? (
+          <div className="px-6 py-14 flex flex-col items-center gap-3 text-center">
+            <p className="text-[14px] text-[var(--muted)]">
+              {userMessageOf(list.error)}
+            </p>
+            <button
+              onClick={() => void list.refetch()}
+              className="px-4 py-2 rounded-full text-[13px] font-semibold text-[var(--ink)] bg-[var(--surface-3)]"
+            >
+              Reintentar
+            </button>
           </div>
+        ) : people.length === 0 ? (
+          searching ? (
+            message(
+              `No encontramos personas para “${trimmed}”.`,
+              matchesOwnAccount(trimmed, me.data)
+                ? 'Tu propia cuenta no aparece en la búsqueda.'
+                : 'Prueba con otro nombre, el usuario (@) o la carrera.',
+            )
+          ) : (
+            message(
+              'Por ahora no hay más personas para sugerirte.',
+              'Ya sigues a todas las sugeridas. Usa el buscador para encontrar a alguien por nombre, usuario o carrera.',
+            )
+          )
+        ) : (
+          <>
+            <p className="px-5 pt-4 pb-1 text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+              {searching ? 'Resultados' : 'Sugerencias para ti'}
+            </p>
+            {people.map((person) => (
+              <UserRow key={person.id} user={person} />
+            ))}
+            <InfiniteListFooter
+              scrollRootRef={scrollRef}
+              hasNextPage={list.hasNextPage}
+              isFetchingNextPage={list.isFetchingNextPage}
+              errorMessage={nextPageError}
+              onLoadMore={() => void list.fetchNextPage()}
+            />
+          </>
         )}
 
-        {isLive
-          ? liveItems.map((u) => (
-              <UserRow
-                key={u.id}
-                user={{
-                  id: u.id,
-                  name: u.displayName,
-                  handle: u.handle,
-                  career: u.careerName,
-                  avatar: u.avatarUrl,
-                }}
-                follow={{
-                  followStatus: u.followStatus,
-                  canFollow: u.canFollow,
-                }}
-              />
-            ))
-          : localResults.map((u) => <UserRow key={u.id} user={u} />)}
-
-        <p className="px-5 py-6 text-center text-[12px] text-[var(--muted)] font-['DM_Sans',sans-serif]">
-          Sigues a {followingIds.length}{' '}
-          {followingIds.length === 1 ? 'persona' : 'personas'} · conectado como{' '}
-          {user?.profile.displayName ?? profile.name}
-        </p>
+        {following !== undefined && (
+          <p className="px-5 py-6 text-center text-[12px] text-[var(--muted)]">
+            Sigues a {following} {following === 1 ? 'persona' : 'personas'}
+          </p>
+        )}
       </div>
     </div>
   );

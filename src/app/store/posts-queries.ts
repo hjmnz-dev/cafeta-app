@@ -46,6 +46,18 @@ export function useUserPosts(userId: string | undefined, enabled = true) {
   });
 }
 
+/** Recursos del perfil (bug 1029): sus publicaciones con un PDF. */
+export function useUserResources(userId: string | undefined, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postKeys.resources(userId ?? ''),
+    queryFn: ({ pageParam }) =>
+      postsApi.resourcesByUser(userId ?? '', pageParam),
+    initialPageParam: firstPage,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: enabled && Boolean(userId),
+  });
+}
+
 export function useUserPostCount(userId: string | undefined) {
   return useQuery({
     queryKey: postKeys.count(userId ?? ''),
