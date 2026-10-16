@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft, Bell, Check, CheckCheck, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { userMessageOf } from '../lib/http';
-import { initialsOf } from '../lib/messages';
 import type { NotificationView } from '../lib/notifications-api';
 import {
   flattenNotifications,
@@ -20,6 +19,7 @@ import {
 } from '../store/notifications-queries';
 import { useFollowRequests, useRespondRequest } from '../store/follows-queries';
 import { InfiniteListFooter } from './InfiniteListFooter';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * Notificaciones (HU39, spec 0008 decisión 27). Lista real de la API, del más
@@ -222,13 +222,19 @@ function NotificationRow({
         aria-label={`${notificationText(notification)}${read ? '' : ', sin leer'}`}
         className="w-full px-5 py-4 flex items-center gap-3 text-left transition-colors hover:bg-[var(--surface)]"
       >
-        <div className="w-[44px] h-[44px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[15px] shadow-sm">
-          {actor ? (
-            initialsOf(actor.displayName)
-          ) : (
+        {actor ? (
+          <ProfileAvatar
+            url={actor.avatarUrl}
+            name={actor.displayName}
+            size={44}
+            radius={22}
+            className="flex-shrink-0 shadow-sm"
+          />
+        ) : (
+          <div className="w-[44px] h-[44px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] shadow-sm">
             <Bell className="w-5 h-5" aria-hidden="true" />
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p
             className={`text-[14px] leading-snug ${read ? 'text-[var(--muted)]' : 'text-[var(--ink)]'}`}

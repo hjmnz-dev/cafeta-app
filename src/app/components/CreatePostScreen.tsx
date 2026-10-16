@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * Crear publicación contra la API (spec 0005, HU20).
@@ -116,8 +117,6 @@ export function CreatePostScreen() {
       },
     );
   };
-
-  const initial = (name.trim()[0] || 'C').toUpperCase();
 
   const focusTextarea = () => {
     textareaRef.current?.focus();
@@ -295,9 +294,12 @@ export function CreatePostScreen() {
       <div className="flex-1 overflow-y-auto p-4" onClick={focusTextarea}>
         {/* User Info */}
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-semibold text-lg">{initial}</span>
-          </div>
+          <ProfileAvatar
+            url={user?.profile.avatarUrl}
+            name={name}
+            size={48}
+            className="flex-shrink-0"
+          />
           <div className="flex-1">
             <h3 className="font-semibold text-[var(--ink)]">{name}</h3>
             <p className="text-xs text-[var(--muted)]">{careerName}</p>

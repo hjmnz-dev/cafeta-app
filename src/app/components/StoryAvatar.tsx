@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 /**
  * Cara de quien publica una historia: su foto si la tiene (enlace de lectura
  * de la API) y, si no, su inicial sobre el color de marca. La comparten la
@@ -12,11 +14,13 @@ export function StoryAvatar({
   name: string;
   className?: string;
 }) {
-  if (url) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  if (url && url !== failedUrl) {
     return (
       <img
         src={url}
         alt=""
+        onError={() => setFailedUrl(url)}
         className={`rounded-full object-cover bg-[var(--surface-3)] ${className}`}
       />
     );

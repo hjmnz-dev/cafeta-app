@@ -1,6 +1,9 @@
+import { useState } from 'react';
+
 /**
  * Foto de perfil de la API (decisión 13) con la inicial del nombre como
- * respaldo cuando no hay foto. Presentacional: recibe lo que se dibuja.
+ * respaldo cuando no hay foto o no carga (bug 1072). Es el avatar de toda
+ * la app: recibe lo que se dibuja.
  */
 export function ProfileAvatar({
   url,
@@ -15,12 +18,14 @@ export function ProfileAvatar({
   radius?: number;
   className?: string;
 }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const initial = (name.trim()[0] ?? 'C').toUpperCase();
   const box = { width: size, height: size, borderRadius: radius };
-  return url ? (
+  return url && url !== failedUrl ? (
     <img
       src={url}
       alt=""
+      onError={() => setFailedUrl(url)}
       style={box}
       className={`object-cover bg-[var(--surface-3)] ${className}`}
     />

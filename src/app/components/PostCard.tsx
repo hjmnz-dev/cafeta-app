@@ -28,6 +28,7 @@ import { CommentsPanel } from './CommentsPanel';
 import type { PostView } from '../lib/posts-api';
 import { useHasReported } from '../store/reports-queries';
 import { PostReactionButton } from './PostReactionButton';
+import { PostReactionsDialog } from './PostReactionsDialog';
 import { ReportTargetDialog } from './ReportTargetDialog';
 import { VerifiedBadge } from './VerifiedBadge';
 import { ImageViewer } from './ImageViewer';
@@ -147,6 +148,8 @@ export function PostCard({ post, live }: { post: Post; live: LivePost }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  // Bug 1076: en mis publicaciones, quién reaccionó.
+  const [reactorsOpen, setReactorsOpen] = useState(false);
   // Bug 1025: la imagen abierta en el visor; null con el visor cerrado.
   const [viewing, setViewing] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
@@ -437,6 +440,7 @@ export function PostCard({ post, live }: { post: Post; live: LivePost }) {
                 mine={live.reaction.mine}
                 busy={live.reaction.busy}
                 onSelect={live.reaction.select}
+                onShowReactors={own ? () => setReactorsOpen(true) : undefined}
               />
               {live.save && (
                 <button
@@ -462,6 +466,12 @@ export function PostCard({ post, live }: { post: Post; live: LivePost }) {
                 </button>
               )}
             </div>
+            {reactorsOpen && (
+              <PostReactionsDialog
+                postId={post.id}
+                onClose={() => setReactorsOpen(false)}
+              />
+            )}
             {commentsOpen && (
               <CommentsPanel
                 target={{ kind: 'posts', id: post.id }}

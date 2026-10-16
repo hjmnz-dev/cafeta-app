@@ -4,13 +4,13 @@ import { MessageCircle, Search, SquarePen } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ConversationView } from '../lib/conversations-api';
 import { userMessageOf } from '../lib/http';
-import { initialsOf } from '../lib/messages';
 import { relativeTime } from '../lib/posts';
 import { useInbox, useOpenConversation } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
 import { InfiniteListFooter } from './InfiniteListFooter';
 import { NewConversationPanel } from './NewConversationPanel';
 import { StoryRing } from './StoryRing';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * Bandeja de mensajes (HU33, spec 0008 decisión 25). Lista real de la API,
@@ -185,9 +185,13 @@ function InboxRow({
     <div className="w-full pl-5 flex items-center gap-3 hover:bg-[var(--surface)] transition-colors border-b border-[var(--line-soft)]">
       {/* Bug 1047: con historia vigente, la foto lleva el anillo y la abre. */}
       <StoryRing userId={otherUser.id} name={otherUser.displayName}>
-        <div className="w-[52px] h-[52px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[16px] shadow-sm">
-          {initialsOf(otherUser.displayName)}
-        </div>
+        <ProfileAvatar
+          url={otherUser.avatarUrl}
+          name={otherUser.displayName}
+          size={52}
+          radius={26}
+          className="flex-shrink-0 shadow-sm"
+        />
       </StoryRing>
       <button
         onClick={onOpen}

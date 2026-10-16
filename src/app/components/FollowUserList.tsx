@@ -8,20 +8,7 @@ import type { FollowUser } from '../lib/follows-api';
 import { userMessageOf } from '../lib/http';
 import { InfiniteListFooter } from './InfiniteListFooter';
 import { VerifiedBadge } from './VerifiedBadge';
-
-/** Inicial de la persona mientras no hay foto (la foto llega con la 14). */
-function Initial({ user }: { user: Pick<FollowUser, 'displayName'> }) {
-  return (
-    <div
-      className="w-[46px] h-[46px] rounded-full bg-[var(--brand)] flex items-center justify-center flex-none"
-      aria-hidden="true"
-    >
-      <span className="text-white font-['Space_Grotesk',sans-serif] font-bold text-[18px]">
-        {(user.displayName.trim()[0] ?? 'C').toUpperCase()}
-      </span>
-    </div>
-  );
-}
+import { ProfileAvatar } from './ProfileAvatar';
 
 /** Fila de una persona de la red que lleva a su perfil; `actions` a la derecha. */
 export function FollowUserRow({
@@ -37,7 +24,13 @@ export function FollowUserRow({
         to={`/u/${user.id}`}
         className="flex items-center gap-3 flex-1 min-w-0"
       >
-        <Initial user={user} />
+        <ProfileAvatar
+          url={user.avatarUrl}
+          name={user.displayName}
+          size={46}
+          radius={23}
+          className="flex-none"
+        />
         <div className="flex-1 min-w-0">
           <p className="flex items-center gap-1 font-semibold text-[15px] text-[var(--ink)] truncate">
             {user.displayName}

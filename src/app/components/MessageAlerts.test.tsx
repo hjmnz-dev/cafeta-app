@@ -44,6 +44,7 @@ const aviso = (
     id: '01926f00-0000-7000-8000-0000000000b0',
     handle: 'beto',
     displayName: 'Beto Díaz',
+    avatarUrl: null,
   },
   postId: null,
   storyId: null,

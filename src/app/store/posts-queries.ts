@@ -194,3 +194,13 @@ export function useSavePost() {
 export function useUploadFile() {
   return useMutation({ mutationFn: uploadsApi.upload });
 }
+
+/** Quién reaccionó a mi publicación (bug 1076); se pide al abrir la lista. */
+export function usePostReactors(postId: string) {
+  return useInfiniteQuery({
+    queryKey: postKeys.reactors(postId),
+    queryFn: ({ pageParam }) => postsApi.reactors(postId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (page) => page.nextCursor,
+  });
+}

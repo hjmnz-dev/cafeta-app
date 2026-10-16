@@ -17,6 +17,7 @@ import { hasUnreadConversation } from '../lib/messages';
 import { useInbox } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
 import { MessageAlerts } from './MessageAlerts';
+import { ProfileAvatar } from './ProfileAvatar';
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -27,7 +28,7 @@ const BottomNav = () => {
   const path = location.pathname;
   // Bug 1024: la bandeja la mantiene al día el socket; con algo sin leer,
   // «Mensajes» lleva un punto.
-  const { status } = useSession();
+  const { status, user } = useSession();
   const inbox = useInbox(status === 'authenticated');
   const unreadMessages = hasUnreadConversation(inbox.data?.pages ?? []);
 
@@ -68,6 +69,11 @@ const BottomNav = () => {
         label="Profile"
         to="/profile"
         isActive={path === '/profile'}
+        photo={
+          user?.profile.avatarUrl
+            ? { url: user.profile.avatarUrl, name: user.profile.displayName }
+            : undefined
+        }
       />
     </div>
   );
@@ -80,6 +86,7 @@ const NavItem = ({
   isActive,
   dot = false,
   dotLabel,
+  photo,
 }: {
   icon: any;
   label: string;
@@ -88,6 +95,8 @@ const NavItem = ({
   /** Punto de "hay algo nuevo"; `dotLabel` lo dice con palabras. */
   dot?: boolean;
   dotLabel?: string;
+  /** Mi foto en lugar del ícono (bug 1072). */
+  photo?: { url: string; name: string };
 }) => (
   <Link
     to={to}
@@ -95,12 +104,25 @@ const NavItem = ({
     className="flex flex-col items-center justify-center w-16 gap-1"
   >
     <span className="relative">
-      <Icon
-        className={cn(
-          'w-6 h-6 transition-colors',
-          isActive ? 'text-[var(--brand)]' : 'text-[var(--muted)]',
-        )}
-      />
+      {photo ? (
+        <ProfileAvatar
+          url={photo.url}
+          name={photo.name}
+          size={24}
+          radius={12}
+          className={cn(
+            'ring-2',
+            isActive ? 'ring-[var(--brand)]' : 'ring-transparent',
+          )}
+        />
+      ) : (
+        <Icon
+          className={cn(
+            'w-6 h-6 transition-colors',
+            isActive ? 'text-[var(--brand)]' : 'text-[var(--muted)]',
+          )}
+        />
+      )}
       {dot && (
         <span
           data-testid={`nav-dot-${to.slice(1)}`}

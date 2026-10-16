@@ -25,6 +25,7 @@ function conversation(
       displayName: 'Beto Díaz',
       careerName: 'Medicina',
       verified: false,
+      avatarUrl: null,
     },
     lastMessage: null,
     unread: false,
@@ -83,6 +84,7 @@ describe('HU33 — Bandeja de mensajes', () => {
               displayName: 'Carla Peña',
               careerName: null,
               verified: false,
+              avatarUrl: null,
             },
             lastMessage: {
               id: 'm2',
@@ -286,6 +288,18 @@ describe('HU34, HU35 y HU38 — Ver una conversación y enviar', () => {
         ),
       ).toBe(true),
     );
+  });
+
+  it('bug 1074: el nombre del encabezado abre el perfil de la otra persona', async () => {
+    const user = userEvent.setup();
+    threadApi();
+    renderWithProviders(<Screens />, { route: `/messages/${CONV}` });
+
+    await user.click(
+      await screen.findByRole('link', { name: 'Ver el perfil de Beto Díaz' }),
+    );
+
+    expect(screen.getByTestId('location')).toHaveTextContent(`/u/${BETO}`);
   });
 
   it('HU34 E1: enviar manda el texto recortado, lo agrega al historial y limpia la caja', async () => {

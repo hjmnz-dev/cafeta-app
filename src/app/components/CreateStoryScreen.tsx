@@ -168,7 +168,7 @@ export function CreateStoryScreen() {
 
         <div className="flex items-start gap-3">
           <StoryAvatar
-            url={null}
+            url={user?.profile.avatarUrl ?? null}
             name={user?.profile.displayName ?? ''}
             className="w-10 h-10 flex-none"
           />

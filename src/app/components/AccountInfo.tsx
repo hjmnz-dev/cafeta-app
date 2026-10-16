@@ -7,6 +7,7 @@ import {
 } from '../lib/account';
 import type { CurrentUser } from '../lib/auth-api';
 import { useCareers } from '../store/posts-queries';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * HU06: los datos de la cuenta en Configuración, tomados de la sesión real
@@ -47,11 +48,13 @@ export function AccountInfo({
       <div className={card}>
         {user && (
           <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--line-soft)]">
-            <div className="w-11 h-11 rounded-[14px] bg-[var(--brand)] flex items-center justify-center flex-none">
-              <span className="text-white font-['Space_Grotesk',sans-serif] font-bold text-[20px]">
-                {(user.profile.displayName.trim()[0] || 'C').toUpperCase()}
-              </span>
-            </div>
+            <ProfileAvatar
+              url={user.profile.avatarUrl}
+              name={user.profile.displayName}
+              size={44}
+              radius={14}
+              className="flex-none"
+            />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-[15px] text-[var(--ink)] truncate">
                 {user.profile.displayName}
