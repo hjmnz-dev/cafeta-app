@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import {
   X,
   ChevronLeft,
@@ -223,15 +223,26 @@ export function StoryViewerScreen() {
 
       {/* Cabecera: autor y vigencia */}
       <div className="relative px-3 py-2.5 flex items-center gap-2.5">
-        <StoryAvatar
-          url={author.avatarUrl}
-          name={author.displayName}
-          className="w-9 h-9 flex-none text-[15px]"
-        />
+        {/* Bug 1063: la foto y el nombre llevan al perfil del autor, que
+            aplica su privacidad; «Atrás» desde el perfil vuelve aquí. */}
+        <Link
+          to={user?.id === author.id ? '/profile' : `/u/${author.id}`}
+          aria-label={`Ver el perfil de ${author.displayName}`}
+          className="flex-none rounded-full"
+        >
+          <StoryAvatar
+            url={author.avatarUrl}
+            name={author.displayName}
+            className="w-9 h-9 flex-none text-[15px]"
+          />
+        </Link>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-[14px] font-semibold truncate">
+          <Link
+            to={user?.id === author.id ? '/profile' : `/u/${author.id}`}
+            className="block text-white text-[14px] font-semibold truncate hover:underline"
+          >
             {author.displayName}
-          </p>
+          </Link>
           <p className="text-white/70 text-[11px]">
             {remainingLabel(story.expiresAt)}
             {story.editedAt && ' · Editada'}
