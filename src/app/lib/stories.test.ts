@@ -23,6 +23,7 @@ const story = (id: string): StoryView => ({
   myReaction: null,
   reactionCount: null,
   commentCount: 0,
+  seenByMe: false,
   createdAt: '2026-10-07T10:00:00.000Z',
   expiresAt: '2026-10-08T10:00:00.000Z',
   media: {

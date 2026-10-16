@@ -173,3 +173,109 @@ describe('Campana de notificaciones', () => {
     expect(screen.queryByTestId('unread-badge')).not.toBeInTheDocument();
   });
 });
+
+describe('Bug 1066 — Responder una solicitud desde su aviso', () => {
+  const request = {
+    id: 'f1',
+    createdAt: new Date().toISOString(),
+    follower: {
+      id: ANA,
+      handle: 'ana',
+      displayName: 'Ana Díaz',
+      avatarUrl: null,
+      careerName: null,
+      verified: false,
+    },
+  };
+
+  function api(pending: boolean) {
+    let answered: string | null = null;
+    const fetchMock = signIn((url, init) => {
+      const path = url.pathname;
+      if (
+        path.endsWith('/follows/f1/accept') ||
+        path.endsWith('/follows/f1/reject')
+      ) {
+        answered = path.endsWith('/accept') ? 'accept' : 'reject';
+        return new Response(null, { status: 204 });
+      }
+      if (path.endsWith('/notifications/n1/read')) {
+        return new Response(null, { status: 204 });
+      }
+      if (path.endsWith('/follows/requests')) {
+        return json(200, {
+          items: pending && answered === null ? [request] : [],
+          nextCursor: null,
+        });
+      }
+      if (path.endsWith('/notifications') && init?.method !== 'POST') {
+        return page([notification({ id: 'n1', type: 'FOLLOW_REQUEST' })]);
+      }
+      return undefined;
+    });
+    return { fetchMock, answer: () => answered };
+  }
+
+  it('aceptar desde el aviso acepta la solicitud y lo confirma', async () => {
+    const user = userEvent.setup();
+    const { answer } = api(true);
+    renderWithProviders(<NotificationsScreen />, { route: '/notifications' });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Aceptar la solicitud de Ana Díaz',
+      }),
+    );
+
+    expect(
+      await screen.findByText('Aceptaste la solicitud: Ana Díaz ya te sigue.'),
+    ).toBeInTheDocument();
+    expect(answer()).toBe('accept');
+    expect(
+      screen.queryByRole('button', { name: /aceptar la solicitud/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('rechazar desde el aviso rechaza la solicitud', async () => {
+    const user = userEvent.setup();
+    const { answer } = api(true);
+    renderWithProviders(<NotificationsScreen />, { route: '/notifications' });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Rechazar la solicitud de Ana Díaz',
+      }),
+    );
+
+    expect(
+      await screen.findByText('Rechazaste la solicitud.'),
+    ).toBeInTheDocument();
+    expect(answer()).toBe('reject');
+  });
+
+  it('una solicitud ya respondida no ofrece botones', async () => {
+    api(false);
+    renderWithProviders(<NotificationsScreen />, { route: '/notifications' });
+
+    expect(
+      await screen.findByText('Esta solicitud ya fue respondida.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /aceptar la solicitud/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('las pendientes llevan a la lista de solicitudes', async () => {
+    const user = userEvent.setup();
+    api(true);
+    renderWithProviders(<NotificationsScreen />, { route: '/notifications' });
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /1 solicitud de seguimiento pendiente/i,
+      }),
+    );
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/network');
+  });
+});

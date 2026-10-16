@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedScreen } from './FeedScreen';
+import { Toaster } from './ui/sonner';
 import { renderWithProviders } from '../../test/utils';
 import { page, postView, signIn, TEST_USER } from '../../test/api';
 import { json, TEST_CAREERS } from '../../test/setup';
@@ -103,5 +104,74 @@ describe('Spec 0005 — Feed', () => {
     fail = false;
     await user.click(screen.getByRole('button', { name: /reintentar/i }));
     expect(await screen.findByTestId('post-ok')).toBeInTheDocument();
+  });
+});
+
+describe('Bug 1070 — Tocar la marca actualiza el feed', () => {
+  function api() {
+    const calls = { feed: 0, stories: 0 };
+    let fail = false;
+    signIn((url, init) => {
+      if (url.pathname.endsWith('/posts/feed')) {
+        calls.feed += 1;
+        if (fail) return json(503, { statusCode: 503, code: 'UNAVAILABLE' });
+        return page([postView({ id: `p${calls.feed}` })]);
+      }
+      if (
+        url.pathname.endsWith('/stories') &&
+        (init?.method ?? 'GET') === 'GET'
+      ) {
+        calls.stories += 1;
+        return json(200, { groups: [] });
+      }
+      return undefined;
+    });
+    return { calls, failNext: () => (fail = true) };
+  }
+
+  it('vuelve a pedir el feed y las historias y avisa al terminar', async () => {
+    const user = userEvent.setup();
+    const { calls } = api();
+    renderWithProviders(
+      <>
+        <FeedScreen />
+        <Toaster />
+      </>,
+      { route: '/home' },
+    );
+    expect(await screen.findByTestId('post-p1')).toBeInTheDocument();
+    const before = { ...calls };
+
+    await user.click(
+      screen.getByRole('button', { name: 'Actualizar el feed' }),
+    );
+
+    expect(await screen.findByText('Feed actualizado')).toBeInTheDocument();
+    expect(await screen.findByTestId('post-p2')).toBeInTheDocument();
+    expect(calls.feed).toBeGreaterThan(before.feed);
+    expect(calls.stories).toBeGreaterThan(before.stories);
+  });
+
+  it('si falla, lo dice y deja lo que ya estaba', async () => {
+    const user = userEvent.setup();
+    const { failNext } = api();
+    renderWithProviders(
+      <>
+        <FeedScreen />
+        <Toaster />
+      </>,
+      { route: '/home' },
+    );
+    expect(await screen.findByTestId('post-p1')).toBeInTheDocument();
+    failNext();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Actualizar el feed' }),
+    );
+
+    expect(
+      await screen.findByText('Algo salió mal. Intenta de nuevo.'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('post-p1')).toBeInTheDocument();
   });
 });

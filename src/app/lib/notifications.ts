@@ -73,3 +73,19 @@ export function flattenNotifications(
 export function badgeText(count: number): string {
   return count > 9 ? '9+' : String(count);
 }
+
+/**
+ * Bug 1066 · Las solicitudes pendientes que me llegaron, por quien la envió:
+ * así un aviso «quiere seguirte» sabe qué solicitud aceptar o rechazar.
+ */
+export function pendingRequestsByFollower(
+  pages: readonly {
+    items: readonly { id: string; follower: { id: string } }[];
+  }[],
+): ReadonlyMap<string, string> {
+  return new Map(
+    pages.flatMap((page) =>
+      page.items.map((request) => [request.follower.id, request.id] as const),
+    ),
+  );
+}

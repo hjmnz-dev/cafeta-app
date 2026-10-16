@@ -759,6 +759,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/stories/{id}/view': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** La marca como vista por mí (bug 1068); repetir no cambia nada. */
+    post: operations['StoriesController_markViewed'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/stories/{id}': {
     parameters: {
       query?: never;
@@ -1765,6 +1782,8 @@ export interface components {
       expiresAt: string;
       /** @description Comentarios activos de usuarios activos. */
       commentCount: number;
+      /** @description true si quien pregunta ya la abrió (el anillo pasa a gris, bug 1068). */
+      seenByMe: boolean;
     };
     StoryAuthorDto: {
       /** @description Enlace de lectura de la foto, o null si no tiene. */
@@ -3311,6 +3330,25 @@ export interface operations {
         content: {
           'application/json': components['schemas']['StoryViewDto'];
         };
+      };
+    };
+  };
+  StoriesController_markViewed: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

@@ -224,6 +224,7 @@
   --shadow-card: 0 2px 12px rgba(23, 19, 19, 0.08);
   --shadow-pop: 0 8px 28px rgba(23, 19, 19, 0.18);
   --story-ring: linear-gradient(to top right, #d62828, #ff4a46);
+  --story-ring-seen: #cfc7c3; /* anillo de historias ya vistas (bug 1068) */
 
   /* Etiquetas del perfil por categoría (DEF-10) */
   --tag-carrera-bg: #ffe9e6;
@@ -260,6 +261,7 @@
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.45);
   --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.6);
   --story-ring: linear-gradient(to top right, #ff5a52, #ffa38c);
+  --story-ring-seen: #5a504d;
 
   --tag-carrera-bg: #412320; /* el rojo de marca al 16 % sobre la superficie, ya mezclado */
   --tag-carrera-ink: #ff8078;

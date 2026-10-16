@@ -15,7 +15,9 @@ import {
   STORY_DURATION_MS,
 } from '../lib/stories';
 import { useSession } from '../store/SessionStore';
-import { useStoryTray } from '../store/stories-queries';
+import { useMarkStoryViewed, useStoryTray } from '../store/stories-queries';
+import { useQueryClient } from '@tanstack/react-query';
+import { storyKeys } from '../lib/query-keys';
 import { StoryAvatar } from './StoryAvatar';
 import { StoryCommentsSheet } from './StoryCommentsSheet';
 import { StoryEngagement } from './StoryEngagement';
@@ -94,6 +96,22 @@ export function StoryViewerScreen() {
   const prev = queue[index - 1];
   const next = queue[index + 1];
   const nextId = next?.story.id ?? null;
+  // Bug 1068: la que se abre queda vista (una vez); al salir del visor la tira
+  // se vuelve a pedir y lo visto pasa al final.
+  const markViewed = useMarkStoryViewed().mutate;
+  const watchingId = entry?.story.id;
+  const watchingSeen = entry?.story.seenByMe ?? true;
+  useEffect(() => {
+    if (watchingId && !watchingSeen) markViewed(watchingId);
+  }, [watchingId, watchingSeen, markViewed]);
+  const queryClient = useQueryClient();
+  useEffect(
+    () => () => {
+      void queryClient.invalidateQueries({ queryKey: storyKeys.tray });
+    },
+    [queryClient],
+  );
+
   const commentsOpen = entry !== undefined && commentsFor === entry.story.id;
   const reactionsOpen = entry !== undefined && reactionsFor === entry.story.id;
   const paused = menuBusy || commentsOpen || reactionsOpen;

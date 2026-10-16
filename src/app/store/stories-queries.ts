@@ -10,12 +10,33 @@ import {
 } from '@tanstack/react-query';
 import { storyKeys } from '../lib/query-keys';
 import type { ReactionType } from '../lib/reactions';
-import { mapStoryInTray, withStoryReaction } from '../lib/stories';
+import {
+  mapStoryInTray,
+  withStoryReaction,
+  withStorySeen,
+} from '../lib/stories';
 import {
   storiesApi,
   type StoryReactionState,
   type StoryTray,
 } from '../lib/stories-api';
+
+/**
+ * Bug 1068 · Marca la historia como vista. Se ve al instante en la bandeja
+ * (anillo gris), sin volver a pedirla: el orden de la tira cambia al cerrar
+ * el visor, no mientras se ve.
+ */
+export function useMarkStoryViewed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: storiesApi.markViewed,
+    onMutate: (id: string) => {
+      queryClient.setQueryData<StoryTray>(storyKeys.tray, (tray) =>
+        mapStoryInTray(tray, id, withStorySeen),
+      );
+    },
+  });
+}
 
 /** Quién reaccionó a mi historia (bug 1018); se pide al abrir el detalle. */
 export function useStoryReactors(storyId: string) {

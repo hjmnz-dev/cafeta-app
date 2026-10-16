@@ -1,5 +1,10 @@
 import { Link, useLocation } from 'react-router';
-import { groupOf } from '../lib/stories';
+import {
+  firstToWatch,
+  groupOf,
+  groupSeen,
+  ringBackground,
+} from '../lib/stories';
 import { useProfile } from '../store/profiles-queries';
 import { useSession } from '../store/SessionStore';
 import { useStoryTray } from '../store/stories-queries';
@@ -26,7 +31,7 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
   const { pathname: from } = useLocation();
 
   const mine = groupOf(tray.data?.groups ?? [], user?.id);
-  const firstStory = mine?.stories[0];
+  const firstStory = mine && firstToWatch(mine);
   const name = me.data?.displayName ?? user?.profile.displayName ?? '';
   const avatarUrl = me.data?.avatarUrl ?? mine?.author.avatarUrl ?? null;
 
@@ -59,7 +64,7 @@ export function MyStoryAvatar({ size = 62 }: { size?: number }) {
           state={{ from }}
           aria-label={`Ver historia de ${name}`}
           className="block w-full h-full rounded-full p-[2.5px]"
-          style={{ background: 'var(--story-ring)' }}
+          style={{ background: ringBackground(mine ? groupSeen(mine) : false) }}
         >
           {avatar(true)}
         </Link>

@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, Bell, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Bell, Check, CheckCheck, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { userMessageOf } from '../lib/http';
 import { initialsOf } from '../lib/messages';
@@ -10,6 +10,7 @@ import {
   notificationAction,
   notificationLink,
   notificationText,
+  pendingRequestsByFollower,
 } from '../lib/notifications';
 import { relativeTime } from '../lib/posts';
 import {
@@ -17,6 +18,7 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from '../store/notifications-queries';
+import { useFollowRequests, useRespondRequest } from '../store/follows-queries';
 import { InfiniteListFooter } from './InfiniteListFooter';
 
 /**
@@ -31,6 +33,16 @@ export function NotificationsScreen() {
   const notifications = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
+  // Bug 1066: las solicitudes pendientes, para responderlas desde aquí.
+  const requests = useFollowRequests();
+  const respond = useRespondRequest();
+  const pendingByFollower = pendingRequestsByFollower(
+    requests.data?.pages ?? [],
+  );
+  // Lo que respondí en esta pantalla, por aviso, para confirmarlo a la vista.
+  const [answered, setAnswered] = useState<
+    Readonly<Record<string, 'accepted' | 'rejected'>>
+  >({});
 
   const items = flattenNotifications(notifications.data?.pages ?? []);
   const hasUnread = items.some((n) => !n.read);
@@ -42,8 +54,25 @@ export function NotificationsScreen() {
 
   const open = (n: NotificationView) => {
     if (!n.read) markRead.mutate(n.id);
-    navigate(notificationLink(n));
+    // De dónde se viene: cerrar una historia vuelve aquí (bug 1058).
+    navigate(notificationLink(n), { state: { from: '/notifications' } });
   };
+
+  const answer = (n: NotificationView, followId: string, accept: boolean) => {
+    if (!n.read) markRead.mutate(n.id);
+    respond.mutate(
+      { followId, accept },
+      {
+        onSuccess: () =>
+          setAnswered((current) => ({
+            ...current,
+            [n.id]: accept ? 'accepted' : 'rejected',
+          })),
+        onError: (error) => toast.error(userMessageOf(error)),
+      },
+    );
+  };
+  const pendingCount = pendingByFollower.size;
 
   const readAll = () =>
     markAll.mutate(undefined, {
@@ -76,6 +105,25 @@ export function NotificationsScreen() {
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        {pendingCount > 0 && (
+          <button
+            onClick={() => navigate('/network?tab=requests')}
+            className="w-full px-5 py-3 flex items-center gap-3 text-left bg-[var(--tint)] border-b border-[var(--line-soft)]"
+          >
+            <UserPlus
+              className="w-5 h-5 text-[var(--brand)]"
+              aria-hidden="true"
+            />
+            <span className="flex-1 text-[14px] font-semibold text-[var(--ink)]">
+              {pendingCount === 1
+                ? '1 solicitud de seguimiento pendiente'
+                : `${pendingCount} solicitudes de seguimiento pendientes`}
+            </span>
+            <span className="text-[13px] font-semibold text-[var(--brand)]">
+              Ver solicitudes
+            </span>
+          </button>
+        )}
         {notifications.isPending && <NotificationsSkeleton />}
 
         {notifications.isError && !notifications.isFetchNextPageError && (
@@ -116,6 +164,19 @@ export function NotificationsScreen() {
                     notification={n}
                     now={now}
                     onOpen={() => open(n)}
+                    request={
+                      n.type === 'FOLLOW_REQUEST' &&
+                      n.actor &&
+                      requests.isSuccess
+                        ? {
+                            followId: pendingByFollower.get(n.actor.id),
+                            answered: answered[n.id],
+                            busy: respond.isPending,
+                            onAnswer: (followId, accept) =>
+                              answer(n, followId, accept),
+                          }
+                        : undefined
+                    }
                   />
                 </li>
               ))}
@@ -138,47 +199,112 @@ function NotificationRow({
   notification,
   now,
   onOpen,
+  request,
 }: {
   notification: NotificationView;
   now: Date;
   onOpen: () => void;
+  /** Solo en «quiere seguirte»: la solicitud pendiente, si sigue pendiente. */
+  request?: {
+    followId: string | undefined;
+    answered: 'accepted' | 'rejected' | undefined;
+    busy: boolean;
+    onAnswer: (followId: string, accept: boolean) => void;
+  };
 }) {
   const { actor, read } = notification;
   return (
-    <button
-      onClick={onOpen}
-      aria-label={`${notificationText(notification)}${read ? '' : ', sin leer'}`}
-      className={`w-full px-5 py-4 flex items-center gap-3 text-left transition-colors border-b border-[var(--line-soft)] hover:bg-[var(--surface)] ${read ? '' : 'bg-[var(--surface)]'}`}
+    <div
+      className={`border-b border-[var(--line-soft)] ${read ? '' : 'bg-[var(--surface)]'}`}
     >
-      <div className="w-[44px] h-[44px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[15px] shadow-sm">
-        {actor ? (
-          initialsOf(actor.displayName)
-        ) : (
-          <Bell className="w-5 h-5" aria-hidden="true" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p
-          className={`text-[14px] leading-snug ${read ? 'text-[var(--muted)]' : 'text-[var(--ink)]'}`}
-        >
-          {actor && (
-            <span className="font-semibold text-[var(--ink)]">
-              {actor.displayName}{' '}
-            </span>
+      <button
+        onClick={onOpen}
+        aria-label={`${notificationText(notification)}${read ? '' : ', sin leer'}`}
+        className="w-full px-5 py-4 flex items-center gap-3 text-left transition-colors hover:bg-[var(--surface)]"
+      >
+        <div className="w-[44px] h-[44px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[15px] shadow-sm">
+          {actor ? (
+            initialsOf(actor.displayName)
+          ) : (
+            <Bell className="w-5 h-5" aria-hidden="true" />
           )}
-          {notificationAction(notification)}
-        </p>
-        <span className="text-[12px] text-[var(--muted)]">
-          {relativeTime(notification.createdAt, now)}
-        </span>
-      </div>
-      {!read && (
-        <span
-          data-testid="unread-dot"
-          className="flex-shrink-0 w-2.5 h-2.5 bg-[var(--brand)] rounded-full"
-        />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p
+            className={`text-[14px] leading-snug ${read ? 'text-[var(--muted)]' : 'text-[var(--ink)]'}`}
+          >
+            {actor && (
+              <span className="font-semibold text-[var(--ink)]">
+                {actor.displayName}{' '}
+              </span>
+            )}
+            {notificationAction(notification)}
+          </p>
+          <span className="text-[12px] text-[var(--muted)]">
+            {relativeTime(notification.createdAt, now)}
+          </span>
+        </div>
+        {!read && (
+          <span
+            data-testid="unread-dot"
+            className="flex-shrink-0 w-2.5 h-2.5 bg-[var(--brand)] rounded-full"
+          />
+        )}
+      </button>
+      {request && (
+        <RequestActions request={request} name={actor?.displayName ?? ''} />
       )}
-    </button>
+    </div>
+  );
+}
+
+/** Bug 1066 · Aceptar o rechazar una solicitud desde su aviso. */
+function RequestActions({
+  request,
+  name,
+}: {
+  request: NonNullable<Parameters<typeof NotificationRow>[0]['request']>;
+  name: string;
+}) {
+  if (request.answered) {
+    return (
+      <p
+        role="status"
+        className="px-5 pb-3 -mt-1 pl-[76px] text-[13px] text-[var(--muted)]"
+      >
+        {request.answered === 'accepted'
+          ? `Aceptaste la solicitud: ${name} ya te sigue.`
+          : 'Rechazaste la solicitud.'}
+      </p>
+    );
+  }
+  const followId = request.followId;
+  if (!followId) {
+    return (
+      <p className="px-5 pb-3 -mt-1 pl-[76px] text-[13px] text-[var(--muted)]">
+        Esta solicitud ya fue respondida.
+      </p>
+    );
+  }
+  return (
+    <div className="px-5 pb-3 -mt-1 pl-[76px] flex gap-2">
+      <button
+        onClick={() => request.onAnswer(followId, true)}
+        disabled={request.busy}
+        aria-label={`Aceptar la solicitud de ${name}`}
+        className="h-[32px] px-4 rounded-full text-[13px] font-semibold flex items-center gap-1.5 bg-[var(--brand)] text-[var(--on-brand)] disabled:opacity-50"
+      >
+        <Check className="w-4 h-4" aria-hidden="true" /> Aceptar
+      </button>
+      <button
+        onClick={() => request.onAnswer(followId, false)}
+        disabled={request.busy}
+        aria-label={`Rechazar la solicitud de ${name}`}
+        className="h-[32px] px-4 rounded-full text-[13px] font-semibold flex items-center gap-1.5 border-2 border-[var(--line)] text-[var(--ink)] disabled:opacity-50"
+      >
+        <X className="w-4 h-4" aria-hidden="true" /> Rechazar
+      </button>
+    </div>
   );
 }
 

@@ -38,6 +38,9 @@ export const storiesApi = {
     apiRequest<StoryReactionState>(`/stories/${id}/reaction`, {
       method: 'DELETE',
     }),
+  /** La marca como vista por mí (bug 1068); repetir no cambia nada. */
+  markViewed: (id: string) =>
+    apiRequest<void>(`/stories/${id}/view`, { method: 'POST' }),
   /** Quién reaccionó a mi historia y con qué; solo para su autor (bug 1018). */
   reactors: (id: string, cursor: string | null = null) =>
     apiRequest<StoryReactorPage>(
