@@ -33,6 +33,7 @@ const story = (id: string, overrides: Partial<StoryView> = {}): StoryView => ({
   myReaction: null,
   reactionCount: null,
   commentCount: 0,
+  seenByMe: false,
   createdAt: new Date(Date.now() - HOUR).toISOString(),
   expiresAt: new Date(Date.now() + 5.5 * HOUR).toISOString(),
   media: {

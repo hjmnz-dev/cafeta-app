@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
-import { groupOf } from '../lib/stories';
+import {
+  firstToWatch,
+  groupOf,
+  groupSeen,
+  ringBackground,
+} from '../lib/stories';
 import { useStoryTray } from '../store/stories-queries';
 
 /**
@@ -27,9 +32,10 @@ export function StoryRing({
   const tray = useStoryTray();
   // De dónde se sale, para volver aquí al cerrar el visor.
   const { pathname: from } = useLocation();
-  const first = groupOf(tray.data?.groups ?? [], userId)?.stories[0];
+  const group = groupOf(tray.data?.groups ?? [], userId);
+  const first = group && firstToWatch(group);
 
-  if (!first) return <>{fallback ?? children}</>;
+  if (!group || !first) return <>{fallback ?? children}</>;
   return (
     <Link
       to={`/stories/${first.id}`}
@@ -38,7 +44,8 @@ export function StoryRing({
       // self-start: en una fila flex (la tarjeta de publicación) no se estira
       // a toda la altura (bug 1056); queda del tamaño del avatar.
       className="block flex-none self-start h-fit rounded-full p-[2.5px]"
-      style={{ background: 'var(--story-ring)' }}
+      // Gris si ya vi todas sus historias (bug 1068).
+      style={{ background: ringBackground(groupSeen(group)) }}
     >
       <span className="block rounded-full border-2 border-[var(--surface)]">
         {children}

@@ -89,3 +89,23 @@ export function mapStoryInTray(
     })),
   };
 }
+
+/** Bug 1068 · La historia ya abierta por mí: su anillo pasa a gris. */
+export function withStorySeen(story: StoryView): StoryView {
+  return { ...story, seenByMe: true };
+}
+
+/** Bug 1068 · Ya vi todas las historias vigentes de este autor. */
+export function groupSeen(group: StoryGroup): boolean {
+  return group.stories.every((story) => story.seenByMe);
+}
+
+/** La primera del autor que todavía no vi; si ya las vi todas, la primera. */
+export function firstToWatch(group: StoryGroup): StoryView | undefined {
+  return group.stories.find((story) => !story.seenByMe) ?? group.stories[0];
+}
+
+/** El fondo del anillo: el degradado de marca, o gris si ya está todo visto. */
+export function ringBackground(seen: boolean): string {
+  return seen ? 'var(--story-ring-seen)' : 'var(--story-ring)';
+}

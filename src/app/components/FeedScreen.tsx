@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, Search, X } from 'lucide-react';
+import { Heart, Loader2, Search, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { userMessageOf } from '../lib/http';
 import { Link, useSearchParams } from 'react-router';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -16,6 +18,7 @@ import { orderCareerTabs } from '../lib/posts';
 import { useCareers, useFeed } from '../store/posts-queries';
 import { useExplorePosts } from '../store/search-queries';
 import { useSession } from '../store/SessionStore';
+import { useStoryTray } from '../store/stories-queries';
 import { NotificationsBell } from './NotificationsBell';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -100,6 +103,24 @@ export function FeedScreen() {
 
   const closePanels = () => setShowSuggestions(false);
 
+  // Bug 1070: tocar la marca vuelve arriba y actualiza el feed y las
+  // historias, con aviso mientras carga y si falla (lo ya cargado se queda).
+  const tray = useStoryTray();
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = async () => {
+    if (refreshing) return;
+    scrollContainerRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
+    setRefreshing(true);
+    const [posts, stories] = await Promise.all([
+      feed.refetch(),
+      tray.refetch(),
+    ]);
+    setRefreshing(false);
+    const error = posts.error ?? stories.error;
+    if (error) toast.error(userMessageOf(error));
+    else toast.success('Feed actualizado');
+  };
+
   const panelCard =
     'absolute top-full left-4 right-4 mt-2 bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-pop)] border border-[var(--line)] overflow-hidden z-50';
 
@@ -123,12 +144,31 @@ export function FeedScreen() {
             showHeader ? 'h-[52px] opacity-100' : 'h-0 opacity-0',
           )}
         >
-          <div className="flex items-center gap-2">
-            <CafetaAppIcon size={30} tone="red" radius={10} />
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={refreshing}
+            aria-label={
+              refreshing ? 'Actualizando el feed' : 'Actualizar el feed'
+            }
+            aria-busy={refreshing}
+            className="flex items-center gap-2 rounded-xl"
+          >
+            {refreshing ? (
+              <span className="w-[30px] h-[30px] flex items-center justify-center">
+                <Loader2
+                  data-testid="feed-refreshing"
+                  className="w-6 h-6 text-[var(--brand)] animate-spin"
+                  aria-hidden="true"
+                />
+              </span>
+            ) : (
+              <CafetaAppIcon size={30} tone="red" radius={10} />
+            )}
             <span className="font-['Space_Grotesk',sans-serif] font-bold text-[20px] text-[var(--ink)] tracking-[-0.045em] lowercase">
               cafeta
             </span>
-          </div>
+          </button>
           <div className="flex items-center gap-4">
             {/* Entrada a la búsqueda global (DEF-07 · HU41/HU42) */}
             <Link to="/search" aria-label="Buscar">

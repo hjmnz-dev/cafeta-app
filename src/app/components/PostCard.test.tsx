@@ -262,6 +262,7 @@ describe('Bugs 1043, 1047 y 1038 — avatar, anillo y comentarios de archivadas'
                     myReaction: null,
                     reactionCount: null,
                     commentCount: 0,
+                    seenByMe: false,
                     createdAt: new Date().toISOString(),
                     expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
                     media: {

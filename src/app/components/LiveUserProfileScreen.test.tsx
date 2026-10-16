@@ -247,6 +247,7 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
                 myReaction: null,
                 reactionCount: null,
                 commentCount: 0,
+                seenByMe: false,
                 createdAt: new Date().toISOString(),
                 expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
                 media: {

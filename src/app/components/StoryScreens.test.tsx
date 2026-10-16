@@ -24,6 +24,7 @@ const story = (id: string, overrides: Partial<StoryView> = {}): StoryView => ({
   myReaction: null,
   reactionCount: null,
   commentCount: 0,
+  seenByMe: false,
   createdAt: new Date(Date.now() - HOUR).toISOString(),
   expiresAt: new Date(Date.now() + 5.5 * HOUR).toISOString(),
   media: {
@@ -590,5 +591,62 @@ describe('Bug 1063 · Del visor al perfil del autor', () => {
     await user.click(screen.getByRole('link', { name: 'Beto Ramírez' }));
     expect(await screen.findByText('Perfil ajeno')).toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent(`/u/${BETO.id}`);
+  });
+});
+
+describe('Bug 1068 · Historias ya vistas', () => {
+  it('el anillo de quien ya vi queda gris y abre por la primera sin ver', async () => {
+    signIn(
+      trayOf(() => [
+        group(BETO, [story('b1', { seenByMe: true }), story('b2')]),
+        group({ id: 'c-id', handle: 'carla', displayName: 'Carla Peña' }, [
+          story('c1', { seenByMe: true }),
+        ]),
+      ]),
+    );
+    renderWithProviders(<StoriesStrip />, { route: '/home' });
+
+    expect(
+      await screen.findByRole('link', { name: 'Ver historia de Beto Ramírez' }),
+    ).toHaveAttribute('href', '/stories/b2');
+    expect(screen.getByTestId(`ring-${BETO.id}`)).toHaveAttribute(
+      'data-seen',
+      'false',
+    );
+    expect(
+      screen.getByRole('link', {
+        name: 'Ver historia de Carla Peña, ya vista',
+      }),
+    ).toHaveAttribute('href', '/stories/c1');
+    expect(screen.getByTestId('ring-c-id')).toHaveAttribute(
+      'data-seen',
+      'true',
+    );
+  });
+
+  it('abrir una historia sin ver la marca como vista, una sola vez', async () => {
+    const viewed: string[] = [];
+    signIn((url, init) => {
+      if (url.pathname.endsWith('/view') && init?.method === 'POST') {
+        viewed.push(url.pathname);
+        return new Response(null, { status: 204 });
+      }
+      return isTrayRequest(url, init)
+        ? json(200, {
+            groups: [
+              group(BETO, [
+                story('b1', { seenByMe: viewed.length > 0 }),
+                story('b2', { seenByMe: true }),
+              ]),
+            ],
+          })
+        : undefined;
+    });
+    renderRoutes(
+      [{ path: '/stories/:storyId', element: <StoryViewerScreen /> }],
+      { route: '/stories/b1' },
+    );
+
+    await waitFor(() => expect(viewed).toEqual(['/api/v1/stories/b1/view']));
   });
 });

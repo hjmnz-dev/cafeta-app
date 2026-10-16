@@ -1,5 +1,10 @@
 import { Link, useLocation } from 'react-router';
-import { groupOf } from '../lib/stories';
+import {
+  firstToWatch,
+  groupOf,
+  groupSeen,
+  ringBackground,
+} from '../lib/stories';
 import { useSession } from '../store/SessionStore';
 import { useStoryTray } from '../store/stories-queries';
 import { MyStoryAvatar } from './MyStoryAvatar';
@@ -55,27 +60,29 @@ export function StoriesStrip() {
           {hasMine ? '.' : ', o publica la tuya.'}
         </p>
       ) : (
-        others.map(({ author, stories }) => (
+        others.map((group) => (
           <Link
-            key={author.id}
-            to={`/stories/${stories[0]?.id}`}
+            key={group.author.id}
+            to={`/stories/${firstToWatch(group)?.id}`}
             state={{ from }}
             className="flex flex-col items-center gap-1.5 min-w-[68px]"
-            aria-label={`Ver historia de ${author.displayName}`}
+            aria-label={`Ver historia de ${group.author.displayName}${groupSeen(group) ? ', ya vista' : ''}`}
           >
-            {/* Anillo de historia vigente */}
+            {/* Anillo de historia vigente; gris si ya la vi (bug 1068) */}
             <div
+              data-testid={`ring-${group.author.id}`}
+              data-seen={groupSeen(group)}
               className="w-[62px] h-[62px] rounded-full p-[2.5px]"
-              style={{ background: 'var(--story-ring)' }}
+              style={{ background: ringBackground(groupSeen(group)) }}
             >
               <StoryAvatar
-                url={author.avatarUrl}
-                name={author.displayName}
+                url={group.author.avatarUrl}
+                name={group.author.displayName}
                 className="w-full h-full border-2 border-[var(--surface)] text-[22px]"
               />
             </div>
             <span className="text-[11px] text-[var(--ink)] font-medium truncate w-[64px] text-center">
-              {author.displayName.split(' ')[0]}
+              {group.author.displayName.split(' ')[0]}
             </span>
           </Link>
         ))

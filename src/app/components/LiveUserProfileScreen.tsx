@@ -18,7 +18,12 @@ import {
   VISIBILITY_LABEL,
   TAG_CATEGORIES,
 } from '../lib/profiles';
-import { groupOf } from '../lib/stories';
+import {
+  firstToWatch,
+  groupOf,
+  groupSeen,
+  ringBackground,
+} from '../lib/stories';
 import { useProfile } from '../store/profiles-queries';
 import { useUserPosts } from '../store/posts-queries';
 import { useBlockUser } from '../store/blocks-queries';
@@ -173,7 +178,8 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
   // Sus historias vigentes que ya me llegan en la tira (bug 1017): la foto las abre.
   const tray = useStoryTray();
   const { pathname: from } = useLocation();
-  const firstStory = groupOf(tray.data?.groups ?? [], profile.id)?.stories[0];
+  const storyGroup = groupOf(tray.data?.groups ?? [], profile.id);
+  const firstStory = storyGroup && firstToWatch(storyGroup);
 
   return (
     <div
@@ -194,7 +200,11 @@ function ProfileBody({ profile }: { profile: ProfileView }) {
               state={{ from }}
               aria-label={`Ver historia de ${profile.displayName}`}
               className="block rounded-[28px] p-[3px]"
-              style={{ background: 'var(--story-ring)' }}
+              style={{
+                background: ringBackground(
+                  storyGroup ? groupSeen(storyGroup) : false,
+                ),
+              }}
             >
               <ProfileAvatar
                 url={profile.avatarUrl}
