@@ -2,7 +2,9 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { UserRow } from './UserRow';
+import { orderCareerTabs } from '../lib/posts';
 import { useCareers } from '../store/posts-queries';
+import { useSession } from '../store/SessionStore';
 import {
   useSearchUsers,
   useSearchPosts,
@@ -23,6 +25,9 @@ import { userMessageOf } from '../lib/http';
 
 type Tab = 'people' | 'posts';
 
+/** Cuántas carreras se ofrecen como acceso rápido. */
+const SUGGESTED_CAREERS = 8;
+
 export function SearchScreen() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -37,8 +42,15 @@ export function SearchScreen() {
   const liveExploreQuery = useExplorePosts(!trimmed);
   // Accesos rápidos: las carreras reales con su nombre completo, así la
   // búsqueda las encuentra igual que escritas a mano (bug 1037).
+  // Mi carrera primero y unas pocas más, para no llenar la pantalla.
+  const { user } = useSession();
   const careers = useCareers();
-  const suggestions = (careers.data ?? []).map((c) => c.name);
+  const suggestions = orderCareerTabs(
+    careers.data ?? [],
+    user?.profile.careerId ?? null,
+  )
+    .slice(0, SUGGESTED_CAREERS)
+    .map((c) => c.name);
 
   const liveUserItems =
     liveUsersQuery.data?.pages.flatMap((p) => p.items) ?? [];

@@ -20,19 +20,28 @@ const LEGACY_KEY = 'cafeta.appstate.v1';
 const isTheme = (value: unknown): value is Theme =>
   value === 'dark' || value === 'light';
 
+/** El tema de la demo vieja, que además se borra del navegador siempre. */
+function takeLegacyTheme(): Theme | null {
+  const legacy = localStorage.getItem(LEGACY_KEY);
+  if (legacy === null) return null;
+  localStorage.removeItem(LEGACY_KEY);
+  try {
+    const theme: unknown = JSON.parse(legacy)?.settings?.theme;
+    return isTheme(theme) ? theme : null;
+  } catch {
+    return null;
+  }
+}
+
 /** El tema guardado; si no hay, el de la demo vieja; si no, oscuro. */
 function loadTheme(): Theme {
   try {
+    const legacy = takeLegacyTheme();
     const saved = localStorage.getItem(THEME_KEY);
     if (isTheme(saved)) return saved;
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      localStorage.removeItem(LEGACY_KEY);
-      const theme: unknown = JSON.parse(legacy)?.settings?.theme;
-      if (isTheme(theme)) return theme;
-    }
+    if (legacy) return legacy;
   } catch {
-    /* almacenamiento no disponible o dato corrupto: el predeterminado */
+    /* almacenamiento no disponible: el predeterminado */
   }
   return 'dark';
 }
