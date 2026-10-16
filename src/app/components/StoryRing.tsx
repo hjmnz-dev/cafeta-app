@@ -35,7 +35,9 @@ export function StoryRing({
       to={`/stories/${first.id}`}
       state={{ from }}
       aria-label={`Ver historia de ${name}`}
-      className="block flex-none rounded-full p-[2.5px]"
+      // self-start: en una fila flex (la tarjeta de publicación) no se estira
+      // a toda la altura (bug 1056); queda del tamaño del avatar.
+      className="block flex-none self-start h-fit rounded-full p-[2.5px]"
       style={{ background: 'var(--story-ring)' }}
     >
       <span className="block rounded-full border-2 border-[var(--surface)]">
