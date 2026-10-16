@@ -1,14 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cafeta</title>
     <meta
       name="description"
-      content="Connect with fellow INTEC students through a vibrant social network, share resources, and engage in academic discussions tailored for university life."
+      content="La red social de la comunidad de INTEC: comparte recursos, conversa con tu carrera y entérate de lo que pasa en el campus."
     />
     <meta name="robots" content="noindex, nofollow" />
+    <!-- Íconos: el símbolo de Cafeta en blanco sobre rojo (ver Logo.tsx). -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#d62828" />
     <style>
       html,
       body {
@@ -21,12 +27,16 @@
     </style>
     <script>
       // Pinta el tema antes del primer render: sin esto, la app oscura
-      // parpadearía en claro mientras carga React.
+      // parpadearía en claro mientras carga React. El tema vive en
+      // cafeta.theme (ThemeStore); la demo vieja se lee solo si aún no hay.
       try {
-        var saved = JSON.parse(
-          localStorage.getItem('cafeta.appstate.v1') || '{}',
-        );
-        var theme = (saved.settings && saved.settings.theme) || 'dark';
+        var theme = localStorage.getItem('cafeta.theme');
+        if (theme !== 'light' && theme !== 'dark') {
+          var legacy = JSON.parse(
+            localStorage.getItem('cafeta.appstate.v1') || '{}',
+          );
+          theme = (legacy.settings && legacy.settings.theme) || 'dark';
+        }
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.toggle('dark', theme === 'dark');
       } catch (e) {
