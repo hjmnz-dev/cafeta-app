@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useEffect, useState } from 'react';
+import { clockLabel, msToNextMinute } from '../lib/clock';
 import { hasUnreadConversation } from '../lib/messages';
 import { useInbox } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
@@ -117,22 +119,43 @@ const NavItem = ({
   </Link>
 );
 
-const StatusBar = ({ isDark }: { isDark: boolean }) => (
-  <div
-    className={cn(
-      'w-full h-12 flex justify-between items-center px-6 absolute top-0 z-50',
-      isDark ? 'text-white' : 'text-black',
-    )}
-  >
-    <span className="text-[15px] font-semibold tracking-tight mt-1">9:41</span>
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-[20px]"></div>
-    <div className="flex items-center gap-1.5 mt-1">
-      <Signal className="w-4 h-4" />
-      <Wifi className="w-4 h-4" />
-      <Battery className="w-[18px] h-[18px]" />
+/** La hora local de quien usa la app; cambia justo al cambiar el minuto. */
+function useClock(): string {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setNow(new Date()),
+      msToNextMinute(now),
+    );
+    return () => window.clearTimeout(timer);
+  }, [now]);
+  return clockLabel(now);
+}
+
+const StatusBar = ({ isDark }: { isDark: boolean }) => {
+  const time = useClock();
+  return (
+    <div
+      className={cn(
+        'w-full h-12 flex justify-between items-center px-6 absolute top-0 z-50',
+        isDark ? 'text-white' : 'text-black',
+      )}
+    >
+      <time
+        data-testid="status-clock"
+        className="text-[15px] font-semibold tracking-tight mt-1"
+      >
+        {time}
+      </time>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-[20px]"></div>
+      <div className="flex items-center gap-1.5 mt-1">
+        <Signal className="w-4 h-4" />
+        <Wifi className="w-4 h-4" />
+        <Battery className="w-[18px] h-[18px]" />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export function AppLayout() {
   const location = useLocation();

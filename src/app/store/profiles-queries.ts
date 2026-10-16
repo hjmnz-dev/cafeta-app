@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { profilesApi } from '../lib/profiles-api';
 import { followKeys, postKeys, profileKeys } from '../lib/query-keys';
+import { useSession } from './SessionStore';
 
 export function useProfile(userId: string, enabled = true) {
   return useQuery({
@@ -40,10 +41,13 @@ export function useUpdatePrivacy() {
  */
 export function useUpdateProfile(userId: string) {
   const queryClient = useQueryClient();
+  const { refresh } = useSession();
   return useMutation({
     mutationFn: profilesApi.update,
     onSuccess: (profile) => {
       queryClient.setQueryData(profileKeys.view(userId), profile);
+      // La sesión también guarda mi carrera y mi nombre.
+      void refresh();
       void queryClient.invalidateQueries({ queryKey: postKeys.all });
       void queryClient.invalidateQueries({ queryKey: followKeys.all });
     },

@@ -38,6 +38,8 @@ interface SessionValue {
   login: (email: string, password: string, remember: boolean) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
+  /** Vuelve a pedir mis datos (GET /auth/me), por ejemplo tras editar el perfil. */
+  refresh: () => Promise<void>;
 }
 
 type SessionState =
@@ -120,6 +122,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Al cambiar la carrera (o el nombre) desde Editar perfil, la sesión se
+  // vuelve a pedir: si no, el feed, la búsqueda, Configuración y Crear
+  // publicación seguían con la carrera vieja hasta recargar.
+  const refresh = useCallback(async () => {
+    try {
+      const user = await authApi.me();
+      setState((current) =>
+        current.status === 'authenticated'
+          ? { status: 'authenticated', user }
+          : current,
+      );
+    } catch {
+      /* sin red: se queda lo que había; un 401 ya cierra la sesión solo */
+    }
+  }, []);
+
   const value = useMemo<SessionValue>(
     () => ({
       status: state.status,
@@ -127,8 +145,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refresh,
     }),
-    [state, login, register, logout],
+    [state, login, register, logout, refresh],
   );
 
   return (

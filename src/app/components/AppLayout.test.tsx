@@ -74,3 +74,13 @@ describe('AppLayout: punto de mensajes sin leer (bug 1024)', () => {
     expect(screen.queryByTestId('nav-dot-messages')).not.toBeInTheDocument();
   });
 });
+
+describe('AppLayout: la hora de la barra de estado', () => {
+  it('muestra la hora local actual, no una fija', () => {
+    renderWithProviders(<AppLayout />, { route: '/home' });
+
+    const now = new Date();
+    const expected = `${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}`;
+    expect(screen.getByTestId('status-clock')).toHaveTextContent(expected);
+  });
+});
