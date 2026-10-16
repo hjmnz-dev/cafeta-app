@@ -101,7 +101,8 @@ export function toCardPost(view: PostView, now: Date): Post {
     authorId: view.author.id,
     authorName: view.author.displayName,
     authorVerified: view.author.verified,
-    authorAvatar: '',
+    // Bug 1043: la foto de su perfil; sin ella, la tarjeta pone la inicial.
+    authorAvatar: view.author.avatarUrl ?? '',
     career: view.author.careerName ?? '',
     time: relativeTime(view.createdAt, now),
     type: CARD_TYPES[view.type],

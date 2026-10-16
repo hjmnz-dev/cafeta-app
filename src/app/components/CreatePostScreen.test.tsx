@@ -195,3 +195,46 @@ describe('Spec 0005 — Crear publicación', () => {
     expect(publishButton()).toBeEnabled();
   });
 });
+
+describe('Bug 1039 — no perder el borrador al cerrar con la X', () => {
+  it('con texto escrito, cerrar pide confirmar y "Seguir editando" lo conserva', async () => {
+    const user = userEvent.setup();
+    signIn();
+    renderWithProviders(<CreatePostScreen />, { route: '/create-post' });
+
+    await user.type(
+      await screen.findByRole('textbox', {
+        name: /qué quieres compartir|publicación/i,
+      }),
+      'Borrador importante',
+    );
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }));
+
+    expect(
+      screen.getByRole('alertdialog', { name: '¿Descartar la publicación?' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Seguir editando' }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('Borrador importante')).toBeInTheDocument();
+  });
+
+  it('"Descartar" cierra el aviso; sin nada escrito, cerrar no pregunta', async () => {
+    const user = userEvent.setup();
+    signIn();
+    renderWithProviders(<CreatePostScreen />, { route: '/create-post' });
+
+    await user.click(await screen.findByRole('button', { name: 'Cerrar' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+    await user.type(
+      screen.getByRole('textbox', {
+        name: /qué quieres compartir|publicación/i,
+      }),
+      'Algo',
+    );
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }));
+    await user.click(screen.getByRole('button', { name: 'Descartar' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+});

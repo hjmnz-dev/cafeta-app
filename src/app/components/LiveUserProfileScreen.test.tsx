@@ -261,11 +261,12 @@ describe('Decisión 15 · Perfil ajeno desde la API', () => {
       },
     });
 
-    await user.click(
-      await screen.findByRole('link', {
-        name: 'Ver historia de María Rodríguez',
-      }),
-    );
+    // La cabecera y cada publicación suya llevan el anillo (bug 1047).
+    const rings = await screen.findAllByRole('link', {
+      name: 'Ver historia de María Rodríguez',
+    });
+    expect(rings.length).toBeGreaterThanOrEqual(1);
+    await user.click(rings[0]);
     expect(await screen.findByText('Visor de historias')).toBeInTheDocument();
   });
 

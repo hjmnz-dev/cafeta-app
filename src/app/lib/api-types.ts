@@ -1388,6 +1388,8 @@ export interface components {
     PostAuthorDto: {
       /** @example Ingeniería de Software */
       careerName: string | null;
+      /** @description Enlace de lectura de su foto de perfil; null si no tiene. */
+      avatarUrl: string | null;
       id: string;
       /** @example cgomez_intec */
       handle: string;

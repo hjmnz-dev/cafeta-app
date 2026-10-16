@@ -10,6 +10,7 @@ import { useInbox, useOpenConversation } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
 import { InfiniteListFooter } from './InfiniteListFooter';
 import { NewConversationPanel } from './NewConversationPanel';
+import { StoryRing } from './StoryRing';
 
 /**
  * Bandeja de mensajes (HU33, spec 0008 decisión 25). Lista real de la API,
@@ -181,15 +182,18 @@ function InboxRow({
     ? `${mine ? 'Tú: ' : ''}${lastMessage.content}`
     : 'Sin mensajes';
   return (
-    <button
-      onClick={onOpen}
-      aria-label={`Conversación con ${otherUser.displayName}${unread ? ', sin leer' : ''}`}
-      className="w-full px-5 py-4 flex items-center gap-3 hover:bg-[var(--surface)] transition-colors border-b border-[var(--line-soft)]"
-    >
-      <div className="w-[52px] h-[52px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[16px] shadow-sm">
-        {initialsOf(otherUser.displayName)}
-      </div>
-      <div className="flex-1 min-w-0 text-left">
+    <div className="w-full pl-5 flex items-center gap-3 hover:bg-[var(--surface)] transition-colors border-b border-[var(--line-soft)]">
+      {/* Bug 1047: con historia vigente, la foto lleva el anillo y la abre. */}
+      <StoryRing userId={otherUser.id} name={otherUser.displayName}>
+        <div className="w-[52px] h-[52px] flex-shrink-0 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-[16px] shadow-sm">
+          {initialsOf(otherUser.displayName)}
+        </div>
+      </StoryRing>
+      <button
+        onClick={onOpen}
+        aria-label={`Conversación con ${otherUser.displayName}${unread ? ', sin leer' : ''}`}
+        className="flex-1 min-w-0 pr-5 py-4 text-left"
+      >
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-['Space Grotesk',sans-serif] font-semibold text-[15px] text-[var(--ink)] truncate">
             {otherUser.displayName}
@@ -217,8 +221,8 @@ function InboxRow({
             />
           )}
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
 

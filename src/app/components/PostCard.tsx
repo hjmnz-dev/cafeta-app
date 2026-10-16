@@ -31,6 +31,7 @@ import { PostReactionButton } from './PostReactionButton';
 import { ReportTargetDialog } from './ReportTargetDialog';
 import { VerifiedBadge } from './VerifiedBadge';
 import { ImageViewer } from './ImageViewer';
+import { StoryRing } from './StoryRing';
 
 /**
  * DEF-09 · HU21/HU22/HU23 — Tarjeta de publicación.
@@ -185,7 +186,9 @@ export function PostCard({ post, live }: { post: Post; live: LivePost }) {
       className="relative bg-[var(--surface)] px-4 py-3.5 border-b border-[var(--line-soft)]"
     >
       <div className="flex gap-3">
-        <Avatar post={post} />
+        <StoryRing userId={live.authorId} name={post.authorName}>
+          <Avatar post={post} />
+        </StoryRing>
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {/* Una sola línea de identidad: nombre · carrera · tiempo */}
@@ -463,6 +466,7 @@ export function PostCard({ post, live }: { post: Post; live: LivePost }) {
               <CommentsPanel
                 target={{ kind: 'posts', id: post.id }}
                 count={post.comments}
+                readOnly={live.state === 'ARCHIVED'}
               />
             )}
           </>

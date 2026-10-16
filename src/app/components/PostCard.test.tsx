@@ -3,7 +3,8 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostCard } from './PostCard';
 import { renderWithProviders } from '../../test/utils';
-import { postView } from '../../test/api';
+import { postView, signIn } from '../../test/api';
+import { json } from '../../test/setup';
 import { toCardPost } from '../lib/posts';
 
 /**
@@ -153,7 +154,7 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     expect(card.getByText('Auditorio')).toBeInTheDocument();
     expect(card.getByText('Laboratorio 3')).toBeInTheDocument();
     expect(
-      card.getByRole('button', { name: 'Reaccionar. 12 reacciones' }),
+      card.getByRole('button', { name: 'Me encanta. 12 reacciones' }),
     ).toBeInTheDocument();
     expect(card.getByLabelText('3 comentarios')).toBeInTheDocument();
     // Sin backend todavía: ni guardar ni asistir. Quedan el menú de una publicación
@@ -163,7 +164,8 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
     ).toEqual([
       'Opciones de la publicación de Juan Pérez',
       '3 comentarios',
-      'Reaccionar. 12 reacciones',
+      'Me encanta. 12 reacciones',
+      'Más reacciones',
     ]);
     // Sin foto: la inicial en un círculo.
     expect(card.getByRole('img', { name: 'Juan Pérez' })).toHaveTextContent(
@@ -187,7 +189,7 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
 
     const card = within(screen.getByTestId('post-uno'));
     expect(
-      card.getByRole('button', { name: 'Reaccionar. 1 reacción' }),
+      card.getByRole('button', { name: 'Me encanta. 1 reacción' }),
     ).toBeInTheDocument();
     expect(card.getByLabelText('1 comentario')).toBeInTheDocument();
   });
@@ -216,5 +218,110 @@ describe('Spec 0005 · AC-8 — Tarjeta de una publicación real (live)', () => 
       '/profile',
     );
     expect(card.getByText(/anuncio oficial/i)).toBeInTheDocument();
+  });
+});
+
+describe('Bugs 1043, 1047 y 1038 — avatar, anillo y comentarios de archivadas', () => {
+  const live = {
+    isMine: false,
+    authorId: '01926f00-0000-7000-8000-0000000000aa',
+    isAnnouncement: false,
+    reaction: { mine: null, busy: false, select: () => undefined },
+  };
+
+  it('bug 1043: con foto de perfil, la publicación muestra la foto y no la inicial', () => {
+    const view = postView({
+      id: 'f1',
+      author: { avatarUrl: 'https://blob.test/juan.jpg' },
+    });
+    renderWithProviders(<PostCard post={toCardPost(view, NOW)} live={live} />);
+
+    expect(screen.getByAltText('Juan Pérez')).toHaveAttribute(
+      'src',
+      'https://blob.test/juan.jpg',
+    );
+  });
+
+  it('bug 1047: si el autor tiene una historia vigente, su avatar lleva el anillo y la abre', async () => {
+    signIn((url) =>
+      url.pathname.endsWith('/stories')
+        ? json(200, {
+            groups: [
+              {
+                author: {
+                  id: live.authorId,
+                  handle: 'jperez',
+                  displayName: 'Juan Pérez',
+                  avatarUrl: null,
+                },
+                stories: [
+                  {
+                    id: 's1',
+                    text: null,
+                    editedAt: null,
+                    myReaction: null,
+                    reactionCount: null,
+                    commentCount: 0,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+                    media: {
+                      mediaType: 'IMAGE',
+                      url: 'https://blob.test/s1.jpg',
+                      mimeType: 'image/jpeg',
+                    },
+                  },
+                ],
+              },
+            ],
+          })
+        : undefined,
+    );
+    renderWithProviders(
+      <PostCard post={toCardPost(postView({ id: 'r1' }), NOW)} live={live} />,
+    );
+
+    expect(
+      await screen.findByRole('link', { name: 'Ver historia de Juan Pérez' }),
+    ).toHaveAttribute('href', '/stories/s1');
+  });
+
+  it('bug 1038: en una archivada propia se leen los comentarios pero no se escribe', async () => {
+    const user = userEvent.setup();
+    signIn((url) =>
+      url.pathname.endsWith('/posts/a1/comments')
+        ? json(200, {
+            items: [
+              {
+                id: 'c1',
+                content: 'Buen resumen',
+                createdAt: new Date().toISOString(),
+                editedAt: null,
+                isMine: false,
+                author: {
+                  id: '01926f00-0000-7000-8000-0000000000b1',
+                  handle: 'beto',
+                  displayName: 'Beto',
+                  avatarUrl: null,
+                },
+              },
+            ],
+            nextCursor: null,
+          })
+        : undefined,
+    );
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(postView({ id: 'a1', commentCount: 1 }), NOW)}
+        live={{ ...live, isMine: true, state: 'ARCHIVED' }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '1 comentario' }));
+
+    expect(await screen.findByText('Buen resumen')).toBeInTheDocument();
+    expect(screen.getByText(/está archivada/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole('textbox', { name: 'Escribe un comentario' }),
+    ).not.toBeInTheDocument();
   });
 });

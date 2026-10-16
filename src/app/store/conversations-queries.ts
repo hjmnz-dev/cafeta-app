@@ -22,6 +22,7 @@ import {
   type Pages,
 } from '../lib/messages';
 import { conversationKeys } from '../lib/query-keys';
+import { refreshNotifications } from './notifications-queries';
 
 const firstPage = null as string | null;
 
@@ -79,8 +80,13 @@ export function useMarkRead(conversationId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => conversationsApi.markRead(conversationId),
+    // La API también da por leídos los avisos de mensaje de esta conversación
+    // (bug 1049): la campana se vuelve a pedir junto con la bandeja.
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: conversationKeys.inbox }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: conversationKeys.inbox }),
+        refreshNotifications(queryClient),
+      ]),
   });
 }
 

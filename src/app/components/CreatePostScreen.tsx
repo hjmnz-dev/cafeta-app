@@ -15,6 +15,16 @@ import {
   useUploadFile,
 } from '../store/posts-queries';
 import { useSession } from '../store/SessionStore';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 
 /**
  * Crear publicación contra la API (spec 0005, HU20).
@@ -36,6 +46,12 @@ export function CreatePostScreen() {
   const [location, setLocation] = useState<CampusLocation | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  // Bug 1039: cerrar con algo escrito, una ubicación o adjuntos pide
+  // confirmar antes de descartarlo.
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const hasDraft =
+    postText.trim() !== '' || location !== null || attachments.length > 0;
+  const close = () => (hasDraft ? setConfirmingDiscard(true) : navigate(-1));
   // Candado del envío: varios toques seguidos llegan antes de que isPending
   // se refleje en el botón, y solo debe salir una petición.
   const sending = useRef(false);
@@ -257,7 +273,7 @@ export function CreatePostScreen() {
       {/* Header */}
       <div className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--line-soft)] mt-12">
         <button
-          onClick={() => navigate(-1)}
+          onClick={close}
           aria-label="Cerrar"
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[var(--surface-2)] transition-colors"
         >
@@ -518,6 +534,22 @@ export function CreatePostScreen() {
           </div>
         </div>
       )}
+      <AlertDialog open={confirmingDiscard} onOpenChange={setConfirmingDiscard}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Descartar la publicación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se perderá lo que escribiste, la ubicación y los adjuntos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Seguir editando</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate(-1)}>
+              Descartar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

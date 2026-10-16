@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedScreen } from './FeedScreen';
 import { Toaster } from './ui/sonner';
@@ -92,14 +98,12 @@ const openPicker = async (
   user: ReturnType<typeof userEvent.setup>,
   card: ReturnType<typeof within>,
 ) => {
-  await user.click(
-    card.getByRole('button', { name: /^(reaccionar|tu reacción)/i }),
-  );
+  await user.click(card.getByRole('button', { name: 'Más reacciones' }));
   return within(card.getByRole('group', { name: 'Elegir reacción' }));
 };
 
 describe('HU28 — Reaccionar a una publicación', () => {
-  it('tocar el botón ofrece las cinco expresiones', async () => {
+  it('«Más reacciones» ofrece las cinco expresiones (teclado y escritorio)', async () => {
     const user = userEvent.setup();
     fakeApi();
     const card = await renderFeed();
@@ -121,7 +125,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
 
     expect(
       await card.findByRole('button', {
-        name: 'Tu reacción: Fuego. 5 reacciones',
+        name: 'Quitar tu reacción: Fuego. 5 reacciones',
       }),
     ).toBeInTheDocument();
     expect(api.calls).toEqual([
@@ -139,7 +143,9 @@ describe('HU28 — Reaccionar a una publicación', () => {
     await user.click(picker.getByRole('button', { name: 'Aplauso' }));
 
     expect(
-      card.getByRole('button', { name: 'Tu reacción: Aplauso. 5 reacciones' }),
+      card.getByRole('button', {
+        name: 'Quitar tu reacción: Aplauso. 5 reacciones',
+      }),
     ).toBeInTheDocument();
     api.release();
     await waitFor(() => expect(api.calls).toHaveLength(1));
@@ -158,7 +164,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
     await user.click(picker.getByRole('button', { name: 'Me encanta' }));
 
     expect(
-      await card.findByRole('button', { name: 'Reaccionar. 3 reacciones' }),
+      await card.findByRole('button', { name: 'Me encanta. 3 reacciones' }),
     ).toBeInTheDocument();
     expect(api.calls).toEqual([
       { method: 'DELETE', path: '/posts/p1/reaction', body: undefined },
@@ -175,7 +181,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
 
     expect(
       await card.findByRole('button', {
-        name: 'Tu reacción: Asombro. 4 reacciones',
+        name: 'Quitar tu reacción: Asombro. 4 reacciones',
       }),
     ).toBeInTheDocument();
     expect(api.calls).toEqual([
@@ -198,7 +204,7 @@ describe('HU28 — Reaccionar a una publicación', () => {
       await screen.findByText('Esa publicación ya no existe.'),
     ).toBeInTheDocument();
     expect(
-      card.getByRole('button', { name: 'Reaccionar. 4 reacciones' }),
+      card.getByRole('button', { name: 'Me encanta. 4 reacciones' }),
     ).toBeInTheDocument();
   });
 
@@ -211,6 +217,63 @@ describe('HU28 — Reaccionar a una publicación', () => {
     await user.keyboard('{Escape}');
 
     expect(card.queryByRole('group', { name: 'Elegir reacción' })).toBeNull();
+    expect(api.calls).toEqual([]);
+  });
+
+  it('bug 1026: un toque corto pone ❤️ directo, sin abrir el selector', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({ count: 4 });
+    const card = await renderFeed();
+
+    await user.click(
+      card.getByRole('button', { name: 'Me encanta. 4 reacciones' }),
+    );
+
+    expect(
+      await card.findByRole('button', {
+        name: 'Quitar tu reacción: Me encanta. 5 reacciones',
+      }),
+    ).toBeInTheDocument();
+    expect(card.queryByRole('group', { name: 'Elegir reacción' })).toBeNull();
+    expect(api.calls).toEqual([
+      { method: 'PUT', path: '/posts/p1/reaction', body: { type: 'HEART' } },
+    ]);
+  });
+
+  it('bug 1026: con una reacción puesta, el toque corto la quita', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({ mine: 'FIRE', count: 4 });
+    const card = await renderFeed();
+
+    await user.click(
+      card.getByRole('button', {
+        name: 'Quitar tu reacción: Fuego. 4 reacciones',
+      }),
+    );
+
+    expect(
+      await card.findByRole('button', { name: 'Me encanta. 3 reacciones' }),
+    ).toBeInTheDocument();
+    expect(api.calls).toEqual([
+      { method: 'DELETE', path: '/posts/p1/reaction', body: undefined },
+    ]);
+  });
+
+  it('bug 1026: mantener pulsado abre el selector y no reacciona', async () => {
+    const api = fakeApi({ count: 4 });
+    const card = await renderFeed();
+    const heart = card.getByRole('button', {
+      name: 'Me encanta. 4 reacciones',
+    });
+
+    fireEvent.pointerDown(heart);
+    await act(() => new Promise((r) => setTimeout(r, 500)));
+    fireEvent.pointerUp(heart);
+    fireEvent.click(heart);
+
+    expect(
+      card.getByRole('group', { name: 'Elegir reacción' }),
+    ).toBeInTheDocument();
     expect(api.calls).toEqual([]);
   });
 });
