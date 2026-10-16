@@ -110,6 +110,7 @@ describe('hasUnreadConversation (bug 1024)', () => {
       otherUser: {
         id: `u${i}`,
         handle: `u${i}`,
+        avatarUrl: null,
         displayName: `Persona ${i}`,
         careerName: null,
         verified: false,

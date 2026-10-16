@@ -27,8 +27,14 @@ export function toQueryString(
 
 export type ReactionInput = Schemas['SetReactionDto'];
 export type ReactionState = Schemas['ReactionStateDto'];
+export type PostReactorPage = Schemas['PostReactorPageDto'];
 
 export const postsApi = {
+  /** Quién reaccionó a mi publicación y con qué; solo para su autor (bug 1076). */
+  reactors: (id: string, cursor: string | null = null) =>
+    apiRequest<PostReactorPage>(
+      `/posts/${id}/reactions${toQueryString({ cursor })}`,
+    ),
   create: (input: CreatePostInput) =>
     apiRequest<PostView>('/posts', { method: 'POST', body: input }),
   feed: (careerId: string | null, cursor: string | null) =>

@@ -30,6 +30,7 @@ export function PostReactionButton({
   mine,
   busy,
   onSelect,
+  onShowReactors,
 }: {
   count: number;
   /** Mi reacción activa a esta publicación; null si no he reaccionado. */
@@ -37,6 +38,8 @@ export function PostReactionButton({
   busy: boolean;
   /** El tipo que queda; null cuando se quita. */
   onSelect: (type: ReactionType | null) => void;
+  /** Solo en mis publicaciones: tocar el conteo muestra quién reaccionó (bug 1076). */
+  onShowReactors?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   // El temporizador del toque largo y si ya abrió el selector (para que el
@@ -107,16 +110,31 @@ export function PostReactionButton({
             aria-hidden="true"
           />
         )}
-        <span
+        {!onShowReactors && (
+          <span
+            className={
+              'text-[13px] font-medium ' +
+              (mine ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
+            }
+            aria-hidden="true"
+          >
+            {compact(count)}
+          </span>
+        )}
+      </button>
+      {onShowReactors && (
+        <button
+          type="button"
+          onClick={onShowReactors}
+          aria-label={`Ver quién reaccionó: ${count} ${noun}`}
           className={
-            'text-[13px] font-medium ' +
+            'px-1 py-1 -ml-1 text-[13px] font-medium underline-offset-2 hover:underline ' +
             (mine ? 'text-[var(--brand)]' : 'text-[var(--muted)]')
           }
-          aria-hidden="true"
         >
           {compact(count)}
-        </span>
-      </button>
+        </button>
+      )}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

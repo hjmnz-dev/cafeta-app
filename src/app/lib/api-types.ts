@@ -100,6 +100,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/uploads': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['UploadsController_upload'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/posts': {
     parameters: {
       query?: never;
@@ -254,22 +270,6 @@ export interface paths {
     get: operations['UserPostsController_count'];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/uploads': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations['UploadsController_upload'];
     delete?: never;
     options?: never;
     head?: never;
@@ -914,6 +914,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/posts/{id}/reactions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Quién reaccionó a mi publicación y con qué; solo para su autor. */
+    get: operations['PostReactorsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/posts/{id}/comments': {
     parameters: {
       query?: never;
@@ -1325,6 +1342,8 @@ export interface components {
     };
     ProfileSummaryDto: {
       careerId: string | null;
+      /** @description Mi foto de perfil (URL firmada); null si no tengo. */
+      avatarUrl: string | null;
       /** @example cgomez_intec */
       handle: string;
       displayName: string;
@@ -1357,6 +1376,25 @@ export interface components {
       password: string;
       /** @description Con true la sesión dura 30 días; sin él, 12 horas. */
       remember?: boolean;
+    };
+    UploadFileDto: {
+      /** Format: binary */
+      file: string;
+    };
+    /** @enum {string} */
+    MediaType: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
+    UploadViewDto: {
+      mediaType: components['schemas']['MediaType'];
+      /**
+       * @description Clave del archivo; se manda de vuelta al publicar.
+       * @example image/0192f0c4-7d1a-7c3e-9a51-3c2b8e1f4a10.jpg
+       */
+      key: string;
+      /** @description Enlace de lectura que vence en una hora como máximo. */
+      url: string;
+      /** @example image/jpeg */
+      mimeType: string;
+      sizeBytes: number;
     };
     CreatePostDto: {
       /** @enum {string} */
@@ -1393,8 +1431,6 @@ export interface components {
      * @enum {string}
      */
     ReactionType: 'HEART' | 'FIRE' | 'CLAP' | 'LAUGH' | 'WOW';
-    /** @enum {string} */
-    MediaType: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
     PostMediaDto: {
       mediaType: components['schemas']['MediaType'];
       /** @description Enlace de lectura que vence en una hora como máximo. */
@@ -1473,23 +1509,6 @@ export interface components {
     PostCountDto: {
       /** @example 12 */
       count: number;
-    };
-    UploadFileDto: {
-      /** Format: binary */
-      file: string;
-    };
-    UploadViewDto: {
-      mediaType: components['schemas']['MediaType'];
-      /**
-       * @description Clave del archivo; se manda de vuelta al publicar.
-       * @example image/0192f0c4-7d1a-7c3e-9a51-3c2b8e1f4a10.jpg
-       */
-      key: string;
-      /** @description Enlace de lectura que vence en una hora como máximo. */
-      url: string;
-      /** @example image/jpeg */
-      mimeType: string;
-      sizeBytes: number;
     };
     /** @enum {string} */
     ProfileVisibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
@@ -1604,6 +1623,8 @@ export interface components {
       | 'MESSAGE'
       | 'VERIFICATION_RESULT';
     NotificationActorDto: {
+      /** @description Su foto de perfil (URL firmada); null si no tiene. */
+      avatarUrl: string | null;
       id: string;
       /** @example cgomez_intec */
       handle: string;
@@ -1658,6 +1679,8 @@ export interface components {
       createdAt: string;
     };
     ConversationUserDto: {
+      /** @description Su foto de perfil (URL firmada); null si no tiene. */
+      avatarUrl: string | null;
       /** @example Ingeniería de Software */
       careerName: string | null;
       id: string;
@@ -1855,6 +1878,18 @@ export interface components {
       myReaction: components['schemas']['ReactionType'] | null;
       /** @description Reacciones activas de usuarios activos. */
       reactionCount: number;
+    };
+    PostReactorDto: {
+      /** Format: uuid */
+      id: string;
+      type: components['schemas']['ReactionType'];
+      /** Format: date-time */
+      createdAt: string;
+      user: components['schemas']['FollowUserViewDto'];
+    };
+    PostReactorPageDto: {
+      items: components['schemas']['PostReactorDto'][];
+      nextCursor: string | null;
     };
     CreateReportDto: {
       /** @enum {string} */
@@ -2258,6 +2293,29 @@ export interface operations {
       };
     };
   };
+  UploadsController_upload: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['UploadFileDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UploadViewDto'];
+        };
+      };
+    };
+  };
   PostsController_create: {
     parameters: {
       query?: never;
@@ -2496,29 +2554,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PostCountDto'];
-        };
-      };
-    };
-  };
-  UploadsController_upload: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'multipart/form-data': components['schemas']['UploadFileDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['UploadViewDto'];
         };
       };
     };
@@ -3607,6 +3642,32 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ReactionStateDto'];
+        };
+      };
+    };
+  };
+  PostReactorsController_list: {
+    parameters: {
+      query: {
+        /** @description id de la última publicación de la página anterior. */
+        cursor?: string;
+        /** @description De 1 a 50; 20 si no se envía. */
+        limit: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PostReactorPageDto'];
         };
       };
     };

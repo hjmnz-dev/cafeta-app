@@ -326,3 +326,69 @@ describe('Bugs 1043, 1047 y 1038 — avatar, anillo y comentarios de archivadas'
     ).not.toBeInTheDocument();
   });
 });
+
+describe('Bug 1076 — Quién reaccionó a mi publicación', () => {
+  const live = {
+    isMine: true,
+    authorId: '01926f00-0000-7000-8000-0000000000aa',
+    isAnnouncement: false,
+    reaction: { mine: null, busy: false, select: () => undefined },
+  };
+  const BETO = '01926f00-0000-7000-8000-0000000000b0';
+
+  it('el autor toca el conteo y ve quién reaccionó, con qué, y llega a su perfil', async () => {
+    const user = userEvent.setup();
+    signIn((url) =>
+      url.pathname.endsWith('/posts/r1/reactions')
+        ? json(200, {
+            items: [
+              {
+                id: 'x1',
+                type: 'LAUGH',
+                createdAt: NOW.toISOString(),
+                user: {
+                  id: BETO,
+                  handle: 'beto',
+                  displayName: 'Beto Díaz',
+                  avatarUrl: 'https://blob.test/beto.jpg',
+                  careerName: null,
+                  verified: false,
+                },
+              },
+            ],
+            nextCursor: null,
+          })
+        : undefined,
+    );
+    const view = postView({ id: 'r1', reactionCount: 1 });
+    renderWithProviders(<PostCard post={toCardPost(view, NOW)} live={live} />);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Ver quién reaccionó: 1 reacción' }),
+    );
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Reacciones de la publicación',
+    });
+    const row = await within(dialog).findByRole('link', {
+      name: /Beto Díaz reaccionó con/,
+    });
+    expect(row).toHaveAttribute('href', `/u/${BETO}`);
+    expect(
+      dialog.querySelector('img[src="https://blob.test/beto.jpg"]'),
+    ).not.toBeNull();
+  });
+
+  it('en una publicación ajena el conteo no abre ninguna lista', () => {
+    const view = postView({ id: 'r2', reactionCount: 3 });
+    renderWithProviders(
+      <PostCard
+        post={toCardPost(view, NOW)}
+        live={{ ...live, isMine: false }}
+      />,
+    );
+    expect(
+      screen.queryByRole('button', { name: /ver quién reaccionó/i }),
+    ).not.toBeInTheDocument();
+  });
+});

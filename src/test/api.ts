@@ -15,6 +15,7 @@ export const TEST_USER = {
     handle: 'cgomez_intec',
     displayName: 'Carlos Gómez',
     careerId: TEST_CAREERS[0].id,
+    avatarUrl: null,
   },
 } as const;
 

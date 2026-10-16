@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft,
   Check,
@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { userMessageOf } from '../lib/http';
 import {
   chronological,
-  initialsOf,
   MESSAGE_CONTENT_MAX,
   messageTime,
 } from '../lib/messages';
@@ -29,6 +28,7 @@ import {
 } from '../store/conversations-queries';
 import { useSession } from '../store/SessionStore';
 import { StoryRing } from './StoryRing';
+import { ProfileAvatar } from './ProfileAvatar';
 
 /**
  * Una conversación (HU34, HU35 y HU38, spec 0008 decisión 25 y 26). El historial
@@ -128,7 +128,7 @@ export function ConversationScreen() {
       <Header
         title={other?.displayName ?? ''}
         subtitle={other ? `@${other.handle}` : undefined}
-        initials={other ? initialsOf(other.displayName) : undefined}
+        avatarUrl={other?.avatarUrl ?? null}
         userId={other?.id}
         onBack={() => navigate('/messages')}
       />
@@ -324,13 +324,13 @@ export function ConversationScreen() {
 function Header({
   title,
   subtitle,
-  initials,
+  avatarUrl,
   userId,
   onBack,
 }: {
   title: string;
   subtitle?: string;
-  initials?: string;
+  avatarUrl?: string | null;
   /** La otra persona: con historia vigente, su foto la abre (bug 1047). */
   userId?: string;
   onBack: () => void;
@@ -344,21 +344,51 @@ function Header({
       >
         <ArrowLeft className="w-6 h-6" />
       </button>
-      {initials && userId && (
+      {title && userId && (
         <StoryRing userId={userId} name={title}>
-          <div className="w-10 h-10 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--on-brand)] font-semibold text-sm shadow-sm">
-            {initials}
-          </div>
+          <ProfileAvatar
+            url={avatarUrl}
+            name={title}
+            size={40}
+            radius={20}
+            className="shadow-sm"
+          />
         </StoryRing>
       )}
-      <div className="flex-1 min-w-0">
-        <h2 className="font-['Space Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)] truncate">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-[var(--muted)] text-[13px] truncate">{subtitle}</p>
-        )}
-      </div>
+      {/* Bug 1074: el nombre lleva al perfil de la persona; el perfil aplica
+          sus propias reglas de privacidad y bloqueo. */}
+      {userId ? (
+        <Link
+          to={`/u/${userId}`}
+          aria-label={`Ver el perfil de ${title}`}
+          className="flex-1 min-w-0"
+        >
+          <HeaderTitle title={title} subtitle={subtitle} />
+        </Link>
+      ) : (
+        <div className="flex-1 min-w-0">
+          <HeaderTitle title={title} subtitle={subtitle} />
+        </div>
+      )}
     </div>
+  );
+}
+
+function HeaderTitle({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <>
+      <h2 className="font-['Space Grotesk',sans-serif] font-bold text-[16px] text-[var(--ink)] truncate">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-[var(--muted)] text-[13px] truncate">{subtitle}</p>
+      )}
+    </>
   );
 }

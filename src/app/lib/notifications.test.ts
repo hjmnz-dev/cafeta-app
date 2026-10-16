@@ -15,7 +15,7 @@ function notification(
 ): NotificationView {
   return {
     id: 'n1',
-    actor: { id: ANA, handle: 'ana', displayName: 'Ana Díaz' },
+    actor: { id: ANA, handle: 'ana', displayName: 'Ana Díaz', avatarUrl: null },
     postId: null,
     storyId: null,
     conversationId: null,

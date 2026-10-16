@@ -13,6 +13,8 @@ export const postKeys = {
   saved: ['posts', 'saved'] as const,
   /** Mis archivadas y desactivadas (solo las veo yo). */
   archived: ['posts', 'archived'] as const,
+  /** Quién reaccionó a una publicación mía (bug 1076). */
+  reactors: (id: string) => ['posts', 'reactors', id] as const,
 };
 
 /**
