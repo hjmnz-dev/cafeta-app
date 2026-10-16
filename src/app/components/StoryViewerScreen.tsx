@@ -77,8 +77,15 @@ export function StoryViewerScreen() {
    * perfil si se abrió desde el perfil— y no siempre al feed. Se arrastra al
    * pasar de una historia a otra para no perderlo por el camino.
    */
-  const from = (location.state as { from?: string } | null)?.from ?? '/home';
-  const goBack = () => navigate(from);
+  const opened = (location.state as { from?: string } | null)?.from;
+  const from = opened ?? '/home';
+  // Bug 1058: el visor ocupa una sola entrada del historial (pasar entre
+  // historias la reemplaza), así que cerrar es volver atrás a la pantalla de
+  // origen. Antes navegaba hacia adelante a `from`, y el «Atrás» de esa
+  // pantalla reabría la historia en bucle. Sin origen (enlace directo) se
+  // reemplaza por Inicio.
+  const goBack = () =>
+    opened ? navigate(-1) : navigate(from, { replace: true });
 
   const tray = useStoryTray();
   const queue = playbackQueue(tray.data?.groups ?? []);
@@ -97,10 +104,11 @@ export function StoryViewerScreen() {
       // Se acabaron las historias por ver: se cierra el visor.
       if (nextId)
         navigate(`/stories/${nextId}`, { replace: true, state: { from } });
-      else navigate(from);
+      else if (opened) navigate(-1);
+      else navigate(from, { replace: true });
     }, STORY_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [entry, nextId, from, navigate, paused]);
+  }, [entry, nextId, from, opened, navigate, paused]);
 
   if (tray.isPending) {
     return (
@@ -276,7 +284,11 @@ export function StoryViewerScreen() {
       <div className="relative px-3 pb-8 flex items-center justify-between">
         <button
           onClick={() =>
-            prev && navigate(`/stories/${prev.story.id}`, { state: { from } })
+            prev &&
+            navigate(`/stories/${prev.story.id}`, {
+              replace: true,
+              state: { from },
+            })
           }
           disabled={!prev}
           aria-label="Historia anterior"
@@ -289,7 +301,11 @@ export function StoryViewerScreen() {
         </span>
         <button
           onClick={() =>
-            next && navigate(`/stories/${next.story.id}`, { state: { from } })
+            next &&
+            navigate(`/stories/${next.story.id}`, {
+              replace: true,
+              state: { from },
+            })
           }
           disabled={!next}
           aria-label="Historia siguiente"
