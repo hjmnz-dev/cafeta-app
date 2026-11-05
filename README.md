@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <img src="docs/readme/banner.webp" alt="Banner de Cafeta">
+  <img src="docs/readme/banner-en.webp" alt="Cafeta banner">
   <br />
 
   <div>
@@ -15,190 +15,192 @@
 
   <p align="center"><a href="https://cafeta-web-hj01.azurewebsites.net">cafeta-web-hj01.azurewebsites.net</a></p>
 
-  <p align="center">La app web de Cafeta, la red social de la comunidad universitaria de INTEC, en República Dominicana.</p>
+  <p align="center">The web app of Cafeta, the social network for the INTEC university community in the Dominican Republic.</p>
+
+  <p align="center"><b>English</b> · <a href="README.es.md">Español</a></p>
 </div>
 
-## 📋 <a name="table">Tabla de contenido</a>
+## 📋 <a name="table">Table of Contents</a>
 
-1. ✨ [Introducción](#introduction)
-2. 📸 [Pantallas](#screens)
-3. ⚙️ [Stack](#tech-stack)
-4. 🔋 [Funciones](#features)
-5. 🗂️ [Estructura](#project-structure)
-6. 🤸 [Inicio rápido](#quick-start)
-7. 🧪 [Pruebas](#tests)
-8. 🚀 [Despliegue](#deployment)
-9. 🎨 [Dónde cambiar cada cosa](#customization)
-10. 🧩 [Los otros repos](#related)
-11. 🙌 [Créditos](#credits)
-12. 📬 [Contacto](#contact)
+1. ✨ [Introduction](#introduction)
+2. 📸 [Screens](#screens)
+3. ⚙️ [Tech Stack](#tech-stack)
+4. 🔋 [Features](#features)
+5. 🗂️ [Project Structure](#project-structure)
+6. 🤸 [Quick Start](#quick-start)
+7. 🧪 [Tests](#tests)
+8. 🚀 [Deployment](#deployment)
+9. 🎨 [Customization](#customization)
+10. 🧩 [Related Repos](#related)
+11. 🙌 [Credits](#credits)
+12. 📬 [Contact](#contact)
 
-## <a name="introduction">✨ Introducción</a>
+## <a name="introduction">✨ Introduction</a>
 
-Cafeta es una red social cerrada para la comunidad de INTEC: solo entra quien tiene un correo institucional. Sus estudiantes comparten apuntes y avisos, suben historias de 24 horas, conversan en tiempo real y descubren a otros compañeros.
+Cafeta is a closed social network for the INTEC community: only people with an institutional email can join. Students share notes and announcements, post 24-hour stories, chat in real time and discover other classmates.
 
-Este repositorio es la app del estudiante, pensada como una app de teléfono que corre en el navegador y que se puede instalar. Es una aplicación React que lee todo de [cafeta-api](https://github.com/hjmnz-dev/cafeta-api).
+This repository is the student app, designed as a phone app that runs in the browser and can be installed. It is a React application that reads everything from [cafeta-api](https://github.com/hjmnz-dev/cafeta-api).
 
-Nació como proyecto académico en INTEC, a partir de un prototipo en Figma, y está desplegada en producción.
+It started as an academic project at INTEC, from a Figma prototype, and runs in production. The interface is in Spanish, the language of its users.
 
-## <a name="screens">📸 Pantallas</a>
+## <a name="screens">📸 Screens</a>
 
-Capturas con los datos ficticios de la semilla de demo.
+Screenshots with the fictional data from the demo seed.
 
 <div align="center">
-  <img src="docs/readme/feed.webp" width="24%" alt="Feed con pestañas por carrera">
-  <img src="docs/readme/perfil.webp" width="24%" alt="Perfil con etiquetas y publicaciones">
-  <img src="docs/readme/mensajes.webp" width="24%" alt="Bandeja de mensajes">
-  <img src="docs/readme/configuracion.webp" width="24%" alt="Configuración con los niveles de privacidad del perfil">
+  <img src="docs/readme/feed.webp" width="24%" alt="Feed with a tab per degree program">
+  <img src="docs/readme/perfil.webp" width="24%" alt="Profile with tags and posts">
+  <img src="docs/readme/mensajes.webp" width="24%" alt="Message inbox">
+  <img src="docs/readme/configuracion.webp" width="24%" alt="Settings with the profile privacy levels">
 </div>
 
-## <a name="tech-stack">⚙️ Stack</a>
+## <a name="tech-stack">⚙️ Tech Stack</a>
 
-- **[React 18](https://react.dev)** y **[TypeScript](https://www.typescriptlang.org)** en modo strict.
-- **[Vite 6](https://vite.dev)** para el servidor de desarrollo y el build.
-- **[Tailwind CSS 4](https://tailwindcss.com)** con componentes de **[shadcn/ui](https://ui.shadcn.com)** sobre **[Radix UI](https://www.radix-ui.com)**, además de **[MUI](https://mui.com)** y **[Lucide](https://lucide.dev)**.
-- **[React Router 7](https://reactrouter.com)** para las rutas y **[React Hook Form](https://react-hook-form.com)** para los formularios.
-- **[TanStack Query 5](https://tanstack.com/query)** para los datos de la API, con caché e invalidación por dominio.
-- **[Socket.io](https://socket.io)** para mensajes y notificaciones al instante.
-- **[Motion](https://motion.dev)** para las animaciones y **[Sonner](https://sonner.emilkowal.ski)** para los avisos.
-- **[Sentry](https://sentry.io)** para el monitoreo de errores.
-- **[Vitest](https://vitest.dev)** y **[Testing Library](https://testing-library.com)** para las pruebas; **oxlint** y **Prettier** para lint y formato.
+- **[React 18](https://react.dev)** and **[TypeScript](https://www.typescriptlang.org)** in strict mode.
+- **[Vite 6](https://vite.dev)** for the development server and production build.
+- **[Tailwind CSS 4](https://tailwindcss.com)** with **[shadcn/ui](https://ui.shadcn.com)** components on **[Radix UI](https://www.radix-ui.com)**, plus **[MUI](https://mui.com)** and **[Lucide](https://lucide.dev)**.
+- **[React Router 7](https://reactrouter.com)** for routing and **[React Hook Form](https://react-hook-form.com)** for forms.
+- **[TanStack Query 5](https://tanstack.com/query)** for API data, with caching and per-domain invalidation.
+- **[Socket.io](https://socket.io)** for instant messages and notifications.
+- **[Motion](https://motion.dev)** for animations and **[Sonner](https://sonner.emilkowal.ski)** for toasts.
+- **[Sentry](https://sentry.io)** for error monitoring.
+- **[Vitest](https://vitest.dev)** and **[Testing Library](https://testing-library.com)** for tests; **oxlint** and **Prettier** for linting and formatting.
 
-## <a name="features">🔋 Funciones</a>
+## <a name="features">🔋 Features</a>
 
-👉 **Solo con correo institucional**: Registro, inicio de sesión con "Recordarme" y recuperación de contraseña por correo.
+👉 **Institutional Email Only**: Sign-up, sign-in with "Remember me" and password recovery by email.
 
-👉 **Feed por carrera**: La pestaña "Para ti" y una por carrera, con scroll infinito.
+👉 **Feed by Degree Program**: A "For you" tab plus one tab per program, with infinite scroll.
 
-👉 **Publicaciones con adjuntos**: Texto con fotos, videos o PDF, y una ubicación del campus si hace falta.
+👉 **Posts with Attachments**: Text with photos, videos or PDFs, and an optional campus location.
 
-👉 **Reacciones y comentarios**: Cinco reacciones y comentarios editables, también en las historias.
+👉 **Reactions and Comments**: Five reactions and editable comments, on stories too.
 
-👉 **Historias**: Imagen o video con texto opcional, que duran 24 horas y se pueden editar o desactivar.
+👉 **Stories**: An image or video with optional text, lasting 24 hours, that can be edited or deactivated.
 
-👉 **Mensajes en tiempo real**: Conversaciones con edición y retiro de mensajes, y aviso de mensajes nuevos.
+👉 **Real-Time Messages**: Conversations with message editing and withdrawal, and alerts for new messages.
 
-👉 **Perfil**: Foto, biografía y etiquetas de carrera, habilidades e intereses, con pestañas de publicaciones, recursos y guardados.
+👉 **Profile**: Photo, bio and tags for program, skills and interests, with tabs for posts, resources and saved items.
 
-👉 **Tu red**: Seguir usuarios, solicitudes para los perfiles de solo seguidores y bloqueos.
+👉 **Your Network**: Follow users, follow requests for followers-only profiles, and blocks.
 
-👉 **Búsqueda y descubrir**: Busca personas y publicaciones, y encuentra gente nueva.
+👉 **Search and Discover**: Search people and posts, and find new people.
 
-👉 **Notificaciones**: Lista con no leídas, preferencias por tipo y avisos al instante.
+👉 **Notifications**: A list with unread items, preferences by type and instant alerts.
 
-👉 **Archivar y guardar**: Archiva tus publicaciones para restaurarlas después, y guarda las de otros.
+👉 **Archive and Save**: Archive your posts to restore them later, and save other people's posts.
 
-👉 **Privacidad y reportes**: Tres niveles de privacidad del perfil, reportes de usuarios y publicaciones, y desactivación de la cuenta.
+👉 **Privacy and Reports**: Three profile privacy levels, reports on users and posts, and account deactivation.
 
-👉 **Tema claro y oscuro**: Oscuro por defecto, con cambio desde Configuración.
+👉 **Light and Dark Themes**: Dark by default, switchable from Settings.
 
-👉 **Accesible**: Contraste AA comprobado por una prueba, foco visible con teclado, respeto por "reducir movimiento" y campos con etiqueta.
+👉 **Accessible**: AA contrast checked by a test, visible keyboard focus, support for "reduce motion" and labeled fields.
 
-👉 **Instalable**: Trae su manifiesto web para agregarla a la pantalla de inicio.
+👉 **Installable**: Ships a web manifest so it can be added to the home screen.
 
-## <a name="project-structure">🗂️ Estructura</a>
+## <a name="project-structure">🗂️ Project Structure</a>
 
 ```text
 deploy/
-└── server.mjs        Servidor estático de producción en App Service
-docs/readme/          Imágenes de este README
-public/               Iconos y manifiesto web
+└── server.mjs        Production static server on App Service
+docs/readme/          Images for this README
+public/               Icons and web manifest
 src/
 ├── app/
-│   ├── components/   Una pantalla por archivo; los componentes base en ui/
-│   ├── lib/          Lógica pura, cliente HTTP y tipos generados desde OpenAPI
-│   ├── store/        Sesión, tema, tiempo real y hooks de TanStack Query
-│   └── routes.tsx    Todas las rutas de la app
-├── styles/           Tailwind, fuentes y tokens de color
-└── test/             Configuración y utilidades de las pruebas
-design.md             Lenguaje visual y reglas de accesibilidad
+│   ├── components/   One screen per file; base components in ui/
+│   ├── lib/          Pure logic, HTTP client and types generated from OpenAPI
+│   ├── store/        Session, theme, real time and TanStack Query hooks
+│   └── routes.tsx    Every route in the app
+├── styles/           Tailwind, fonts and color tokens
+└── test/             Test setup and utilities
+design.md             Visual language and accessibility rules
 ```
 
-## <a name="quick-start">🤸 Inicio rápido</a>
+## <a name="quick-start">🤸 Quick Start</a>
 
-Sigue estos pasos para correr la app en tu máquina.
+Follow these steps to run the app on your machine.
 
-**Requisitos**
+**Prerequisites**
 
 - [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/en) 24, con npm
-- [cafeta-api](https://github.com/hjmnz-dev/cafeta-api) corriendo en el puerto 3000; su README explica cómo levantarla con datos de demo
+- [Node.js](https://nodejs.org/en) 24, with npm
+- [cafeta-api](https://github.com/hjmnz-dev/cafeta-api) running on port 3000; its README explains how to start it with demo data
 
-**Clonar el repositorio**
+**Cloning the Repository**
 
 ```bash
 git clone https://github.com/hjmnz-dev/cafeta-app.git
 cd cafeta-app
 ```
 
-**Instalación**
+**Installation**
 
 ```bash
 npm install
 ```
 
-**Correr el proyecto**
+**Running the Project**
 
 ```bash
 npm run dev
 ```
 
-Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-Con la semilla de la API puedes entrar como `cgomez@est.intec.edu.do`, con la `SEED_DEMO_PASSWORD` de tu `.env` de la API.
+With the API's demo seed you can sign in as `cgomez@est.intec.edu.do`, using the `SEED_DEMO_PASSWORD` from the API's `.env`.
 
-**Variables de entorno**
+**Environment Variables**
 
-No necesitas ninguna en local: sin `VITE_API_URL`, la app usa `http://localhost:3000/api/v1`, y sin `VITE_SENTRY_DSN` no envía nada a Sentry. Las dos están explicadas en [`.env.example`](.env.example).
+None are needed locally: without `VITE_API_URL`, the app uses `http://localhost:3000/api/v1`, and without `VITE_SENTRY_DSN` it sends nothing to Sentry. Both are explained in [`.env.example`](.env.example).
 
-## <a name="tests">🧪 Pruebas</a>
+## <a name="tests">🧪 Tests</a>
 
 ```bash
-npm test              # pruebas con Vitest y Testing Library
-npm run lint          # revisa todo el repo y falla con cualquier aviso
-npm run format:check  # revisa el formato
-npm run typecheck     # revisa los tipos
-npm run api:types     # regenera los tipos desde OpenAPI, con la API en el puerto 3000
+npm test              # tests with Vitest and Testing Library
+npm run lint          # checks the whole repo and fails on any warning
+npm run format:check  # checks formatting
+npm run typecheck     # checks types
+npm run api:types     # regenerates the types from OpenAPI, with the API on port 3000
 ```
 
-Husky y lint-staged revisan lint, formato y tipos antes de cada commit, y el CI repite todo en cada push y en cada PR.
+Husky and lint-staged check linting, formatting and types before every commit, and CI runs everything again on every push and pull request.
 
-## <a name="deployment">🚀 Despliegue</a>
+## <a name="deployment">🚀 Deployment</a>
 
-La app corre en [cafeta-web-hj01.azurewebsites.net](https://cafeta-web-hj01.azurewebsites.net), en [Azure App Service](https://azure.microsoft.com/products/app-service) (Canada Central). Cada push a `main` corre el CI y, solo si todo pasa, el job `deploy`:
+The app runs at [cafeta-web-hj01.azurewebsites.net](https://cafeta-web-hj01.azurewebsites.net), on [Azure App Service](https://azure.microsoft.com/products/app-service) (Canada Central). Every push to `main` runs CI and, only if everything passes, the `deploy` job:
 
-1. Compila con la URL de la API y el DSN de Sentry del ambiente `production`.
-2. Sube los source maps a Sentry y comprueba que ninguno quede publicado.
-3. Entra a Azure con OIDC, sin contraseñas guardadas en GitHub, y sube `dist/` con `deploy/server.mjs`.
-4. Espera a que `/version.txt` muestre el commit nuevo.
+1. Builds with the API URL and Sentry DSN from the `production` environment.
+2. Uploads the source maps to Sentry and checks that none get published.
+3. Signs in to Azure with OIDC, with no passwords stored in GitHub, and uploads `dist/` with `deploy/server.mjs`.
+4. Waits until `/version.txt` shows the new commit.
 
-Las demás ramas y los PR nunca despliegan. Cuando un cambio toca el contrato, primero se despliega la API.
+Other branches and pull requests never deploy. When a change touches the contract, the API deploys first.
 
-## <a name="customization">🎨 Dónde cambiar cada cosa</a>
+## <a name="customization">🎨 Customization</a>
 
-| Para cambiar           | Edita                                                                 |
-| ---------------------- | --------------------------------------------------------------------- |
-| Rutas                  | `src/app/routes.tsx`                                                  |
-| Colores y tema         | `src/styles/theme.css`, con las reglas en `design.md`                 |
-| Mensajes de error      | `src/app/lib/error-messages.ts`                                       |
-| Términos y privacidad  | `src/app/lib/legal.ts`                                                |
-| Ubicaciones del campus | `src/app/lib/campus-locations.ts`                                     |
-| Claves de caché        | `src/app/lib/query-keys.ts`                                           |
-| Tipos de la API        | `npm run api:types`; `src/app/lib/api-types.ts` nunca se edita a mano |
+| To change         | Edit                                                               |
+| ----------------- | ------------------------------------------------------------------ |
+| Routes            | `src/app/routes.tsx`                                               |
+| Colors and theme  | `src/styles/theme.css`, following the rules in `design.md`         |
+| Error messages    | `src/app/lib/error-messages.ts`                                    |
+| Terms and privacy | `src/app/lib/legal.ts`                                             |
+| Campus locations  | `src/app/lib/campus-locations.ts`                                  |
+| Cache keys        | `src/app/lib/query-keys.ts`                                        |
+| API types         | `npm run api:types`; never edit `src/app/lib/api-types.ts` by hand |
 
-## <a name="related">🧩 Los otros repos</a>
+## <a name="related">🧩 Related Repos</a>
 
-Cafeta son tres repositorios que se despliegan por separado:
+Cafeta is made of three repositories that deploy separately:
 
-- **[cafeta-api](https://github.com/hjmnz-dev/cafeta-api)**: la API.
-- **[cafeta-app](https://github.com/hjmnz-dev/cafeta-app)**: esta app web.
-- **[cafeta-admin-web](https://github.com/hjmnz-dev/cafeta-admin-web)**: la consola de administración.
+- **[cafeta-api](https://github.com/hjmnz-dev/cafeta-api)**: the API.
+- **[cafeta-app](https://github.com/hjmnz-dev/cafeta-app)**: this web app.
+- **[cafeta-admin-web](https://github.com/hjmnz-dev/cafeta-admin-web)**: the admin console.
 
-## <a name="credits">🙌 Créditos</a>
+## <a name="credits">🙌 Credits</a>
 
-- **Componentes base**: [shadcn/ui](https://ui.shadcn.com), con [licencia MIT](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md). Más detalle en [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+- **Base components**: [shadcn/ui](https://ui.shadcn.com), under the [MIT license](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md). More details in [ATTRIBUTIONS.md](ATTRIBUTIONS.md) (in Spanish).
 
-## <a name="contact">📬 Contacto</a>
+## <a name="contact">📬 Contact</a>
 
 **Hamsell Jiménez**
 
