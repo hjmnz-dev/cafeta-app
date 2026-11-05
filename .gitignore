@@ -24,3 +24,13 @@ npm-debug.log*
 
 # Archivos temporales
 *.tmp
+
+# Llaves, certificados y perfiles de publicación
+*.pem
+*.key
+*.pfx
+*.p12
+*.PublishSettings
+
+# Configuración local de agentes
+.claude/

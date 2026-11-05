@@ -71,11 +71,8 @@ npm run api:types    # regenera los tipos desde OpenAPI; necesita la API en el p
 
 - En `vite.config.ts`, los plugins de React y Tailwind son obligatorios aunque parezcan sobrar; no los quites.
 - En `vite.config.ts`, `test.css` deja pasar solo `theme.css`: es lo que permite a `contrast.test.ts` leerlo con `?raw`; el resto del CSS sigue apagado en las pruebas.
-- Los imports `figma:asset/<archivo>` se resuelven a `src/assets/` con un plugin propio de Vite.
 - `localStorage` guarda unos 5 MB en total; por eso las imágenes se reducen antes de guardarse (`lib/image.ts`). Deja de importar cuando la pantalla usa la API.
 - La URL de la API sale de `VITE_API_URL` (ver `.env.example`); sin ella usa `http://localhost:3000/api/v1`.
-- `package.json` todavía se llama `@figma/my-make-file` y trae un bloque `pnpm` que no aplica: el repo usa npm.
-- `guidelines/Guidelines.md` está vacío.
 - El scroll infinito observa el contenedor con scroll de cada pantalla (el marco del teléfono), no la ventana. jsdom no trae `IntersectionObserver`: las pruebas lo simulan (ver `InfiniteListFooter.test.tsx`).
 - TanStack Query pausa los reintentos mientras la pestaña está oculta; en una verificación en navegador, el panel tiene que estar visible para ver los estados de error.
 - `deploy/server.mjs` es el mismo archivo que en `Cafeta-Admin`: un cambio va en los dos. Si un build nuevo emite una extensión que no está en su tabla de tipos, súmala ahí.
